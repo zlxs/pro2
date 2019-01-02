@@ -1,0 +1,51 @@
+TOP-N分析法：
+   使用TOP-N分析法可以得到某列上最什么的前n个值，例如：
+   薪水最高的前5个员工
+   人员最多的3个部门
+   最大的几个值和最小的几个值都可以通过Top-N分析的方法得到
+
+
+通过嵌套来实现：
+
+注：rownum只能用<和<=  不能用>和>=   即:可以 <=rownum 不能>=rownum
+
+id从小到大排序，查询前6个记录
+select * from(select * from employee order by id)
+   where rownum<6
+
+id从大到小排序，查询前6个记录
+select a.* from(select * from employee order by id desc) a //可以加个别名
+   where rownum<6
+
+------------------------------------------------------------
+id从小到大排序，查询第3个到第5个记录
+select * from(
+   select a.*,a.rownum rn  from(select * from employee order by id) a 
+   where rownum<6
+) where rn>2;
+   
+
+使用在java中实现分页：
+
+//得到指定从哪开始到哪结束的记录
+public Object[] fengyeSelect(int start,int end){
+Connection conn=null;
+PreparedStatement st=nul;
+ResultSet rs=null;
+//得到连接
+conn=utils.getConnection();
+String sql="select * from(
+   select a.*,a.rownum rn  from(select * from employee order by id) a 
+   where rownum<?
+) where rn>?";
+
+st=conn.prepareStatement(sql);
+st.setInt(1,end+1);
+st.setInt(2,start-1);
+rs=st.executeQuery();
+while(re.next){
+....
+...
+}
+
+}

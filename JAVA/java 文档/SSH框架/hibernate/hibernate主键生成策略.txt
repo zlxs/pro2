@@ -1,0 +1,72 @@
+主键生成策略
+
+
+代理主键：采用一种自动化机制给主键赋值
+
+1.increment ：主键必须为long,int,short类型，带走+1（插入数据时，先取出主键字段最大值，
+            再+1作为新插入字段的主键字段值，然后再插入表中）
+        不依赖于底层库，适用于所有库，集群和多线程不能使用
+
+
+2.identity:依赖于数据库自增字段（字段需要设置自增），oracle无法使用
+            mysql 为auto increment   sql server 为identity(1,1)
+
+
+3.sequence: 使用序列  用于为long、short或int生成唯一标识
+    <generator class="sequence" >
+      <param name="sequence">seq_name</param> //调用数据库的sequence来生成主键，要设定序列名，不然hibernate无法找到
+    </generator>
+
+
+4.hilo:high/low 高低位算法,+1带走（每次把表最大主键值+1,然后再取出，之后再插入数据，需要一张额外的表保存hi的值。
+                  保存hi值的表至少有一条记录(只与第一条记录有关)，否则会出现错误）
+    <id name="id" type="integer" column="id">  
+        <generator class="hilo">  
+                <param name="table">hibernate_hilo</param>  指定表名
+                <param name="column">next_hi</param>    指定保存hi值的列名
+                <param name="max_lo">100</param>     指定低位的最大值
+        </generator>  
+    </id>
+
+
+5.native:能根据底层数据库类型，自动选择合适的标识符生成器，
+     因此很适合跨数据库的平台，即在同一个应用中需要连接多种数据库系统的场合
+
+
+6.uuid:使用一个128-bit的UUID算法生成字符串类型的标识符，UUID被编码成一个32位16进制数字的字符串。
+　　hibernate会算出一个128位的唯一值插
+
+
+
+
+自然主键：把具有业务含义的字段作为主键叫自然主键，手动赋值
+     注：不推荐使用自然主键和联合主键
+
+assigned:指定的，指派的，手动赋值，
+      如setId("1485664");
+
+
+联合主键：由多个字段合成在一起，确定唯一性 
+ 映射文件中配置：<composite-id>而不是<id>
+  <composite-id>如何配置，具体用到时去百度，一般用注解代替xml，所以这里不做具体分析
+
+
+联合主键用Hibernate注解映射方式主要有三种： 
+第一、将联合主键的字段单独放在一个类中，该类需要实现java.io.Serializable接口并重写equals和hascode，
+      再将该类注解为@Embeddable,最后在主类中(该类不包含联合主键类中的字段)保存该联合主键类的一个引用，
+      并生成set和get方法，并将该引用注解为@Id 
+
+第二、将联合主键的字段单独放在一个类中，该类需要实现java.io.Serializable接口并重写equals和hascode，
+      最后在主类中(该类不包含联合主键类中的字段)保存该联合主键类的一个引用，
+      并生成set和get方法，并将该引用注解为@EmbeddedId 
+
+第三、将联合主键的字段单独放在一个类中，该类需要实现java.io.Serializable接口并要重写equals和hashcode.
+      最后在主类中(该类包含联合主键类中的字段)将联合主键字段都注解为@Id,并在该类上方加上这样的注解：
+      @IdClass(联合主键类.class)
+
+
+联合主键如何查询：
+User id=new User();
+id.setFirstName("李");
+id.setLastName("四");
+User user=(User)session.get(User.class,id); //id传的不是数字，而是保存关联主键信息的User对象

@@ -1,0 +1,522 @@
+注：各种关联主要不是表现在sql中的，而是在程序中能否通过A实体类找到B实体类，从B实体类找到A实体类
+
+多对一表：
+表customer                           表orders                        
+ id  name  password           orderid   ordername  cid
+
+orders表的cid来自customer表的customerid
+
+多对一单向关联关系:
+
+实体类：
+@Entity                              @Entity
+class Customer{                      class Orders{
+   private  int id;                       private  int orderid;
+   private  String name;                  private  String ordername;
+   private  String password;              private  Customer  customer;//建立orders到customer的多对一关联
+   ...                                    @ManyToOne
+}                                         getCustomer()
+                                          ...
+                                      }
+
+如何配置hibernate创建有关联关系的customer和orders表
+
+Orders类中用属性Customer customer;来记住它对应的customer;
+映射多对一的关联关系:
+   Orders的映射文件中配置property时，customer属性改用
+<many-to-one name="customer" column="cid" calss="cn.xxx.xx.Customer" not-null="true">
+</many-to-one>
+
+
+class指定customer属性的类型
+not-null属性 设置该字段值是否可以为空，true为不能，默认是false
+
+
+使用session插入数据时，调用save方法要先调用save(customer),再调用save(order);
+
+<many-to-one>有一个属性cascade 级联，设置cascade="save-update",就可以在save(order)时，同时先save(customer),
+    保存订单时，订单关联的客户也能先保存进数据库
+
+hibernate创建的表中字段的类型不是自己希望的类型时，可以在映射文件中进行具体配置
+ 如<property name="name" column="name" type="string" length="20"></property>
+   加上属性length="20" 就能使创建出来的表中name字段的类型变为 varchar(20)
+ 
+   <property name="photo" type="binary">
+      <column name="photo" sql-type="longblob"/>  指定生成的表中的字段类型是longblob
+   </property>
+
+
+使用注解来代替映射文件方法：
+@Entity
+public class Orders {
+
+	private int id;
+	private String orderName;
+	private Customer customer;
+	
+	@Id
+	@GeneratedValue
+	public int getId() {
+		return id;
+	}
+	@ManyToOne   ---------------------在这里加@ManyToOne注解就行了
+	public Customer getCustomer() {
+		return customer;
+	}
+        ...其他set和get方法
+	
+}
+
+@Entity
+public class Customer {
+
+	private int id;
+	private String name;
+	private String password;
+	@Id
+	@GeneratedValue
+	public int getId() {
+		return id;
+	}
+        ...其他set和get方法
+	
+}
+
+
+
+
+一对多单向关联关系：
+
+实体类：
+class Customer{                      class Orders{
+   private  int id;                       private  int orderid;
+   private  String name;                  private  String ordername;
+   private  String password; 
+   //建立customer到orders的一对多关联      set，get方法         
+   private  Set orders;               }
+   @OneToMany
+   @JoinColumn(name="cid")    //1对多需要加这个，不加当成多对多处理，生成中间表
+   //cid字段会加在多的一方表中，即在orders表中加有外键的字段cid
+   getOrders()
+   ...                      
+}      
+
+
+映射一对多的关联关系:
+   Customer的映射文件中配置property时，orders属性改用
+
+<set name="orders" cascade="all" inverse="true">
+  <key column="cid">   //多的一方的加外键的字段
+  <one-to-many class="cn.xxx.xx.Orders">
+</set>
+
+
+inverse属性：true让缓存忽略集合的变化，一般都要打开
+
+cascade级联属性：all，既有save-update的功能，又有delete的功能，
+     delete功能是，在删除有外键关联关系的数据时，把和它关联的数据一起删除，
+         否则的话，数据库是不允许你删除这种数据的     
+
+
+
+
+
+---------------------------------------------------------------------------------------
+
+一对多、多对一双向关联：
+
+@Entity
+public class Orders {
+	private int id;
+	private String orderName;
+	private Customer customer;	
+	@Id
+	@GeneratedValue
+	public int getId() {
+		return id;
+	}
+	@ManyToOne
+        @JoinColumn(name="cid")
+	public Customer getCustomer() {
+		return customer;
+	}
+        ...其他set和get方法	
+}
+
+@Entity
+public class Customer {
+
+	private int id;
+	private String name;
+	private String password;
+        private Set<Orders> orders;
+	@Id
+	@GeneratedValue
+	public int getId() {
+		return id;
+	}
+        @OneToMany(mappedBy="customer")   ---mappedBy--表示只在多的一方中加外键，而不是生成中间表
+        getOrders()
+        ...	
+}
+
+
+映射文件中如何设置：
+Customer:
+<set name="orders"  inverse="true" class="cn.xxx.xx.Customer">
+  <key column="cid">   //在多的一方表中加cid字段作为外键字段
+  <one-to-many class="cn.xxx.xx.Orders">
+</set>
+
+Orders:
+<many-to-one name="customer" column="cid" class="cn.xxx.xx.Orders"></many-to-one>
+
+
+
+---------------------------------------------------------------------------------------
+
+多对多单向关联；
+
+老师和学生:
+
+@Entity
+public class Student {
+	private int id;
+	private String name;
+	@Id
+	public int getId() {
+		return id;
+        }
+	...
+	
+}
+
+@Entity
+public class Teacher {
+	private int id;
+	private String name;
+	private Set<Student> students;
+	@Id
+	public int getId() {
+		return id;
+	}
+	@ManyToMany
+	public Set<Student> getStudents() {
+		return students;
+	}
+	...
+}
+
+
+如果想要修改生成的中间表的名字，和字段名，可以使用@JoinTable
+
+@ManyToMany
+@JoinTable(
+   name="t_s"，  //中间表的名字
+         //joinColumns指定中间表中和当前实体类对应的表有的关联关系的字段名，防止中间表字段外键错乱
+   joinColumns={@JoinColumn(name="teacher_id")},
+         //inverseJoinColumns指定中间表中不和当前实体类对应的表有关联关系的字段名，防止中间表字段外键错乱
+   inverseJoinColumns={@JoinColumn(name="student_id")}		
+)
+	public Set<Student> getStudents() {
+		return students;
+	}
+
+
+在映射文件中如何配置：
+Teacher:
+  <set name="students" table="t_s">
+  <key column="teacher_id"> //中间表中与Teacher表关联的字段名
+  <many-to-many class="cn.xxx.xx.Student" column="student_id"> //中间表中与Student表关联的字段名
+</set>
+
+
+
+-----------------------------------------------------------------------------------------------
+
+多对多双向关联：
+
+@Entity
+public class Student {
+
+	private int id;
+	private String name;
+	private Set<Teacher> teachers;
+	@Id
+	public int getId() {
+		return id;
+	}
+	@ManyToMany(mappedBy="students")//Teacher表里的students,不加会生成两张中间表，加在另一个类上也行
+	public Set<Teacher> getTeachers() {
+		return teachers;
+	}
+	...
+}
+
+@Entity
+public class Teacher {
+
+	private int id;
+	private String name;
+	private Set<Student> students;
+	@Id
+	public int getId() {
+		return id;
+	}
+	@ManyToMany
+	public Set<Student> getStudents() {
+		return students;
+	}
+        ...	
+}
+
+在映射文件中如何配置:
+Teacher:       需要加表名，不然会生成两张中间表
+<set name="students" table="Teacher_Student">
+  <key column="teachers_id"> //中间表中与Teacher表关联的字段名
+  <many-to-many class="cn.xxx.xx.Student" column="students_id"> //中间表中与Student表关联的字段名
+</set>
+
+Student：     需要加表名，不然会生成两张中间表，要和上面的表名一致
+<set name="teachers" table="Teacher_Student" inverse="true">
+  <key column="students_id"> //中间表中与Student表关联的字段名
+  <many-to-many class="cn.xxx.xx.Teacher" column="teachers_id"> //中间表中与Teacher表关联的字段名
+</set>
+
+
+
+-------------------------------------------------------------------------------------------------
+映射组成关系(组件映射)：
+如：实体类Customer中，地址属性用另一类：地址类 作为属性类型
+
+@Entity
+class Customer{                       class Address{
+  private int id;                          private String province;
+  private String name;                     private String city
+  private Address homeAddress;             private String street;
+  @Embedded //嵌入的                       ...
+  getAddress()                         }
+  ...                                        
+}                                     
+
+
+Customer的映射文件中如何映射组成关系：
+<component name="homeAddress" class="cn.xxx.xx.Address">
+    <property name="province" column="home_province" type="string" length="20"></property>
+    <property name="city" column="home_city" type="string" length="20"></property>
+    <property name="street" column="home_street" type="string" length="20"></property>
+</component>
+
+
+生成表：customer
+id    name   home_province  home_city   home_street
+
+
+
+
+如果表中home_province  home_city   home_street三个字段全为null，则  
+调用 Customer customer=session.load(Customer.class,1);
+     Address address=customer.getHomeAddress()得到的是address=null，而不是一个属性全为空的Address类对象
+这时用hibernate更新地址时会出空指针异常
+
+解决方法：
+  if(address=null){
+     address=new Address();
+     customer.setHomeAddress(addrerss);
+  }
+  address.setProvince("xxx")
+ ...
+
+
+
+
+如果想要增加从地址到客户的访问
+    可以修改Addrerss类，增加一个属性Customer customer和get set方法
+再在Customer映射文件的<component>下增加 主从关系<parent name="customer"/>
+
+
+
+----------------------------------------------------------------------------------------
+一对一表：单项外键关联
+
+表student                表studentIdCard
+    
+  id int ;                id int;
+  name varchar(20);       student_id int;//来自student的id,且一对一
+  age int;                ...
+  ...                    
+
+
+实体类
+@Entity                         @Entity
+class Student{                  class  StudentIdCard{
+ private int id;                    private int id;
+ private String name;               private Student studen;//一对一关系
+ ...                                ... 
+ @ID                                @ID
+ @GeneratedValue                    @GeneratedValue
+ getId()                            getId
+                                    @OneToOne
+                                    @JoinColumn(name="student_id") 
+ ...                                getStudent()
+}                                   ...
+                                 }
+
+@JoinColumn与@Column相区别的是：@JoinColumn注释的是保存表与表之间关系的字段（存在外键的字段），
+ 而@Column标注的是表中不包含表关系的字段（不存在外键的字段）。
+
+
+StudentIdCard映射文件中如何映射一对一关联关系：
+
+<many-to-one  name="student" column="student_id"  unique="true"/>
+注：unique="true" 是关键
+
+
+
+
+
+一对一表：双向外键关联
+
+如：夫妻表
+
+@Entity                          @Entity
+class Wife{                      calss Hushband
+ private int id;                   private int id;
+ private Hushband hushband;        private Wife wife; //两边都有对方引用
+ ...                               ...
+ @ID                               @ID
+ @GeneratedValue                   @GeneratedValue
+ getId()                           getId()
+ @OneToOne                         @OneToOne(mappedBy="hushband") //告诉hibernate外键是在对方，即wife表生成，
+ @JoinColumn(name="hushbandId")    @JoinColumn(name="wifeId")    //这里会失效，因为这个属性不会生成字段         
+ getHushband()                     getWife()
+ ...                               ...
+}                                  }
+
+
+只要有双向关联，mappedBy 属性必设置
+     不然两边都会生成外键，冗余
+ 告诉hibernate对方是主导
+
+@OneToOne(mappedBy="hushband") 表示外键是在wife表的huasbandId字段上，在生成hushband表时，不用生成与
+  wife表关联的字段和外键，加了mappedBy @JoinColumn(name="wifeId")就失效，因为这个属性根本不会生成字段
+
+
+
+
+映射文件中设置：
+Husnband:
+ <one-to-one  name="wife" property-ref="hushband"  calss="cn.xxx.xx.Hushband">    property-ref----mappedBy
+Wife:
+ <many-to-one name="hushband" column="hushbandId" class="cn.xxx.xx.Wife" unique="true" > ----有外键的一方
+
+property-ref：指定关联类的属性名，这个属性将会和本类的主键相对应
+
+
+
+
+一对一表：单项主键关联(不重要)
+
+如hushband表和wife表，hushband表的主键id参考wife的主键id
+
+
+class Hushband中：
+
+@PrimaryKeyJoinColumn
+getWife()
+
+
+Hushband.hbm.xml设置：
+<one-to-one name="wife" class="cn.xxx.xx.Hushband" constrained="true">
+
+<generator class="foreign">
+  <param  name="property">wife</property>//靠哪个属性关联
+</generator>
+
+
+
+一对一双向主键关联(不重要)
+
+
+-------------------------------------------------------------------------------------------------
+
+联合主键映射：
+设wife表是id加name联合做主键
+
+@Entity
+@IdClass(WifePK.class)
+class  Wife{
+   private int id;
+   private String name;
+   private int age;
+   @Id
+   getID()
+   @Id
+   getName() 
+   ...
+}
+
+class WifePK implements Serializable{
+  private int id;
+  private String name;
+  get,set方法
+  equals()
+  toString()
+
+}
+
+@Entity
+class Hushband{
+  private int id;
+  private String name;
+  private Wife wife;
+  @Id
+  @GeneratedValue 
+  getId()
+  
+  @OneToOne
+  @JoinColumns(
+     {
+      @JoinColumn(name="wifeId" ,referencedColumnName="id"),  id是wife表的主键属性
+      @JoinColumn(name="wifeName",referencedColumnName="name") name是wife表的主键属性
+     }
+  )
+  getWife()
+  ...  
+}
+
+
+
+---------------------------------------------------------------------------------------------------
+
+继承映射：
+
+@Entity
+@Inheritance(strategy=InheritanceType.JOINED)
+public class Person{
+   private int id;
+   private String name;
+   @Id
+   @GeneratorValue
+   public int getId();
+   ...
+}
+
+@Entity    //子类只需要写@Entity    id都不需要写 
+public class Teacher extends Person{
+    private int salary;
+    ...
+}
+
+@Entity   //子类只需要写@Entity    id都不需要写 
+public class Student extends Person{
+   private int score;
+   ...
+}
+
+插入数据时，不需要new父类，直接save具体子类对象就可以了:
+           Student s=new Student();
+	    s.setName("aaa");
+	    s.setScore(100);
+            session.save(s);
+这时person表中会保存name,student表中会保存score,student表生成的id来自person表的id

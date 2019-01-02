@@ -1,0 +1,4 @@
+1.加入log4j的jar包
+
+2.在classpath下添加log4j的配置文件
+  log4j.properties

@@ -1,0 +1,58 @@
+
+JSON 名称/值对
+JSON 数据的书写格式是：名称/值对。
+名称/值对包括字段名称（在双引号中），后面写一个冒号，然后是值
+"firstName" : "John" 
+
+
+JSON 对象
+JSON 对象在花括号中书写：
+对象可以包含多个名称/值对：
+var name={ "firstName":"John" , "lastName":"Doe" }
+
+
+JSON 数组  var jsonObj = [{},{},{}..];
+JSON 数组在方括号中书写：
+数组可包含多个对象：
+var array=[
+{ "firstName":"John" , "lastName":"Doe" },
+{ "firstName":"Anna" , "lastName":"Smith" },
+{ "firstName":"Peter" , "lastName":"Jones" }
+]
+
+
+
+使用方法  如： name.firstName 就得到"John"
+               array[1].lastName 得到"Smith"
+
+
+数组作为名称/值对中的值
+var persons={"employees": [
+                           { "firstName":"John" , "lastName":"Doe" },
+                           { "firstName":"Anna" , "lastName":"Smith" },
+                           { "firstName":"Peter" , "lastName":"Jones" }
+                          ]
+            }
+
+获取 Anna 方法    persons.employees[1].firstName 
+
+
+JSON中可以包含JSON对象，就像上面的写法一样
+
+-------------------------------------------------------------------------------------
+注：
+从服务器接收回来的满足json格式的字符串在javascript中不一定能识别为json对象,
+所以需要通过eval()函数，转化为javascript可以识别json对象的格式
+
+var jsonStr=xmlhttp.responseText();
+
+var jsonObj=eval("("+jsonStr+")");
+
+之所以要加左右的括号，是因为json字符串中有{} ，eval不知道json是字符串还是函数
+如果是json数组 以[]开头，则不需要加（）
+   
+或者使用JSON.parse(jsonStr);来转换成JSON对象
+
+
+返回json数据时，需要在servlet中设置：
+  response.setContentType("application/json;charset=UTF-8");

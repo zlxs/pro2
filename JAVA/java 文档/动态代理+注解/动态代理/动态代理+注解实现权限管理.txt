@@ -1,0 +1,64 @@
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.List;
+
+import cn.itcast.domain.Privilege;
+import cn.itcast.domain.User;
+import cn.itcast.service.BusinessService;
+import cn.itcast.service.impl.BusinessServiceImpl;
+import cn.itcast.utils.Permission;
+import cn.itcast.utils.SecurityException;
+
+//通过工厂来创建BusinessService service，并返回它的代理对象
+//web层调用的是代理对象的方法，在invoke()里得到web层代理对象调用的方法，再判断service的该方法上有没有权限注解，如果没有则不需要权限，直接调用service的方法（method,invoke(service,args);)
+//如果有注解，得到注解上的权限，再判断用户是否有权限，如果没有就抛编译时异常，告诉web层需要对这个异常进行处理，web层捕获这个异常告诉用户没有权限
+//注：抛出的异常会自动转换为运行时异常，所以在web层catch(Exception e),而不是catch(youException e) 再用if(e instance youException) 判断才行
+
+public class ServiceFactory {
+	
+	private ServiceFactory(){}
+	private static ServiceFactory instance = new ServiceFactory();
+	public static ServiceFactory getInstance(){ 
+		return instance;
+	}
+
+//通过工厂创建代理service的对象
+	public BusinessService createBusinessService(final User user){
+		final BusinessService service = new BusinessServiceImpl();
+		
+		return (BusinessService) Proxy.newProxyInstance(ServiceFactory.class.getClassLoader(), service.getClass().getInterfaces(), new InvocationHandler(){
+					
+			public Object invoke(Object proxy, Method method, Object[] args)
+					throws Throwable {
+			
+				//得到web层调用的方法
+				String methodName = method.getName();
+				
+				//反射出真实对象上相应的方法，检查真实对象方法上有没有权限注解
+				Method realMethod = service.getClass().getMethod(methodName, method.getParameterTypes());
+				Permission permission = realMethod.getAnnotation(Permission.class);//得到Permission注解，该注解是自定义的表示各种权限的注解
+				if(permission==null){//如果没找到，说明该方法上没有该注解，即该方法不需要权限
+					return method.invoke(service, args);
+				}
+				
+				//真实对象相应的方法上有权限注解,则得到访问该方法需要的权限
+				Privilege p = new Privilege(permission.value());   //得到方法需要的具体权限，Privilege是自定义的类，代表权限对象
+				
+				//检查用户是否有权限
+				//得到用户所有权限
+				if(user==null){
+					throw new SecurityException("您没有登陆");
+				}
+				
+				List<Privilege> list = service.getUserAllPrivilege(user);//获得用户所有的权限，具体方法不需要考虑，是自己写的Service层的方法
+				if(list.contains(p)){//Privilege类需要重写equals和hashcode()方法
+					return method.invoke(service, args);
+				}
+				throw new SecurityException("你没有权限");//自定义的编译时异常
+			}
+		});		
+		
+	}
+	
+}

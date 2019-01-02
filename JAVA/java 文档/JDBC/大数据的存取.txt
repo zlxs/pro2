@@ -1,0 +1,33 @@
+存取字符：
+存大文本数据字符：
+
+sql="insert into 表名(大数据列名) values(?)";
+prepareStatement的setCharacterStream(？位置，字符输入流，文本长度)方法
+
+File file=new File("文本地址");
+FileReader reader=new FileReader(file);//可以通过缓冲流来提高效率 BufferedReader reader=new BufferedReader(new FileReader(file));
+prepareStatement的setCharacterStream(1,reader,(int)file.length()); 
+
+setCharacterStream()方法的第三个参数需要是int,不能是long,long的重载方法是抽象的，没有实现
+
+取大文本数据用
+
+Reader reader=rs.getCharacterStream("大数据列名");//rs为结果集ResultSet的对象
+int len=0;
+char[] arr=new char[1024];
+while((len=reader.read(arr))!=-1)
+{
+  System.out.print(new String(arr,0,len));//也可以读到文本中
+
+}
+reader.close();
+
+
+存取字节：
+
+存：
+setBinaryStream(？位置，字节输入流，文本长度); 第三个参数需要是int,不能是long,long的重载方法是抽象的，没有实现
+
+取：
+rs=getBinaryStream("大数据文本列名");
+其他差别不大

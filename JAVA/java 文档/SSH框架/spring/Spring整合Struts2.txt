@@ -1,0 +1,50 @@
+
+使用监听器的方式完成web服务器启动时，Spring容器就初始化
+
+在web.xml中配置监听器（myeclipse在整合spring时会自动配置好）
+<!--上下文载入监听器，web服务器启动时，完成spring容器的初始化
+   是ServletContextListener的实现类，监听ServletContext的创建,
+  创建时加载Spring容器，并存入ServletContext域中
+-->
+<listener>
+  <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+</listener>
+<!--通过配置上下文参数，指定Spring配置文件的位置-->
+<context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:applicationContext.xml</param-value>
+</context-param>
+
+
+配置Struts2的action需要配置为原型的，scope=prototype
+让Spring完成action的初始化，而不是Struts2的StrutsObjectFactory
+
+引入struts-spring-plugin.jar,  myEclipse导入Struts2时选择该jar
+
+struts-plugin.xml中会把实例化action的StrutsObjectFactory改变成了Spring的
+   org.apache.struts2.spring.StrutsSpringObjectFactory
+
+这时Struts2通过StrutsSpringObjectFactory实例化Action就不是直接反射获得了，而是先调用
+--------底层代码不是这样写的，但原理是这样---------
+  ApplicationContext ac=servletContext.getAttribute("applicationContext");
+  ac.getBean(TestAction.class);//具体的Action类
+去ApplicationContext容器中找，由Spring负责创建，找不到再自己反射出来
+
+struts.xml文件中配置action时，class属性就不用写成原来的类了，
+而是Spring中配置的对应action bean的id属性
+
+
+Struts2和Spring整合分3步：
+1.引入struts-spring-plugin.jar
+2.把action写入Spring的配置文件中
+ 
+<bean id="testAction" scope="prototype" class="xxx.xx.Action.TestAction">
+</bean>
+
+3.把struts.xml文件中action的class属性改为Spring中配置的action bean的id
+
+<package name="test" namespace="/test" extends="struts-default">
+  <action name="testAction"  class="testAction" >
+    <result name="success">/index.jsp</result>
+  </action>
+</package>

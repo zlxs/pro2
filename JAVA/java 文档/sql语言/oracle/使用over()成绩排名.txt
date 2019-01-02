@@ -1,0 +1,33 @@
+select s.student_id,row_number()over( order by s.score desc) as rank ,s.score  
+from score s 
+where s.subject_id=1;--查询课程编号为1的学科的成绩排名
+
+
+select s.student_id as '学号',rank()over( order by s.score desc) as '排名' ,s.score as '分数'  
+from score s 
+where s.subject_id=1;
+
+
+查询某学生的某一课程的排名
+select  rank
+from(select * ,rank()over(order by score desc) as rank from score where  subject_id=1) as s
+where student_id=1217417019
+
+
+注意：
+在求第一名成绩的时候，不能用row_number()，因为如果同班有两个并列第一，row_number()只返回一个结果;
+
+rank()和dense_rank()可以将所有的第一名都查找出来
+
+rank()是跳跃排序，有两个第二名时接下来就是第四名
+dense_rank()l是连续排序，有两个第二名时仍然跟着第三名
+
+
+
+
+over是用于数据的分区和排序，常用在函数后边使用
+
+over后的写法：
+over（order by salary） 按照salary排序进行累计，order by是个默认的开窗函数
+over（partition by deptno）按照部门分区
+

@@ -1,0 +1,106 @@
+Step:
+
+ 1.get a instance of CacheManager by using spring context
+
+
+ 2.get a implement of Cache 
+    invoke this method£º
+      Cache cache=cacheManager.getCache("aaa");//if 'aaa' not exist then create a new cache named 'aaa'
+ 
+   CacheManger have two method£º
+
+        Cache getCache(String cacheName); //return the cache associated with the given name 
+
+        Collection<String> getCacheNames();  //return a collection of the caches known by this cache manager
+
+
+ 3.using Cache
+
+ methods of Cache:
+
+   String getName();  //return the cache name. 
+    
+   Object getNativeCache(); //return the underlying native cache provider  eg: RedisTemplate redisTemplate=(RedisTemplate) cache.getNativeCache();
+    
+   Cache.ValueWrapper get(Object key);   //return the value to which this cache maps the specified key
+   
+   <T> T get(Object key, Class<T> type);   //return the value to which this cache maps the specified key, generically specifying a type that return value will be cast to  
+    
+   void put(Object key, Object value);   //associate the specified value with the specified key in this cache  
+    
+   void evict(Object key);   //evict the mapping for this key from this cache if it is present  
+    
+   void clear();     //remove all mappings from the cache
+
+   Cache.ValueWrapper putIfAbsent(Object key, Object value); //atomically associate the specified value with the specified key in this cache if it is not set already
+  
+
+demo£º
+
+    @RequestMapping("/test/{id}")
+    public void test(@PathVariable Long id){
+
+	Cache cache=cacheManager.getCache("group1");
+
+        cache.put(id + "cache", "group1::"+id);     
+
+        String data= cache.get(id + "cache", String.class);  
+        System.out.println(data);
+
+
+        cache.put("a","xx");
+        cache.put("b","yy");
+
+        cache.putIfAbsent("a","yy");
+        cache.putIfAbsent("c","zz");
+
+        System.out.println(cache.get("a").get());//print "xx"
+        System.out.println(cache.get("b").get());//print "yy"
+        System.out.println(cache.get("c").get());//print "zz"
+
+
+	cache.evict(id+"cache");
+
+        String data1 = cache.get(id + "cache", String.class);
+        System.out.println(data1);//null
+
+
+        cache.clear();
+
+
+        Cache cache1=cacheManager.getCache("group2"); 
+
+        cache1.put(id + "cache", "group 2 ....."); 
+
+        String data3= cache1.get(id + "cache", String.class);
+        System.out.println(data3);
+
+        cache.put(id + "cache", "group 1 ....."); 
+
+        String data4= cache.get(id + "cache", String.class);
+        System.out.println(data4);
+
+
+        RedisTemplate redisTemplate=(RedisTemplate) cache.getNativeCache();
+  
+        redisTemplate.opsForValue().set("xxxx","aaaa");
+        System.out.println(redisTemplate.opsForValue().get("xxxx"));
+
+
+}
+
+you can also use RedisTemplate£º
+
+   //saveOrupdate
+   redisTemplate.opsForValue().set(key,value);
+        
+   //set cache time
+   redisTemplate.opsForValue().set(key,value,date);
+
+   //find 
+   redisTemplate.opsForValue().get(key);
+
+   //delete
+   redisTemplate.delete(key);
+
+   ...

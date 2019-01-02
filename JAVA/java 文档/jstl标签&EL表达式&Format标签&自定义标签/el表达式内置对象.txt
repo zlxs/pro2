@@ -1,0 +1,41 @@
+EL表达式内置对象：
+
+内置对象pageContext
+  eg.  ${pageContext.request.contextPath}
+
+
+内置对象四个域
+  pageScope
+  requestScope
+  sessionScope
+  applicationScope
+  获取指定域中的某个参数 eg.  ${ requestScope.xxx}
+
+ 
+内置对象cookie
+  将 cookie 名称映射到单个 cookie 对象。
+  表达式 ${cookie. name .value} 返回带有特定名称的第一个 cookie 值。如果请求包含多个同名的 cookie，
+  则应该使用 ${headerValues. name} 表达式
+
+  获取某个cookie的value  $(cookie.cookie名.value)
+
+
+内置对象initParam
+    获取全局化的初始化参数
+    将上下文初始化参数名称映射到单个值（通过调用 ServletContext.getInitparameter(String name) 获得）
+    ${ initParam.配置的初始化参数名} 
+
+
+内置对象param
+    获取地址栏传递的参数
+    包含请求中参数的一个Map集合，每个parameter名称映射到一个单独的字符串值
+
+
+内置对象paramValues
+    它与 param 隐式对象非常类似，但它检索一个字符串数组而不是单个值。
+    表达式 ${paramvalues. name) 相当于 request.getParamterValues(name)。
+
+
+内置对象header
+    将请求头名称映射到单个字符串头值（通过调用 ServletRequest.getHeader(String name) 获得）
+    表达式 ${header. name} 相当于 request.getHeader(name)

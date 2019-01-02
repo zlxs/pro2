@@ -1,0 +1,31 @@
+hibernate3版本 创建SessionFactory：
+
+Configuration conf=new Configuration().configure();
+SessionFactory sf =conf.buildSessionFactory();
+
+-----
+//4.0-4.3之前，创建SessionFactory：
+Configuration cfg=new Configuration().configure();
+ServiceRegistry serviceRegistry=new ServiceRegistryBuilder()
+		                .applySettings(cfg.getProperties()).buildServiceRegistry();        
+SessionFactory sessionFactory = cfg.buildSessionFactory(serviceRegistry);
+
+-----
+//4.3创建SessionFactory：
+Configuration cfg = new Configuration().configure();
+StandardServiceRegistryBuilder srb = new StandardServiceRegistryBuilder().applySettings(cfg.getProperties());
+StandardServiceRegistry sr = srb.build();
+SessionFactory sf = cfg.buildSessionFactory(sr);
+-----
+
+SessionFactory负责创建Session实例。
+
+Configuration实例config会根据当前的数据库配置信息，构造SessionFacory实例并返回。
+SessionFactory一旦构造完毕，即被赋予特定的配置信息。也就是说，
+之后config的任何变更将不会影响到已经创建的SessionFactory实例sessionFactory。
+如果需要使用基于变更后的config实例的SessionFactory，需要从config重新构建一个SessionFactory实例。
+
+SessionFactory保存了对应当前数据库配置的所有映射关系，同时也负责维护当前的二级数据缓存和Statement Pool。
+由此可见，SessionFactory的创建过程非常复杂、代价高昂。这也意味着，
+在系统设计中充分考虑到SessionFactory的重用策略。由于SessionFactory采用了线程安全的设计，
+可由多个线程并发调用。

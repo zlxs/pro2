@@ -1,0 +1,7 @@
+在jsp,html页面引入JQuery类库
+<script type="text/javascript" src=""></script>  //引入JQuery库
+<link href="" rel="stylesheet" type="text/css"/> //引入插件的css文件
+<script type="text/javascript" src=""></script> //引入插件的js文件
+
+有时还需要引入插件的中文汉化js文件
+

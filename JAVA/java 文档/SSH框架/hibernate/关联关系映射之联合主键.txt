@@ -1,0 +1,46 @@
+
+联合主键映射：
+设wife表是id加name联合做主键
+
+@Entity
+@IdClass(WifePK.class)
+class  Wife{
+   private int id;
+   private String name;
+   private int age;
+   @Id
+   getID()
+   @Id
+   getName() 
+   ...
+}
+
+class WifePK implements Serializable{
+  private int id;
+  private String name;
+  get,set方法
+  equals()
+  hashcode()
+  toString()
+
+}
+
+@Entity
+class Hushband{
+  private int id;
+  private String name;
+  private Wife wife;
+  @Id
+  @GeneratedValue 
+  getId()
+  
+  @OneToOne
+  @JoinColumns(
+     {
+      @JoinColumn(name="wifeId" ,referencedColumnName="id"),  id是wife表的主键属性
+      @JoinColumn(name="wifeName",referencedColumnName="name") name是wife表的主键属性
+     }
+  )
+  getWife()
+  ...  
+}

@@ -1,0 +1,2 @@
+echo "DOCKER_OPTS=\"--registry-mirror=https://pee6w651.mirror.aliyuncs.com\"" | sudo tee -a /etc/default/docker
+sudo service docker restart

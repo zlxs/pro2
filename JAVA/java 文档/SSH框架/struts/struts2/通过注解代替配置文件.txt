@@ -1,0 +1,110 @@
+struts2零配置开发---Annotation
+
+与表单验证相关的Annotation
+@SkipValidation  跳过验证注解
+@Validations 验证注解
+
+@Validations( 
+   requiredStrings={ 
+       @RequiredStringValidator(fieldName="username",message="用户名不能为空!"), 
+       @RequiredStringValidator(fieldName="telNum",message="电话号码不能为空!") 
+   }, 
+   regexFields={@RegexFieldValidator(fieldName="telNum",expression="^(//+86|0|1)//d{10,11}$", 
+   message="电话号码格式不正确！")} 
+) 
+ 
+
+
+Convention的Annotation
+1）与Action相关的两个Annotation是@Action 和@Actions 
+2）@Action中可指定一个value属性。类似于指定<action name=””/>属性值 
+3）@Action中还可以指定一个params属性，该属性是一个字符串数组，用于该Acion指定的参数名和参数值。
+      params属性应遵守如下格式：{“name1”,”value1”,”name2”,”value2”} 
+4）@Actions 也用于修饰Action类里的方法，用于将该方法映射到多个URL.@Actions用于组织多个@Action.因此它可将一个方法映射成多个逻辑Action。 
+
+
+与Result配置相关的Annotation 
+1）@ResultPath @Result 和Results 
+2）@Results用于组织多个@Result因此它只需指定一个value属性值，该value属性值为多个@Result 
+3）@Result相当于struts.xml文件中的<result/>元素。使用@Result必须指定一个name属性，相当于<result name=””/>另外，它还有几个可选的属性。 
+     ☆ type 相当于<result type=””/>指定返回视图资源的类型 
+     ☆ location 相当于<result>…..</result>中间部分，用于指定实际视图位置 
+     ☆ params：该属性相当于<result/>元素里多个<param../>子元素的作用，用于为该Result指定参数值。
+                该属性应满足{“name1”,”value1”,”name2”,”value2”}格式 
+4）@Result有以下两种用法 
+    1.Action级的Result映射：以@Actions组合多个@Action后修饰的Action类。这种Result映射对该Action里的所有方法都有效。 
+    2.方法级Result映射：将多个@Result组成数组后作为@Action的results属性值。这种Result映射仅对被修饰的方法有效。 
+5）@ResultPath则用于修饰包和Action类，用于改变被修饰Action所对应的物理视图资源的根路径。
+   举例说：默认情况下，Convention都会到WEB-INF/content路径下找物理视图资源，一旦我们使用@ResultPath("/view")修饰该Action，
+           系统将回到view目录下寻找物理视图资源。 
+
+
+
+与包和命名空间相关的Annotation： 
+@Namespace：修饰Action类或其所在的包。该Annotation中指定一个value属性值，用于指定被修饰的Action所在的命名空间 
+@Namespaces：修饰Action类或其所在的包，用于组合多个@Namespace 
+@ParentPackage: 用于指定被修饰的Action所在包的父包。 
+
+
+
+与异常处理相关的Annotation 
+@ExceptionMappings 用于组织多个@ExceptionMapping，因此它只需指定一个value属性值，该value属性值为多个@ExceptionMapping。 
+@ExceptionMapping 用于定义异常类和物理视图之间的对应关系，也相当于struts.xml文件里<exception-mapping../>元素的作用 使用时，
+                  必须注意以下两个属性： 
+exception: 用于指定异常类 
+result：用于指定逻辑视图 
+@ExceptionMpping有如下两种用法 
+Action级的异常定义：以@ExceptionMappings组合多个@ExceptionMapping后修饰的Action类。这种异常定义对Action中的所有方法有效 
+方法级的异常定义：将多个@ExceptionMapping组成数组后作为@Action的exceptionMappings属性值，这种异常定义仅对被修饰的方法有效。 
+
+
+
+与拦截器配置相关的Annotation 
+与拦截器配置的Annotation有@InterceptorRef、@InterceptorRefs和@DefaultInterceptorRef 
+@InterceptorRefs用于组织多个@InterceptorRef，因此它只需要指定一个value属性值，该value属性值为多个@InterceptorRef 
+@InterceptorRef用于为指定Action引用拦截器或者是拦截器栈。也就相当于strut.xml中位于<action../>元素内部的<interceptor-ref../>子元素的作用。
+  使用@InterceptorRefAnnotation时，必须制定一个value属性，用于指定所引用的拦截器或拦截器栈的名字。
+          相当于<interceptor-ref../>子元素里name属性的作用。 
+
+
+
+案例：
+
+@ParentPackage("struts-default")  //表示继承的父包
+@Namespace(value="/user") //表示当前Action所在命名空间
+public class LoginAction extends ActionSupport{
+	
+	@Resource
+	private User user; //使用域驱动模式接收表单参数
+
+	@Action( //表示请求的Action及处理方法
+			value="login",  //表示action的请求名称
+			results={  //表示结果跳转
+					@Result(name="success",location="/success.jsp",type="redirect"),
+					@Result(name="login",location="/login.jsp",type="redirect"),
+					@Result(name="error",location="/error.jsp",type="redirect")
+			},
+			interceptorRefs={ //表示拦截器引用
+					@InterceptorRef("defaultStack"),//默认拦截器
+					@InterceptorRef("timer")//自定义拦截器
+			},
+			exceptionMappings={  //映射异常声明
+					@ExceptionMapping(exception="java.lang.Exception",result="error")
+			}
+	)
+	public String login() throws Exception {
+
+		int i = 1/0 ;
+		
+		if ("admin".equals(user.getUsercode()) && "admin".equals(user.getUserpswd())) {
+			
+			Map session = ActionContext.getContext().getSession();
+			session.put("session_user", user);
+			
+			return "success";
+		} else {
+			return "login";
+		}
+
+	}
+}

@@ -1,0 +1,12 @@
+<action path="" name="" type="" scope="" attribute=""></action>
+
+如果设置attribute属性的值，则mapping.getAttribute();获取到的是attribute属性的值，
+否则获取的是name属性的值，如果name属性的值也没设置，则获取的是null
+
+attribute的默认值是name的值，设置后就是自己设置的值
+
+attribute属性的作用：将ActionForm实例以attribute的值为关键字存在scope域中
+
+request/session.getAttribute("attribute的值");得到ActionForm实例javaBean
+
+scope域的值有request和session两种,默认是session

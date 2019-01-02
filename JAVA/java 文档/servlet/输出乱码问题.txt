@@ -1,0 +1,5 @@
+response.setCharacterEncoding("UTF-8");//控制response以utf-8码表编码，向浏览器写出数据
+
+response.setHeader("content-type","text/html;charset=UTF-8");//指定浏览器以utf-8解码数据打开
+
+response.setContentType("text/html;charset=UTF-8");//既指定response编码，又指定浏览器解码

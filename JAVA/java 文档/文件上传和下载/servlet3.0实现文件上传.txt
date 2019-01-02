@@ -1,0 +1,120 @@
+Servlet实现文件上传
+
+通过在servlet上加@MultipartConfig注解和使用Part接口完成
+
+步骤：
+
+ 1.@MultipartConfig(
+	maxFileSize=1024*1024*3,	// 设置上传单个文件大小
+	maxRequestSize=1024*1024*10,	// 设置上传总大小
+	fileSizeThreshold=1024*1024*3,	// 设置缓存大小
+	location=""		// 设置文件上传的临时目录,设置了可能找不到路径，最好不设置
+   )
+
+ 2.利用Part接口
+       获取Part接口实例:request.getPart(name) name参数:客户端页面上传文件的标签的name属性值.
+         
+       Part接口常用方法:
+         * 手动获取上传文件名称:
+	   String header = part.getHeader("Content-Disposition");
+	   int index = header.lastIndexOf("filename=\"");
+	   String filename = header.substring(index+10, header.length()-1);
+
+	 * getInputStream()方法:获取文件输入流.
+	 * write(保存文件的路径)方法:将上传的文件输入流,写入到指定的目录中.
+
+注：提交上传文件的form表单的enctype属性必须设置为 enctype="multipart/form-data"
+
+-----------------------------------------------------------------------------------
+
+案例：
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+
+@WebServlet(urlPatterns={"/upload"})
+@MultipartConfig(
+	fileSizeThreshold=1024*1024*3,	// 设置缓存大小
+	maxFileSize=1024*1024*3,	// 设置上传单个文件大小
+	maxRequestSize=1024*1024*10	// 设置上传总大小
+)
+public class UploadServlet extends HttpServlet {
+
+	public void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+		doPost(request, response);
+	}
+
+	public void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+
+		request.setCharacterEncoding("utf-8");
+		
+		// 如何来处理文件的上传逻辑:通过Part接口
+
+		/*
+		 * 1 如何获取文件上传的普通项?
+		 *  * 通过Request对象的getParameter(String name)方法,可以或上传的普通项.
+		 *    * name参数:指定客户端页面上传普通项的name属性值.
+                 *  如：String username= request.getParameter("username");
+		 */
+		
+		/*
+		 * 2 如何获取Part接口的实例对象?
+		 *  * 通过Request对象的getPart(String name)方法,可以获取Part接口的实例对象.
+		 *    * name参数:指定客户端页面上传文件域的name属性值.
+		 *  * 通过Part接口的实例对象获取有关文件上传项的名称、文件输入流.
+		 *  * Part接口提供的write(filename)方法:
+		 *    * 将接收到的文件输入流,写入指定的服务器端的目录中.
+		 *    * 参数filename:指定的保存文件的绝对路径.
+		 *  * Part接口提供getName()方法:
+		 *    * 获取的是上传文件域的name属性值.
+		 *    * 并没有获取真实上传的文件名称.
+		 *  * 上传的真实文件名称应该是如何获取到的呢?
+		 *    * Servlet 3.0完成文件上传功能的诟病.
+		 *    * 
+		 */
+		Part part = request.getPart("upload");// <input type="file" name="upload" />
+		
+		/*
+		 *  获取上传的真实文件名称:
+		 *  Content-Disposition: form-data; name="upload"; filename="readme.txt"
+		 */
+		if(part!=null){
+		   String header = part.getHeader("Content-Disposition");
+		   int index = header.lastIndexOf("filename=\"");
+		   String filename = header.substring(index+10, header.length()-1);
+		
+		   //InputStream in = part.getInputStream();//获取上传文件的输入流
+		   String realPath = getServletContext().getRealPath("/WEB-INF/uploads");//上传文件保存的地址
+		   part.write(realPath+"/"+filename);//保存上传文件到指定地址
+		}
+	}
+
+}
+
+如果上传多个文件的话，调用 
+
+	Collection<Part> parts = request.getParts();	
+	if(parts!=null){
+	   for(Part part:parts){
+		String header = part.getHeader("Content-Disposition");
+		int index = header.lastIndexOf("filename=\"");
+		String filename = header.substring(index+10, header.length()-1);
+					
+		//InputStream in = part.getInputStream();//获取上传文件的输入流
+		String realPath = this.getServletContext().getRealPath("/WEB-INF/uploads");//上传文件保存的地址
+		part.write(realPath+"/"+filename);//保存上传文件到指定地址
+	   }
+				
+	}

@@ -1,0 +1,22 @@
+/* PC端样式 */
+@media (min-width: 992px) {
+	/* 导航样式 */
+	.navbar-inverse {
+		border-top: 4px solid #0f88eb;
+	}
+	.Button--blue:hover {
+		background-color: rgba(13, 121, 209, .06);
+	}
+	.Button:hover {
+		background-color: rgba(207, 216, 230, .1);
+	}
+	/* 帖子详情页 */
+	.post-link {
+		max-width: 350px;
+	}
+	/* 微信视频样式 */
+	.container .weixin-body iframe{
+		width: 100%;
+		height: 358px;
+	}
+}

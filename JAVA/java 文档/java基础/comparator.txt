@@ -1,0 +1,61 @@
+/**
+ * 实现comparator接口可以不改变原来的类的结构，在类外定义一个实
+ * 现了comparator接口的类，然后传入Collections。sort()方法中
+ */
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+public class b {
+	public int id;
+	public String name;
+	
+	b(int a,String b)
+	{
+		this.id=a;
+		this.name=b;
+	}
+	
+	public String toString()
+	{
+		return "id:"+id+" "+"name:"+name;
+	}
+	
+	public static void main(String[] args)
+	{
+		List<b> s=new ArrayList<b>();
+		
+		b a=new b(3,"xsd");
+		b b=new b(3,"xad");
+		b c=new b(2,"xsd");
+		
+		s.add(a);
+		s.add(b);
+		s.add(c);
+		Collections.sort(s,new c());
+		System.out.println("从小到大排序:"+s);
+		Collections.reverse(s);;
+		System.out.println("从大到小排序:"+s);
+		
+	}
+	
+
+}
+class c implements Comparator<b>{
+	//重写compare
+	 public int compare(b a,b c)
+	 {
+			if(a.id>c.id)
+				return 1;
+			else if(a.id<c.id)
+				return -1;
+			else if(a.name.compareTo(c.name)>0)
+				return 1;
+			else if(a.name.compareTo(c.name)<0)
+			return -1;
+			else
+				return 0; 
+	 }
+		
+}

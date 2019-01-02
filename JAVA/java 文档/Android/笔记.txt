@@ -1,0 +1,73 @@
+2G   2.5 gprs 最大下载速度 30KB
+3G   hsdpa  7.2M 
+4G   35Mbps 
+
+android 运行时 
+dalvik 虚拟机 跟  普通java虚拟机不一样 
+sun java虚拟机
+
+普通java 虚拟机 
+.java->.class->解释执行 
+
+dalvik ->.class ->.dex
+
+
+
+android 2.2  是google api的子集  
+如果使用 google 地图 google 纵横  
+google api level 8  
+
+
+VGA    640*480  像素 
+hvga   half vga   480*320 
+qvga  1/4 vga    320*240
+
+WVGA   800* 480 
+FWVGA  854 * 480  
+
+luncher  桌面 
+
+ddms dalvik debug manager system
+dalvik 虚拟器调试系统 
+
+
+模拟器 和 虚拟机的区别是什么 ?
+
+
+java 虚拟机
+dalvik 虚拟机 
+
+软件模拟硬件  内存 cpu 显示器
+
+
+
+project.properties 指定开发使用的android.jar的版本 
+
+proguard.cfg 程序发布时候的混淆 防止别人反编译 
+
+AndroidManifest.xml 非常重要 系统的清单文件 
+相当于 windows操作系统的注册表 
+
+<uses-sdk android:minSdkVersion="9" /> android2.3 一下的版本不可以安装这个应用程序 
+
+
+activity代表-  应用程序的界面 
+
+
+
+            <intent-filter >
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter> 
+activity的一个配置信息 
+作用 在luncher程序里面生成一个应用程序的图标 
+
+
+
+
+LinearLayout  线性布局 
+AbsoluteLayout 据对布局 
+qq斗地主 854*480 apk 800*480 apk 
+RelativeLayout  相对布局
+FrameLayout  帧布局 类似div层 
+tablelayout 表格布局 

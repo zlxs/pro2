@@ -1,0 +1,17 @@
+eclipse添加插件subclipse
+方法：help菜单下的eclipse Marketplace 搜所 subclipse 再点install
+
+在window的show view 下的other里找到SVN则成功
+
+然后点开SVN，找到SVN资源库，确定，eclipse下方中就会有SVN资源库对应的视图，
+再右键新建，添加url就行了
+
+
+eclipse如何使用SVN：
+  在工程上右键选择Team再点share project 选择SVN确定，再右键项目名选择Team再点提交
+
+在SVN资源库中点刷新就能找到其他人和自己提交的代码
+
+之后可以导出项目，找到项目名右键 检出为
+也可以把指定文件导出
+

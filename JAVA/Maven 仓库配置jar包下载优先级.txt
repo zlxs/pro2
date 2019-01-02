@@ -1,0 +1,55 @@
+优先级由高到低：
+
+1.本地仓库
+
+2.在setting.xml中配置<profiles>
+
+如：
+<profiles>
+	<profile>
+		<id>dev</id>
+		<repositories>
+			<repository>
+				<id>Nexus Repository</id>
+				<url>http://localhost:8081/nexus/content/groups/public/</url>
+				<!--<id>aliyun</id>
+				<url>http://maven.aliyun.com/nexus/content/groups/public/</url>-->
+				<releases>
+					<enabled>true</enabled>
+				</releases>
+				<snapshots>
+					<enabled>true</enabled>
+				</snapshots>
+			</repository>
+		</repositories>
+
+		<pluginRepositories>
+			<pluginRepository>
+				<id>Nexus Repository</id>
+				<url>http://localhost:8081/nexus/content/groups/public/</url>
+				<!--<id>aliyun</id>
+				<url>http://maven.aliyun.com/nexus/content/groups/public/</url>-->
+				<releases>
+					<enabled>true</enabled>
+				</releases>
+				<snapshots>
+					<enabled>true</enabled>
+				</snapshots>
+			 </pluginRepository>
+		</pluginRepositories>
+	</profile>	
+  </profiles>
+  
+  <activeProfiles>
+    <activeProfile>dev</activeProfile>
+  </activeProfiles>
+
+
+3.在pom.xml中配置的<repositories>节点中配置的repository
+注：如果配置了多个，则越上面的优先级越高
+
+
+4.mirror中配置的仓库
+  maven在每次使用远程仓库前会去mirrors中找该远程仓库是否被拦截了，如果被拦截了才用对应的mirror中的url
+  否则，直接使用repository
+

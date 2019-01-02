@@ -1,0 +1,412 @@
+学习目标:
+1.掌握XML文档的书写
+2.会用DTD来约束XML
+3.会用SCHEMA来约束XML
+4.会用SAX解析XML
+5.会用DOM解析XML
+---------------------------------------------------------
+
+XML:extensible Markup language	可拓展的标记语言
+与HTML相比,XMl有如下特点:
+1.标记是不固定的
+2.它是一种元语言,元语言是指可以定义其他语言的语言
+
+HTML:HyperText Markup Language  超文本标记语言
+HTTP协议，也叫超文本传输协议。
+
+HTML的标记是固定的,由W3C国际化组织制定的,由浏览器来负责
+解析这些标记.
+如:
+<b>	HTML标记,表示加粗字体
+<html>,<boby>,<p>,<div>,<span>,<ul>,<table>,<tr>,<td>,...
+<b>hello</b>
+
+XML 与 HTML 的异同
+相同点：
+  a).它们都是由 W3C 组织所制定的 标记语言
+
+不同点：
+  a).HTML的标记是 固定的，而XML的标记是不固定的。
+     正是因为XML的标记是不固定的，所以，在不同的应用系统中
+     ，我们可以赋予XML的不同含义。
+     而HTML的标记是固定的，则只能由浏览器来统一理解。
+  b).HTML 本身不注重数据，而是注重展现。
+     而XML 本身注重数据，而不注重展现。
+     
+     
+XML 的应用
+1. 电子商务的基础
+2. 跨语言平台的数据交换
+3. 远程调用
+4. 资源配置
+...
+     
+----------------------------------------------------------
+XML的语法:
+首先,要保证你所写的XML是格式良好的(Well Formed)
+使用浏览器来检测即可.
+
+1.第一条语句<?xml version="1.0" encoding="UTF-8"?>
+2.标记用<>括起来
+3.标记有开始就有结束,一定要成对.如:<a></a>
+4.标记中可以包含属性,同一个标记中属性是唯一的,不能同名
+  属性必须是:name=value,值使用双引号或者单引号括起来.
+  如:<cd id="001" type='摇滚'></cd>
+5.标记可以嵌套,但是不能互相包含
+  如:
+  <a><b></b></a>//OK
+  <a><b></a></b>//error
+6.标记名称可以是任意的字母组成,含中文或者数字.
+  注意:标记尽量取有意义的名字.
+7.任何XML文件,有且仅有一个根标记.
+
+如:
+<?xml version="1.0" encoding="UTF-8"?>
+<mycd>
+	<cd id="001">
+		<artist>张学友</artist>
+		<year>1998</year>
+		<company>滚石唱片</company>
+		<music>17</music>
+	</cd>
+	<cd id="002">
+		<artist>李代沫</artist>
+		<year>2012</year>
+		<company>中国好声音</company>
+		<music>10</music>
+	</cd>
+</mycd>
+
+练习:[写一个格式良好的XML文档]
+描述一下自己所喜欢的或玩过的游戏产品
+至少写3样
+<game id="" isfree="">
+名称
+公司
+发行时间
+游戏类型
+
+----------------------------------------------------------
+XML 的约定
+目的是在应用系统中制定好XML文档的结构，包含：标记名称、
+标记的出现次序。
+
+W3C制定的两种技术来约定 XML 文档：
+1. DTD 
+2. SCHEMA
+----------------------------------------------------------
+DTD:
+Document Type Definition 文档类型定义
+它是用来在一个应用系统中限定XML文档的标记以及它的层次结构
+
+满足DTD要求的XML,叫做合法的文档
+合法的文档一定是格式良好的
+格式良好的文档不一定是合法的
+
+DTD的语法:
+属性类型是CDATA 元素类型是PCDATA
+<!ELEMENT games (game)+>//+可以出现一次或多次
+<!ELEMENT game (name, company, year, type)>
+<!ATTLIST game id CDATA #REQUIRED>   //id #REQUIRED 必须要存在
+<!ATTLIST game isfree CDATA #IMPLIED>//#IMPLIED 可有可无
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT company (#PCDATA)>
+<!ELEMENT year (#PCDATA)>
+<!ELEMENT type (#PCDATA)>
+----------------------------------------------------------
+对于XML来讲,属性与元素如何选择?
+元素和属性都是可以存放数据的,但是,元素具有可拓展性,而属性
+不可以.在设计XML时,尽量考虑使用元素.
+
+注:属性一定依附于元素存在
+----------------------------------------------------------
+DTD的缺点:
+a).DTD不能自定义类型 
+b).DTD的内置类型太少，只有 #PCDATA / CDATA
+c).DTD中对元素的次数限定不够精确。
+d).DTD的语法是全新的，与XML没有关系。
+----------------------------------------------------------
+基于DTD的缺点,W3C制定了新的用来限定XML规范的标准,
+这个标准就是Schema.
+
+Schema的出现是为了替代DTD,它修复了DTD的所有缺点,并且可以
+满足DTD的所有功能.
+更重要的一点是,Schema采用的也是XML语法,当然,Schema本身的
+标记是固定的.
+
+Schema常用标记有:
+元素 				解释
+schema 				定义 schema 的根元素。
+attribute 			定义一个属性。
+sequence 			要求子元素必须按顺序出现。每个子元素可出现 0 到任意次数。
+group 				定义在复杂类型定义中使用的元素组。
+complexType 			定义复杂类型。
+simpleType 			定义一个简单类型，规定约束以及关于属性或仅含文本的元素的值的信息。
+attributeGroup 			定义在复杂类型定义中使用的属性组。
+complexContent 			定义对复杂类型（包含混合内容或仅包含元素）的扩展或限制。
+documentation 			定义 schema 中的文本注释。
+element 			定义元素。
+extension 			扩展已有的 simpleType 或 complexType 元素。
+field 				规定 XPath 表达式，该表达式规定用于定义标识约束的值。
+import 				向一个文档添加带有不同目标命名空间的多个 schema。
+include				向一个文档添加带有相同目标命名空间的多个 schema。
+key 				指定属性或元素值（或一组值）必须是指定范围内的键。
+keyref 				规定属性或元素值（或一组值）对应指定的 key 或 unique 元素的值。
+list 				把简单类型定义为指定数据类型的值的一个列表。
+notation 			描述 XML 文档中非 XML 数据的格式。
+redefine 			重新定义从外部架构文件中获取的简单和复杂类型、组和属性组。
+restriction 			定义对 simpleType、simpleContent 或 complexContent 的约束。
+all 				规定子元素能够以任意顺序出现，每个子元素可出现零次或一次。
+selector 			指定 XPath 表达式，该表达式为标识约束选择一组元素。
+simpleContent			包含对 complexType 元素的扩展或限制且不包含任何元素。
+union 				定义多个 simpleType 定义的集合。
+unique 				指定属性或元素值（或者属性或元素值的组合）在指定范围内必须是唯一的。
+
+例:把games_0_1.dtd改写成schema
+见代码
+---------------------------------------------------------
+
+JAVA XML解析
+SUN API中提供了两种解析XML文档的方式：
+
+1).SAX解析
+全称，Simple API for XML Parser (XML解析的简单API)
+特点：
+  a).SAX解析方式效率很高，不占内存资源
+  b).SAX采用的基于事件驱动的方式来解析XML文档，每读取标记时，就会
+     触发相应的事件。
+  c).SAX方式不会驻留内存，事件完成，就结束，所以，如果你想得到文档
+  中某一个标记的值，只能从头读到尾。
+  d).SAX方式不支持对XML文档的写入操作。
+
+SAX解析API：
+javax.xml.parsers包
+类：
+SAX抽象工厂类：SAXParserFactory
+方法：
+	public static SAXParserFactory newInstance();
+	public abstract SAXParser newSAXParser();
+
+SAX抽象产品：  SAXParser
+方法：	public void parse(InputStream in, DefaultHandler dh);
+
+SAX事件处理类： DefaultHandler
+针对XML的处理，一般只需重写如下5个方法：
+startDocument(); //只要读到XML文档中的处理指令(<?开始的)，parse方法
+		//中就会回调dh的 startDocument方法.
+
+//只要读到<,表示元素开始，就会触发startElement方法.
+startElement(String uri,String localName,
+		String qName,Attributes attr);
+
+//表示读到两个标记之间的文本，就会触发character方法
+characters(char[] buf,int off,int len);
+
+//只要读到</, 表示元素结束，就会触发 endElement方法
+endElement(String uri,String localName,
+		String qName);
+
+//文档结束
+endDocument();
+
+
+2).DOM解析
+全称，Document Object Model, 文档对象模型
+特点：
+  a).DOM 采用的是“文档树”的方式，会一次性把整个XML文档加载进内存，
+     形成一颗倒置的“文档树”。根元素就是“树根”
+  b).DOM方式较占资源，效率不高，特别是加载大型XML文档时。
+  c).DOM支持读与写。
+  
+相关API：
+DOM文档工厂类：javax.xml.parsers.DocumentBuilderFactory
+方法：
+public static DocumentBuilderFactory newInstance();
+public abstract DocumentBuilder newDocumentBuilder();
+
+DOM文档类： javax.xml.parsers.DocumentBuilder
+方法：
+public Document parse(InputStream in); //把XML文档转换成DOM文档树.
+	//返回的Document就是指向这个“文档树”的根元素.
+
+
+DOM解析的编程步骤：
+
+DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+DocumentBuilder builder = factory.newDocumentBuilder();
+//获取输入流
+InputStream in = Thread.currentThread()
+			.getContextClassLoader()
+			.getResourceAsStream("files/mycd.xml");
+//做DOM解析
+Document doc = builder.parse(in);
+//如何来解析一个DOM文档树 ?
+
+-- ----------------------------------------------------
+在DOM世界里，一切皆是“节点”(Node)
+W3C的DOM模型.
+包: org.w3c.dom包
+接口：
+Node	抽象的节点
+   |- Document	代表整个文档树
+   |- Element	代表元素，也就是使用<>括起来
+   |- Attr	代表元素中的属性
+   |- CharacterData	代表文本节点
+		|- Text	代表元素之间的那个文本内容节点
+		|- Comment	代表注释
+		|- CDATASection	代表<CDATA 元素节点
+   |- Entity	代表实体
+   |- ProcessingInstruction	代表处理指令
+   ...
+
+不管是 Document\Element\Attr\Text 都可以说成是 Node
+
+常用方法:
+1)查询方法
+Node			getParentNode()			获取父节点
+NodeList		getChildNodes()			获取当前节点的所有子节点
+Node			getNextSibing()			获取当前节点的下一个兄弟节点
+Node			getPreviousSibing()		获取当前节点的上一个兄弟节点
+Node			getFirstChild()			获取第一个子节点
+Node			getLastChild()			获取最后一个子节点
+
+String			getNodeName()			获取节点名称
+String			getNodeValue()			获取节点的值,只有Text/Attr/Comment等有值
+
+2)操作方法
+appendChild(Node node)						添加节点
+removeChild(Node node)						移除节点 
+replaceChild(Node newChild, Node oldChild)  替换节点
+setNodeValue(String nodeValue)				设置节点值
+       
+
+Document的方法:
+public Element getDocumentElement()//获取根元素节点
+
+Element的方法:
+public NodeList getElementsByTagName(String tagName)
+public String getAttribute(String attrName)
+
+Attr的方法
+Text的方法
+...
+
+-- ---------------------------------------------------
+DOM解析案例:
+package com.xml.dom;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import com.corejava.util.DateUtil;
+import com.xml.entity.Address;
+import com.xml.entity.Student;
+
+public class StudentDomParser {
+
+	/**
+	 * DOM解析XML文档
+	 */
+	public static void main(String[] args) {
+		try {
+
+			for (Student s : getStudentsFromXml("com//xml//dtd//students.xml")) {
+				System.out.println(s);
+			}
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public static List<Student> getStudentsFromXml(String src) throws Exception {
+		// 1.获取DOM工厂
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		// 2.通过工厂获取DOM解析器
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		// 3.转备参数
+		InputStream in = Thread.currentThread().getContextClassLoader()
+				.getResourceAsStream(src);
+		// 4.调用解析方法
+		Document doc = builder.parse(in);
+		// 处理文档树
+		return handleDoc(doc);
+	}
+
+	public static List<Student> handleDoc(Document doc) {
+		List<Student> students = new ArrayList<>();
+		// 1.获取根节点
+		Element root = doc.getDocumentElement();
+		// 2.获取所有的学生子节点
+		NodeList studentList = root.getElementsByTagName("student");
+		// 3.遍历集合
+		for (int i = 0; i < studentList.getLength(); i++) {
+			// 依次取出每一个学生元素节点
+			Element studentElement = (Element) studentList.item(i);
+			// 把元素转换成对象
+			Student student = handleStudentElement(studentElement);
+			// 把学生对象添加到集合中
+			students.add(student);
+		}
+		return students;
+	}
+
+	// 元素转换成实体对象
+	public static Student handleStudentElement(Element studentElement) {
+		// 1.创建学生对象
+		Student student = new Student();
+		// 2.从元素中获取值，然后一一赋值到对象上、
+		String id = studentElement.getAttribute("id");
+		student.setId(Integer.parseInt(id));
+
+		String name = getTextValue("name", studentElement);
+		student.setName(name);
+
+		String no = getTextValue("no", studentElement);
+		student.setNo(no);
+
+		Date date = DateUtil.parse(getTextValue("birthday", studentElement),
+				"yyyy-MM-d");
+		student.setBirthday(date);
+
+		// 如果有籍贯，则获取值后再设置
+		Element addrElement = (Element) studentElement.getElementsByTagName(
+				"address").item(0);
+		if (addrElement != null) {
+			// 如果有则创建对象
+			Address addr = new Address();
+			// 设置对象
+			String province = getTextValue("province", addrElement);
+			addr.setProvince(province);
+
+			String city = getTextValue("city", addrElement);
+			addr.setCity(city);
+
+			student.setAddr(addr);
+		}
+		return student;
+	}
+
+	public static String getTextValue(String tagName, Element elt) {
+		Element temp = (Element) elt.getElementsByTagName(tagName).item(0);
+		return temp.getTextContent();
+	}
+
+}
+
+第三方的DOM 模型实现:
+1. DOM4J	
+2. JDOM
+
+这些DOM模型实现了W3C要好用的API。
+

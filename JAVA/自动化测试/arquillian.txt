@@ -1,0 +1,149 @@
+用Arquillian写功能测试必须使用 Client Mode，其方法有两种：
+
+1. 为@Deployment注解指定testable = false属性。如：
+
+    @Deployment(testable = false)
+    public static Archive<?> createDeployment() {
+	// ... ...
+    }
+
+2. 在@Test 注解方法上增加 @RunAsClient注解。如：
+
+    @Test
+    @RunAsClient
+    public void should_run_as_client() {
+        // executed from the client JVM
+    }
+
+其中方法2灵活性较强，因为我们可以把一部分@Test方法指定为Client Mode，另一部分不指定。
+如果使用方法1，那么所有的@Test都会以客户模式运行。 
+
+
+Graphene 和 Drone:
+
+Graphene是 Selenium WebDriver API的功能扩展和进一步封装，它简化了原有WebDriver API的使用。
+而Drone则负责管理浏览器的生命周期，即Drone负责在运行测试的时候打开浏览器，简化了初始化部分的代码，并提供多浏览器支持，
+比如 IE, Firefox, Chrome等。
+
+
+---------------------------------------------------------------------------------------------
+
+@FindBy的作用是根据指定的标识符从当前页面中查找元素，然后封装成WebElement对象并注入到类成员中。
+@FindBy功能非常强大，它可以通过标签的id, name来查找元素，还可以通过CSS类名、标签名、<a>标签的链接地址、CSS选择器甚至JQuery选择器来获取元素
+
+
+---------------------------------------------------------------------------------
+
+@Drone的作用是注入一个代表了当前浏览器的WebDriver，通过这个对象我们可以控制浏览器的行为。
+
+
+---------------------------------------------------------------------------------
+
+@ArquillianResource标在URL类上时，会将项目部署到JBoss后实际的访问地址注入进来。
+当执行到 browser.get()方法时，浏览器就会自动被打开，并导航至指定的页面。
+
+
+---------------------------------------------------------------------------------
+
+@Root注解的作用 把指定的元素作为页面的根对象，之后查找页面元素时，不会以html标签开始，而以
+定义的元素开始
+
+@Root(id="form")
+private WebElement form;
+
+
+---------------------------------------------------------------------------------
+
+@Location注解加在home page上，
+之后在测试方法中加参数 @InitialPage LoginPage loginPage 就可以把入口页面加载进来
+
+@Location("login.jsp")  
+public class LoginPage{
+
+}
+
+@RunWith(Arquillian.class)
+public class TestClass{
+
+
+@Test
+public void test(@InitialPage LoginPage loginPage){
+
+  //然后就可以操作loginPage了
+}
+
+}
+ 
+
+---------------------------------------------------------------------------------
+
+@Page注解会初始化某个页面对象
+
+
+---------------------------------------------------------------------------------------------
+
+
+Arquillian的按钮点击
+
+
+如果一个按钮点击了是去往另一个url的，则使用Graphene.guardHttp(btn).click()
+
+如果一个按钮点击了执行ajax请求，则使用Graphene.guardAjax().click()
+
+如果一个按钮点击了显示一个隐藏的页面元素，则使用buttonElement.click()之后再加 Graphene.waitGui().until().element().is().visible()
+
+如果一个按钮点击了执行js代码，则使用buttonElement.click()
+
+Graphene.guardHttp(submitBtn).click();
+guardHttp（）方法的作用即是保证页面的同步性，只有当服务器完成验证，发回响应页面，并且响应页面完全载入完成时，该方法才会返回。
+否则的话，页面还没有打开就执行下面的代码，显然会导致测试失败。
+
+
+
+---------------------------------------------------------------------------------------------
+
+指定测试浏览器
+
+现在我们需要通知 Arquillian 我们到底要用哪个浏览器运行测试。
+arquillian.xml 是用来配置arquiillian相关属性的，这个任务自然也就要交给它了。在 src/test/resources目录创建arquillian.xml文件，内容如下：
+
+    <?xml version="1.0" encoding="UTF-8"?>  
+    <arquillian xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+        xmlns="http://jboss.org/schema/arquillian"  
+        xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">  
+          
+        <extension qualifier="webdriver">  
+            <property name="browser">firefox</property> <!-- 使用firefox浏览器 -->  
+        </extension>  
+          
+    </arquillian>  
+
+然后为了方便起见，我们可以在pom.xml 文件中新建多个 profile，这样在运行测试的时候只需要指定不同的profile就可以在不同的浏览器中进行测试了。
+
+    <profile>  
+        <id>firefox</id>  
+         <properties>  
+             <browser>firefox</browser>  
+         </properties>  
+    </profile>  
+    <profile>  
+        <id>chrome</id>  
+         <properties>  
+            <browser>chrome</browser>  
+         </properties>  
+    </profile>  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+mvn clean verify surefire-report:failsafe-report-only -Pfirefox,mysql,dev -Dwebdriver.gecko.driver="D:\新建文件夹\webdriver\geckodriver\geckodriver.exe" -Dwebdriver.firefox.bin="G:\火狐浏览器\firefox.exe"

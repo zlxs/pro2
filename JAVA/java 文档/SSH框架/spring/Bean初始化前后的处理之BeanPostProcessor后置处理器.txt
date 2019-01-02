@@ -1,0 +1,24 @@
+
+BeanPostProcessor bean的后置处理器，对bean进行批处理
+对所有的bean进行相同处理
+
+public class MyBeanPostProcessor inplements BeanPostProcessor{
+
+        //bean实例化之后的后初始化的后处理 arg0是bean对象，arg1是该bean配置的id
+        @Override
+	public Object postProcessAfterInitialization(Object arg0, String arg1)
+			throws BeansException {
+          Systen.out.println("after");
+          return arg0;//返回bean,这里可以把bean给修改，甚至偷梁换柱了
+	}
+
+        //bean实例化之后的前初始化的后处理
+	@Override
+	public Object postProcessBeforeInitialization(Object arg0, String arg1)
+			throws BeansException {
+	  Systen.out.println("before");	
+	  return arg0;//返回bean,这里可以把bean给修改，甚至偷梁换柱了
+	}
+}
+
+需要在配置文件中配置，配置方式和bean相同

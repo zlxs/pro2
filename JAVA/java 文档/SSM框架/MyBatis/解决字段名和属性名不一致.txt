@@ -1,0 +1,41 @@
+
+create table user(
+  id int auto_increment primary key,
+  username varchar(10)，
+  password varchar(10)
+)
+
+public class User{
+  private int id;
+  private String name;
+  private String psw;
+  set get
+}
+
+解决方案：
+
+1.为字段名起一个与实体类属性名相同的别名
+<mapper namespace="xxx.xx.domain.user">
+  <select id="getUser" parameterType="int" resultType="xxx.xx.domain.User">
+    select username name,password psw from user where id=#{id}
+  </select>
+</mapper>
+
+2.使用resultMap来映射表字段和实体类属性：
+<mapper namespace="xxx.xx.domain.user">
+  <!--使用resultMap代替resultType-->
+  <select id="getUser" parameterType="int" resultMap="getUserMap">
+    select username,password from user where id=#{id}
+  </select>
+</mapper>
+
+<!--配置属性和字段的映射关系-->
+<resultMap type="xxx.xx.domain.User" id="getUserMap">
+  <!--id映射主键字段-->
+  <id property="id" column="id">
+  <result property="name" column="username"/>
+  <result property="psw" column="password"/>
+</resultMap>
+
+用注解方式时，
+  使用别名

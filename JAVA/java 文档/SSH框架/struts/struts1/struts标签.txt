@@ -1,0 +1,186 @@
+jsp中导入标签库
+<%@ taglib url="http://struts.apache.org/tags-html" prefix="html"%>
+
+----------------------------------------------------------------------------------
+1.<html:form></html:form>
+该标签 属性action="xxxAction.do" 需要在struts-config.xml配置文件中有对应的path
+<action path="/xxxAction"  name="form1" value="cn.xxx.xx.xxxAction" scope="" attribute=""></action> 否则出异常
+同时，需要有一个对应的ActionForm实例来封装表单的值，不然也会出异常
+<form-bean name="form1" type="cn.xxx.xx.Form1"></form-bean>
+
+html:form的name属性没有赋值，但解析时，会根据配置文件中action标签中的attribute属性给name赋值,
+如attribute="a",那么html:form的name属性就是name="a"
+
+focus属性：定焦（光标到指定位置）
+----------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------
+2.<html:text></html:text>
+相当于<input type="text"></input>标签
+html:text的property属性，就是input的name属性，只要定义了该属性，就要在
+对应的ActionForm实例中定义该属性的get和set方法
+
+html:text标签也有name属性，该属性与property属性连用：
+
+定义一个Person javaBean，内有一个username属性
+jsp中：
+%
+ Person person=new Person();
+ person.setUsername("aaa");
+ pageContext.setAttribute("person",person);
+%
+
+<html:text name="person" property="username" ></html:text>
+页面表单项会默认输出aaa
+原因是name属性指出关键字，在该关键字下找到一个javabean,property值是这个bean中属性，
+解析html:text时会调用该bean的property属性的get方法，使页面表单项默认输出javabean的属性的初始值
+
+去掉name属性，则会去找表单关联的formBean，调用formBean的属性的get方法，页面的表单项会默认显示
+该formBean的属性的初始值
+
+name属性的默认值是父标签html:form的name属性的值，所以不加也可以找到关联的formbean（从域里
+以name属性的值为关键字就可以找到该bena,因为存formbean时，就是用attribute的值存的），所以以后不用
+写name属性
+
+总结：在页面表单中显示默认表单项数据，只需要在formbean中初始化属性的值
+
+
+类似还有html:radio,html:hidden,html:password 等，同理
+这些标签不能单独使用，必须在html:form内使用
+----------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------
+3.<html:radio></html:radio>
+相当于<input type="radio"></input>标签
+
+value属性不能为空
+如：
+性别：<html:radio property="sex" value="男"/>男
+      <html:radio property="sex" value="女"/>女
+----------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------
+4.<html:link></html:link>
+相当于<a></a>标签
+forward属性 ：转发到配置了全局转发的页面
+
+<global-forwards>
+  <forward name="success" path="success1.jsp" ></forward>
+   <forward name="error" path="error1.jsp" ></forward>      
+</global-forwards>
+则<html:link forward="success">forward</html:link> 会跳转到success1.jsp页面
+
+
+action属性：转到Action中配置了局部转发的页面
+
+ <action-mapping>    
+    <action path="/demoAction" forward="/a.jsp"></action> 
+  </action-mapping>
+则<html:link action="deomAction.do">action</html:link> 会跳转到a.jsp页面
+
+href属性：这个链接会转发给控制器，由控制器决定具体地址
+<html:link href="deomAction.do">href</html:link>
+
+page属性:直接写地址
+<html:link page="/a.jsp">page</html:link>
+
+
+html:link标签传递参数:
+除了在地址后加？,还可以用属性 paramId和paramName
+paramId属性的值：参数的名称
+paramName属性的值：作用域中key   内部会通过该key找到对应的值作为参数的值
+如：<html:link action="" paramId="username" paramName="name"><html:link>
+内部根据name为key从域中找到对应值，假如为aaa,则相当于 ？username=aaa
+也可以再加一个属性paramProperty
+<html:link page="" paramId="username" paramName="person" paramProperty="username"></html:link>
+内部会找到person这个关键字保存在域中的javaBean，再找到该bean的username属性的值作为参数名对应的值
+----------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------
+5.<html:rewrite></html:rewrite>
+用于输出超链接中的URI部分,但它并不生成html中的<a>元素，只是生成地址
+用法如：
+<a href="<html:rewrite action="xxx.do"/>">点击</a>
+该标签也可以用paramId，paramName,paramProperty属性，加入后，放在<a>标签的href里的地址也会带参数
+
+----------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------
+6.<html:img></html:img>
+对应<img/>标签
+用法：
+<html:img action="a.do"></html:img>
+
+在配置文件中加入：
+<action-mapping>    
+    <action path="/a" forward="/1.jpg"></action> 
+  </action-mapping>
+显示1.jpg
+
+或直接链接到1.jpg
+<html:img page="/1.jpg"></html:img>
+----------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------
+7.<html:select></html:select>和<html:option></html:option>
+下拉列表标签
+用法例如：
+<%
+  Edu edu1=new Edu("1","本科");//Edu类中有eduid和eduname两个属性
+  Edu edu2=new Edu("2","专科");
+  Edu edu3=new Edu("3","高中");
+  List list=new ArrayList();
+  list.add(edu1);
+  list.add(edu2);
+  list.add(edu3);
+  pageContext.setAttribute("education",list);
+%>
+<html:select>
+  <html:option collection="education" property="eduid" labelProperty="eduname" ></html:option>
+</html:select>
+collection属性：表示一个集合，该值为作用域中的key，集合中存放javaBean
+property属性：javaBean中的属性，该属性的值是转换为option标签中的value的值
+labelProperty属性：javaBean中的属性,该属性的值是转换为option标签中的文本的值
+----------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------
+8.<bean:write></bean:write>
+在页面输出数据
+<bean:write name="username"/>
+name属性：作用域中的key，如果key保存的value不是一个javaBean，则输出key的value值
+根据name属性的值为关键字，在域中查找值，然后输出
+相当于直接$(username)和jstl的<c:out value="${username}"></c:out>
+
+如果key指向的是一个javaBean，则还要再加上属性property
+<bean:write  name="person" property="username"/>
+内部找出person为关键字保存在作用域中的javaBean，再输出该bean的username属性的值
+
+scope属性：指定从什么域中以name的值为key去取数据
+----------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------
+9.<html:multibox></html:multibox>
+<input type="checkbox"/>
+代替<html:checkbox>，便于实现数据回显
+示例：
+<%
+ String[] love={"足球","篮球","网球"}
+ pageContext.setAttribute("love",love);
+%>
+<c:forEach var="item" items="${love}">
+  <html:multibox property="hobbies" >
+     ${item}
+  </html:multibox>
+${item}
+</c:forEach>
+标签体的值会转化为input标签的value属性
+在对应的formbean中给hobbies属性赋初始值，就可以实现数据回显选中默认值
+----------------------------------------------------------------------------------

@@ -1,0 +1,31 @@
+
+Spring和SpringMVC集成：  
+
+1.只需要Spring的jar,不需要导入其他的jar
+
+2.web.xml中添加Spring的拦截器和配置SpringMVC的DispatcherServlet
+  还是原来的配置，不需要添加其他的配置
+
+<listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+</listener>
+<context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:applicationContext.xml</param-value>
+</context-param>
+
+<servlet>  
+   <servlet-name>springMVC</servlet-name>  
+   <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+   <init-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath*:/springMVC-servlet.xml</param-value>
+   </init-param>  
+   <load-on-startup>1</load-on-startup>  
+</servlet> 
+<servlet-mapping>
+   <servlet-name>springMVC</servlet-name>
+   <url-pattern>/</url-pattern>  	
+</servlet-mapping>
+
+3.添加springMVC-servlet.xml文件和applicationContext.xml文件

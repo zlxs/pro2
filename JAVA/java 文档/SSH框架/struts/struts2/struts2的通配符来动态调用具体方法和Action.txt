@@ -1,0 +1,18 @@
+使用通配符就可以将配置量降到最低
+  但需要约定统一好action的命名规则，和其中的多个方法的命名规则,还要jsp的命名规则
+
+
+<action name="*_*" class="xx.xxx.xx.{1}" method="{2}">
+   <result name="success">/{1}_{2}_success.jsp</result>
+   <result name="error">/{1}_{2}_error.jsp</result> 
+</action>
+
+
+输入http://localhost:8080/命名空间/UserAction_addUser
+  会调用UserAction的addUser方法，成功后转到
+       User_addUser_success.jsp 
+
+http://localhost:8080/命名空间/CustomerAction_findCustomer
+  会调用CustomerAction的findCustomer方法，成功后转到
+       Customer_findCustomer_success.jsp 
+

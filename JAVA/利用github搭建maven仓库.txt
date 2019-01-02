@@ -1,0 +1,121 @@
+步骤：分3步
+1.
+在github上创建一个项目，作为maven的仓库
+ 
+2.
+在需要上传到github仓库中的jar对应项目的pom.xml文件中设置：
+    <distributionManagement>
+        <repository>
+            <id>internal.repo</id>
+            <name>my-repo</name>
+            <url>file://${project.build.directory}/mvn-repo</url>
+        </repository>
+    </distributionManagement>
+
+然后执行mvn clean deploy
+
+url可以自己指定如file://E:\temp，然后到url目录下(这里是该项目target目录下的mvn-repo目录下)
+执行git命令，提交到github的maven仓库项目中：
+git init
+git add -A
+git commit -m "description"
+git remote add origin https://github.com/uo5587211/aaaa.git
+git push -u origin master
+
+
+3.
+在自己的项目中使用github仓库下载自定义的jar包：
+
+<!--使用方式，在需要使用github的maven仓库中的jar时在pom.xml中加入如下-->
+    <repositories>
+        <repository>
+            <!--在maven的settings.xml中把阿里云的mirror的mirrorOf配置改成不拦截my-repo 如：<mirrorOf>*,!my-repo</mirrorOf>否则会被拦截，也可以通过pom.xml文件配置-->
+            <id>my-repo</id>
+            <!--url格式： https://raw.github.com/github用户名/仓库对应项目名/分支-->
+            <url>https://raw.github.com/uo5587211/my-repo/master</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
+
+然后在pom.xml添加需要的依赖如：
+<!-- 具体依赖项目-->
+<dependency>
+  <groupId>具体groupId</groupId>
+  <artifactId>具体artifactId</artifactId>
+  <version>具体版本</version>
+</dependency> 
+
+注：
+不能简单地把jar包放到github上就完事了，一定要先在本地Deploy，生成maven-metadata.xml文件，再上传到github上
+maven-metadata.xml文件很重要，如果没有这个文件来指明最新的jar版本，那么即使远程仓库里的jar更新了版本，
+本地maven编绎时用上-U参数，也不会拉取到最新的jar！
+
+
+至此就完成了！！！
+---------------------------------------------------------------
+
+上面的步骤2也可以不通过git命令完成，直接通过插件来自动在deploy阶段把jar提交到github
+
+需要在maven的settings.xml文件中配置授权信息：
+<settings>
+  ...
+  <servers>
+    <server>
+      <id>github</id>
+      <username>github用户</username>
+      <password>github密码</password><!--密码也可以改成github帐号的令牌-->
+    </server>
+  </servers>
+  ...
+</settings>
+
+
+pom.xml文件中使用：
+
+<!----指定使用的server，该配置需要和上面settings内容保持一致--->
+<properties>
+    <github.global.server>github</github.global.server>
+</properties>
+
+
+<build>
+        <plugins>
+            <!--告诉maven将artifacts部署到一个target下的一个临时目录中-->
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.1</version>
+                <configuration>
+                    <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
+                </configuration>
+            </plugin>
+
+            <!--配置site-maven-plugin，在deploy阶段部署到github上-->
+            <plugin>
+                <groupId>com.github.github</groupId>
+                <artifactId>site-maven-plugin</artifactId>
+                <version>0.8</version>
+                <configuration>
+                    <message>xxxxxxxxxxxxxx</message>                          <!--git commit message-->
+                    <noJekyll>true</noJekyll>
+                    <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory>
+                    <branch>refs/heads/master</branch>                         <!-- remote branch name -->
+                    <includes><include>**/*</include></includes>
+                    <repositoryName>github仓库项目名</repositoryName>          <!-- github repo name -->
+                    <repositoryOwner>github用户名</repositoryOwner>            <!-- github username  -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>site</goal>
+                        </goals>
+                        <phase>deploy</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+</build>

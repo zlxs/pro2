@@ -1,0 +1,221 @@
+等值连接：
+表employee                                  表department
+name    department_id                       id    department_name
+aaa         1                                   1               企划部
+bbb         2                                   2               销售部
+
+select e.name,d.department_name from  employee e,department d where  e.depaetment_id=d.id;
+结果：
+   name     department_name     
+   aaa       企划部
+   bbb       销售部
+
+
+
+
+
+非等值连接：
+表 A                                        表B
+name     salary                              low_salary    high_salary     grade       
+aaa       2000                                500            1499            A  
+bbb       1000                                1500           2499            B
+
+select A.name,B.grade from A,B where A.salary between  B.low_salary and B.high_salary;
+结果：
+   name   grade
+   aaa     B
+   bbb     A
+
+
+
+
+
+外连接：
+表employee                                  表department
+name    department_id                       id    department_name
+aaa         1                                   1               企划部
+bbb         2                                   2               销售部
+ccc                                             3               人力资源部
+ddd                                             4               技术部
+
+左外连接：显示右边表所有记录和左边表与右边表相匹配的记录
+
+select e.name,d.department_name from  employee e,department d where e.depaetment_id(+)=d.id;
+
+结果：
+   name   id  department_name     
+   aaa     1  企划部
+   bbb     2  销售部
+           3  人力资源部
+           4   技术部
+
+右外连接：显示左边表所有记录和右边表与左边表相匹配的记录
+
+select e.name,d.id,d.department_name from  employee e,department d where e.depaetment_id=d.id(+);
+结果：
+   name     department_name     
+   aaa       企划部
+   bbb       销售部
+   ccc
+   ddd
+
+
+
+
+自连接：把一个表看成两个表或多个表
+表employee
+name      employee_id      job        manager_id            
+aaa         0001        B部门员工        0004                              
+bbb         0002        B部门员工        0004
+ccc         0003        A部门经理
+ddd         0004        B部门经理
+eee         0005        A部门员工        0003
+fff         0006        A部门员工        0003
+
+select e.name,e.employee_id,m.name manager_name from employee e,employee m 
+where e.manager_id=m.employee_id;
+
+结果：
+name    employee_id    manager_name
+aaa       0001            ddd            
+bbb       0002            ddd            
+eee       0005            ccc            
+fff       0006            ccc           
+
+
+
+
+自然连接：NATURAL JOIN   注意：不是自连接
+基于两个表中列名完全相同的多个列产生连接，从两个表中选出连接列的值完全相同的所有行
+如果两个列的列名相同，但类型不同，则查询会返回一个错误
+表employee                                  表department
+name    department_id                       department_id   department_name
+aaa         1                                   1               企划部
+bbb         2                                   2               销售部
+
+使用等值连接：
+select e.name,d.department_name from employee e,department d where e.department_id=m.department_id;
+
+使用自然连接：  在字段前不能加限定名
+select name,department_name from employee natural join department;
+
+结果：
+   name     department_name     
+   aaa       企划部
+   bbb       销售部
+
+注意：自然连接要求两个表中含有完全相同的列名
+
+如果两个列的列名相同，但类型不同，可以使用using
+select name,department_name 
+from employee join department using(department_id);
+
+
+
+
+
+
+交叉连接：CROSS JOIN 在两个表中创建一个笛卡尔积，就像是连接两表忘记加where语句
+select * from 表1，表2；
+拿表1中的每条记录和表2中的每条记录拼成一条新的记录，总记录数=表1的总记录数*表2的总记录数
+sql 1999 新写法
+select * from 表1 cross join 表2；
+
+
+
+
+
+内连接：和等值连接类似
+表employee                                  表department
+name    department_id                       id    department_name
+aaa         1                                   1               企划部
+bbb         2                                   2               销售部
+
+采用等值连接
+select e.name,d.department_name from  employee e,department d where  e.depaetment_id=d.id;
+
+采用内连接
+select e.name,d.department_name from  employee e inner join department d 
+on(e.department_id=d.id);
+
+注：on 后的()可以不加，即 可以写成 on e.department_id=d.id
+
+结果：
+   name     department_name     
+   aaa       企划部
+   bbb       销售部
+
+
+
+sql 1999新标准
+左外连接：left outer join  与以前的左外连接，即上面的正好相反
+显示左边表所有记录和右边表与左边表相匹配的记录
+
+表employee                                  表department
+name    department_id                       id    department_name
+aaa         1                                   1               企划部
+bbb         2                                   2               销售部
+ccc                                             3               人力资源部
+ddd                                             4               技术部
+
+select e.name,d.department_name from  employee e left outer join department d 
+on(e.depaetment_id=d.id);
+
+
+结果：
+   name     department_name     
+   aaa       企划部
+   bbb       销售部
+   ccc
+   ddd
+
+
+右外连接：right outer join  与以前的右外连接，即上面的正好相反
+显示右边表所有记录和左边表与右边表相匹配的记录
+
+select e.name,d.department_name from  employee e right outer join department d 
+on(e.depaetment_id=d.id);
+
+结果：
+   name   id  department_name     
+   aaa     1  企划部
+   bbb     2  销售部
+           3  人力资源部
+           4   技术部
+全外连接：full outer join
+显示两边表的所有记录
+
+select e.name,d.department_name from  employee e full outer join department d 
+on(e.depaetment_id=d.id);
+
+结果：
+   name   id  department_name     
+   aaa     1  企划部
+   bbb     2  销售部
+           3  人力资源部
+           4   技术部
+   ccc
+   ddd
+
+
+
+
+自连接：
+表employee
+name      employee_id      job        manager_id            
+aaa         0001        B部门员工        0004                              
+bbb         0002        B部门员工        0004
+ccc         0003        A部门经理
+ddd         0004        B部门经理
+eee         0005        A部门员工        0003
+fff         0006        A部门员工        0003
+
+select e.name,e.employee_id,m.name manager_name from employee e inner join employee m 
+on(e.manager_id=m.employee_id);
+
+结果：
+name    employee_id    manager_name
+aaa       0001            ddd            
+bbb       0002            ddd            
+eee       0005            ccc            
+fff       0006            ccc           

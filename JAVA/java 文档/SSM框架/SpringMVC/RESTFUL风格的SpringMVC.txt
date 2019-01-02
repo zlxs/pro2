@@ -1,0 +1,27 @@
+RESTful（Representational State Transfer）是一种开发理念，是对http的很好的诠释
+
+非RESTful的url: http://.../user?id=001&name=yyy
+RESTful的url:http://.../user/001/yyy
+
+
+
+示例：
+
+@Controller
+@RequestMapping("/rest")
+public class RestController {
+    @RequestMapping(value="/user/{id}/{name}",method=RequestMethod.GET)
+    public String get(@PathVariable("id") Integer id,@PathVariable("name") String name){
+        System.out.println(id+"  "+name);
+        return "/hello";
+    }
+     
+    @RequestMapping(value="/user/{id}",method=RequestMethod.POST)
+    public String post(@PathVariable("id") Integer id){
+        System.out.println("post"+id);
+        return "/hello";
+    }
+    
+     
+}
+

@@ -1,0 +1,240 @@
+观察者模式：用于广播机制 把一个对象(目标对象Subject或Observable)的信息推送给多个订阅信息的对象(观察者Observer)
+
+应用场景：
+ 聊天室
+ Servlet的监听器
+ 短信群发功能
+ 网络游戏信息的发送（如：1个客户端角色的坐标改变，发给服务器，服务器发给其他客户端）
+ 邮件订阅
+ JDK的AWT事件
+
+import java.util.Observable; //目标对象要继承的类
+import java.util.Observer;  //观察者要实现的接口
+
+//观察者
+public class Observer1 implements Observer{
+
+	int state;//用于记录目标对象的状态变化
+	
+	@Override
+	public void update(Observable o, Object arg) {
+		//目标对象状态变化时会调用这个方法，从而使观察者的state和目标对象的state一致
+		this.state=((ConcreteSubject)o).getState();
+	}
+}
+
+
+import java.util.Observable;
+//目标对象，被观察的对象
+public class ConcreteSubject extends Observable{
+
+	int state;//纪录目标对象的状态变化,用于测试的一个属性
+
+	public int getState() {
+		return state;
+	}
+
+	public void setState(int state) {
+		this.state = state;
+		setChanged();//表示目标对象已经进行了更改，观察者和目标对象之间的约定
+		notifyObservers(state);//通知观察者目标对象的state属性被改变了
+	}
+	
+}
+
+//测试
+public class Client {
+
+	public static void main(String[] args) {
+		
+		ConcreteSubject c=new ConcreteSubject();
+		
+		Observer1 o1=new Observer1();
+		Observer1 o2=new Observer1();
+		Observer1 o3=new Observer1();
+		
+		//给目标对象添加多个观察者
+		c.addObserver(o1);
+		c.addObserver(o2);
+		c.addObserver(o3);
+		
+		c.setState(200);
+		
+		System.out.println(o1.state);
+		System.out.println(o2.state);
+		System.out.println(o3.state);
+
+	}
+
+}
+
+-----------------------------------------------------------------------------------------------
+
+不使用JDK的类，自己模拟观察者：
+
+public interface Observer {
+	void update(Subject s);
+}
+
+public class Subject {
+	//观察者容器
+	List<Observer> list=new ArrayList<>();
+	//添加某个观察者
+	public void addObserver(Observer o){
+		list.add(o);
+	};
+	//删除某个观察者
+	public void removeObserver(Observer o){
+		list.remove(o);
+	}
+	//通知所有的观察者更新状态
+	public void notifyAllObservers(){
+		for (Observer observer : list) {
+			observer.update(this);
+		}
+	};
+	
+}
+
+public class MyObserver implements Observer{
+
+	private int state;
+	
+	public int getState() {
+		return state;
+	}
+
+	public void setState(int state) {
+		this.state = state;
+	}
+
+	@Override
+	public void update(Subject s) {	
+		this.state=((ConcreteSubject)s).getState();
+	}
+}
+
+public class ConcreteSubject extends Subject{
+	
+	private int state;
+
+	public int getState() {
+		return state;
+	}
+
+	public void setState(int state) {
+		this.state = state;
+		notifyAllObservers();
+	}
+	
+	
+	
+}
+
+public class Client {
+
+	public static void main(String[] args) {
+		ConcreteSubject c=new ConcreteSubject();
+		
+		MyObserver o1=new MyObserver();
+		MyObserver o2=new MyObserver();
+		MyObserver o3=new MyObserver();
+		
+		c.addObserver(o1);
+		c.addObserver(o2);
+		c.addObserver(o3);
+		
+		c.setState(5);
+		
+		System.out.println(o1.getState());
+		System.out.println(o2.getState());
+		System.out.println(o3.getState());
+		
+		c.setState(7);
+		
+		System.out.println(o1.getState());
+		System.out.println(o2.getState());
+		System.out.println(o3.getState());
+	}
+}
+
+-----------------------------------------------------------------------------------------
+
+用观察者模式模拟餐馆只要有客户点菜，打印机就会打印菜单的功能：
+
+//模拟菜单类，这里为了方便只有一个属性
+public class Order {
+	private String name;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+}
+
+//模拟容器，客户在点菜时把订单保存到容器中
+public class Container extends Observable{
+
+	List<Order> list=new ArrayList<>();
+	
+	public List<Order> getList() {
+		return list;
+	}
+
+	public void setList(List<Order> list) {
+		this.list = list;
+	}
+	//向容器中添加菜单
+	public void addOrder(Order order){
+		synchronized (this) {	
+			list.add(order);
+			java.lang.System.out.println("有菜单被加入了容器...");
+			setChanged();//容器状态改变，有新菜单加入
+			notifyObservers();////通知给观察者，即打印机有新菜单被加入容器
+		}
+	}
+	
+}
+
+//打印机  观察者，监视容器有没有加入菜单
+public class Print implements Observer{
+
+	@Override
+	public void update(Observable o, Object arg) {
+		synchronized (o) {
+			List<Order> list = ((Container)o).getList();
+			for (Order order : list) {
+				java.lang.System.out.println("打印菜单内容...");
+				java.lang.System.out.println(order.getName());
+			}
+			list.clear();//打印完菜单，清除容器，期间容器不能再加入菜单，否则会把未打印的新菜单删除，所以加synchronized
+		}
+	}
+}
+
+//模拟系统运行
+public class System {
+
+	public static void main(String[] args) throws InterruptedException {
+		
+		Order o=new Order();//产生订单
+		o.setName("订单1");
+		
+		Container c=new Container();//被观察者
+		
+		Print p=new Print();//观察者
+		c.addObserver(p);//给目标对象添加观察者
+		
+		c.addOrder(o);//添加到菜单容器
+		
+		Thread.sleep(2000);
+		Order o1=new Order();
+		o1.setName("订单2");
+		c.addOrder(o1);
+
+	}
+}

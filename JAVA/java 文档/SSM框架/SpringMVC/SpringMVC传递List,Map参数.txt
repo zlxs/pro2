@@ -1,0 +1,86 @@
+<input type="text" value=""  name="titleName" />
+<input type="text" value=""  name="titleName" />
+<input type="text" value=""  name="titleName" />
+
+
+用数组接收请求参数：
+
+@Controller
+@RequestMapping("/mycontroller")
+public class MyController{
+  @RequestMapping("/test")
+  public String test(String[] titleName){
+
+   .....
+  }
+
+}
+
+--------------------------------
+
+用List接收请求参数：
+  
+接收简单类型没什么好说的，
+  下面考虑做批量处理时 把请求参数封装给存放具体的包装pojo类的List
+
+
+<c:forEach items="${items}" var="item" varStatus="status">
+  <input type="text" name="itemsList[${status.index}].name" value="${item.name}" />
+  <input type="text" name="itemsList[${status.index}].price" value="${item.price}" />
+  <input type="text" name="itemsList[${status.index}].detail" value="${item.detail}" />
+</c:forEach>
+
+注：
+itemsList 对应包装pojo中的List属性
+itemsList[${status.index}] 对应该list属性的下表为几的ItemCustom
+itemsList[${status.index}].name  对应ItemCustom中的属性名
+
+
+@Controller
+@RequestMapping("/mycontroller")
+public class MyController{
+  @RequestMapping("/test")
+  //把提交信息存到itemsQueryVo的itemsList集合中的具体ItemCustom对象的属性中
+  public String test(ItemsQueryVo itemsQueryVo){ 
+
+   .....
+  }
+
+}
+
+//定义Item的包装pojo
+class ItemsQueryVo{
+ //商品信息类
+ private Item items;
+ //为了系统的可扩展性，对原始生成的po进行扩展 
+ private ItemCustom itemsCustom;
+ //批量商品信息
+ private List<ItemsCustom> itemsList;
+
+ get set
+}
+
+class Item{
+ private String name;
+ private String price;
+ private String detail;
+
+ get set
+}
+
+class ItemCustom extends Item{
+  ...
+}
+
+--------------------------------
+
+用Map接收请求参数：
+
+也通过在包装pojo中定义map类型属性 Map<String,ItemCustom> itemsMap
+
+页面input输入项的具体name属性有区别
+
+<c:forEach items="${items}" var="item">
+  <input type="text" name="itemsMap[key].name" value="${item.name}" />
+  <input type="text" name="itemsMap[key].price" value="${item.price}" />
+</c:forEach>

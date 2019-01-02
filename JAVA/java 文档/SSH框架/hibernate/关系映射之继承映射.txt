@@ -1,0 +1,84 @@
+
+单表继承映射：
+只生成一张表
+person表
+id    name   salary  score   type1111
+1     aaa    1000            teac
+2     bbb             80     stu
+
+
+class Person{
+   private int id;
+   private String name;
+   set get
+}
+
+class Teacher extends Person{
+   private int salary;
+   set get
+}
+
+class Student extends Person{
+   private int score;
+   set get
+}
+
+映射文件：
+person.hbm.xml:
+
+<!--指明鉴别器 column指定生成的表中，用来表示不同子类的列的列名-->
+<discriminator column="type1111" type="string">
+<subclass name="Student(类名)" discriminator-value="stu" >
+  <property name="score" column="score" type="integer" />
+</subclass>
+<subclass name="Teacher(类名)" discriminator-value="teac" >
+  <property name="salary" column="salary" type="integer" />
+</subclass>
+
+推荐使用这种
+-------------------------------------------------------------------
+
+每个类一张表的继承映射：
+
+@Entity
+@Inheritance(strategy=InheritanceType.JOINED)
+public class Person{
+   private int id;
+   private String name;
+   @Id
+   @GeneratorValue
+   public int getId();
+   ...
+}
+
+@Entity    //子类只需要写@Entity    id都不需要写 
+public class Teacher extends Person{
+    private int salary;
+    ...
+}
+
+@Entity   //子类只需要写@Entity    id都不需要写 
+public class Student extends Person{
+   private int score;
+   ...
+}
+
+插入数据时，不需要new父类，直接save具体子类对象就可以了:
+           Student s=new Student();
+	    s.setName("aaa");
+	    s.setScore(100);
+            session.save(s);
+这时person表中会保存name,student表中会保存score,student表生成的id来自person表的id
+
+
+映射文件方式：
+person.hbm.xml:
+
+<joined-subclass name="Teacher">
+  <key column="id" />
+  <property  name="salary"  />
+</joined-subclass>
+<joined-subclass name="Student">
+  <key column="id" />
+  <property  name="score"  />
+</joined-subclass>

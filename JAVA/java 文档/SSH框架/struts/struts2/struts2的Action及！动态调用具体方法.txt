@@ -1,0 +1,31 @@
+
+在struts.xml中配置的action,即使是普通的java类，只要类中有execute方法，
+并且返回值是String类型，就能被struts2当作action
+
+struts2每次访问action都会new一个新的，而不像struts1那样只有一个
+这样就不会有线程同步问题
+
+
+Struts2的Action使用方法：
+1.普通类中有方法： public String execute(){}
+2.自定义的类实现Action接口
+3.自定义的继承 ActionSupport类 ，实际只用这种，前两种可以忘记
+  ActionSupport已经帮我们封装了很多实用的方法
+
+
+action执行的时候并不一定要执行execute方法，可以在配置文件中配置
+Action的适合用method=来指定执行哪个方法 也可以在url地址中动态指定(动态方法调用DMI)(推荐)
+
+如 ：
+<action name="login" class="org.qiujy.web.struts.action.LoginAction" method="findUser">
+   <result name="success">/success.jsp</result>
+</action>
+意思是访问login.action时执行LoginAction类的findUser方法而不是execute方
+这种方式不太好，一个action类需要为多个方法分别配置action标签,不推荐使用
+
+------------------------------------
+推荐方法是：
+直接访问login.action!findUser, 在访问的action后加！和调用方法名
+        而不是在action配置中加method=方法
+------------------------------------
+也可以使用通配符方式（看通配符的txt文件）

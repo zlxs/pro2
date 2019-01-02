@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="aZT7Z5ahWreCbJF4GN7PcXLW42nw2Pd0e8mxCaSU">
+    <title>Spring5源码解析-使用Spring AnnotationUtils处理注解 - 言说</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="yanshuo Team">
+    <meta name="copyright" content="2017 yanshuo.me">
+    <link rel="shortcut icon" type="image/x-icon" href="https://www.yanshuo.me/favicon.ico">
+    
+    <!-- Bootstrap -->
+    <link href="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/bootstrap.css" rel="stylesheet">
+    <link href="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/font-awesome.css" rel="stylesheet">
+    <link href="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/global.css" rel="stylesheet">
+            <link href="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/global-pc.css" rel="stylesheet">    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="http://cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="http://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- 统计代码 -->
+    
+<script src="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/hm.js"></script><script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?afe1b3c918b933d6936181803acef916";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>    <!-- /统计代码 -->
+<meta name="__hash__" content="035da54361b98570020be7334551bdc3_e8049fcccaf98b3ac01b826e7751feaa"></head>
+
+<body>
+    
+    <div class="hide"><img src="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/w_300.png"></div>
+    
+    <div class="top-common-nav mb-50">
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                    
+                    <div class="logo hidden-xs">
+                            <a href="https://www.yanshuo.me/">
+                                <img class="img-responsive pull-left" src="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/yan.svg" width="40">
+                                <img class="img-responsive pull-left" style="margin-top:6px;" src="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/shuo.svg" width="28">
+                            </a>
+                        </div>                    
+                    
+                    
+                    <button type="button" onclick="$('#topic-nav-list').removeClass('in');$('.topic-nav-btn-xs').addClass('collapsed');" class="global-navbar-btn navbar-toggle collapsed" data-toggle="collapse" data-target="#global-navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    
+                </div>
+
+                
+                                
+
+                <div id="global-navbar" class="collapse navbar-collapse">
+                    
+                                        
+                    
+                    <ul class="pc hidden-xs nav navbar-nav">
+                            <li>
+                                    <a href="https://www.yanshuo.me/">
+                                        推荐                                    </a>
+                                </li><li>
+                                    <a href="https://www.yanshuo.me/r/hottest">
+                                        最热                                    </a>
+                                </li><li>
+                                    <a href="https://www.yanshuo.me/r/zhihuhot">
+                                        知乎最热                                    </a>
+                                </li><li>
+                                    <a href="https://www.yanshuo.me/r/pic">
+                                        无聊图                                    </a>
+                                </li><li>
+                                    <a href="https://www.yanshuo.me/r/videos">
+                                        视频                                    </a>
+                                </li><li>
+                                    <a href="https://www.yanshuo.me/r/tech">
+                                        科技                                    </a>
+                                </li><li>
+                                    <a href="https://www.yanshuo.me/r/programmer">
+                                        程序员                                    </a>
+                                </li><li>
+                                    <a href="https://www.yanshuo.me/r/movies">
+                                        电影                                    </a>
+                                </li><li>
+                                    <a href="https://www.yanshuo.me/r/v2ex">
+                                        V2EX                                    </a>
+                                </li><li>
+                                    <a href="https://www.yanshuo.me/r/crawler">
+                                        爬虫                                    </a>
+                                </li>                            <li>
+                                <a href="https://www.yanshuo.me/topics">更多</a>
+                            </li>
+                        </ul>
+                        <ul class="hidden-xs nav navbar-nav user-menu navbar-right">
+                            <li><a href="https://www.yanshuo.me/login">登录</a></li>
+                                <li><a href="https://www.yanshuo.me/register">注册</a></li>
+                                                    </ul>                    
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div class="top-alert mt-50 clearfix text-center">
+        <!--[if lt IE 9]>
+        <div class="alert alert-danger topframe" role="alert">你的浏览器实在<strong>太太太太太太旧了</strong>，请升级浏览器以后再访问本站！
+            <a class="alert-link" href="http://browsehappy.com">立即升级</a>
+        </div>
+        <![endif]-->
+                            </div>
+    <div class="mt-10"></div>
+
+<!-- 代码高亮显示插件 -->
+<link href="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/github.css" rel="stylesheet">
+<script src="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/highlight.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<link rel="stylesheet" href="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/github-markdown.css">
+<!-- /代码高亮显示插件 -->
+
+<div class="wrap">
+    <div class="container">
+        <div class="mt-40 hidden-xs"></div>
+        <div class="mt-15 visible-xs"></div>
+        <div class="row">
+            <div class="col-xs-12 col-md-9 main">
+                <div class="r-programmer r-backend  widget-article widget-content">
+                    <h3 class="title pre-line">Spring5源码解析-使用Spring AnnotationUtils处理注解</h3>                    
+                                        
+                    
+                    <div class="hidden-xs mb-20"></div>                    
+                    <div class="pull-left">
+                        <ul class="pull-left list-inline text-muted">
+                            <li class="post-opt">
+                                <img class="avatar-36" src="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/w_150.jpg">
+                                    &nbsp;                                <a href="https://www.yanshuo.me/u/15094">一个普普通通简简单单平平凡凡的神</a>
+                                <span class="dot"></span>
+                                2017-09-23 08:10 <span class="hidden-xs">发布于</span>
+                            </li>
+                            
+                            <li class="tagPopup">
+                                        <a class="tag" href="https://www.yanshuo.me/r/backend">后端</a>
+                                    </li>                            
+                        </ul>
+                    </div>
+                    <div class="clearfix"></div>
+                    
+                    <div class="hidden-xs mt-10"></div>
+                    
+                    
+                    <div class="visible-xs mt-10"></div>
+                    
+                                                                        <p class="ellipsis mt-10 mb-15">原文: <a target="_blank" href="http://muyinchen.github.io/">muyinchen.github.io</a></p>                                                <!-- 文章内容 -->
+                        <div class="article-body markdown-body">
+<h1 id="Spring5源码解析-使用Spring-AnnotationUtils处理注解">
+<a href="#Spring5%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90-%E4%BD%BF%E7%94%A8Spring-AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3" title="Spring5源码解析-使用Spring AnnotationUtils处理注解"></a>Spring5源码解析-使用Spring AnnotationUtils处理注解</h1>
+<p>通过Java中的注解，程序员可以将配置文件中的一些配置通过使用Java类来实现。例如，在Spring中，通过<code>@RequestMapping</code>注解，我们可以直接在<code>controller</code>内配置<code>URL映射</code>。一般来说，成功者的背后离不开一帮默默支持他的小伙伴，这里同样是，一旦离开其中一个，就甭指望实现所期望的功能，这里要说的一个就是<code>AnnotationUtils</code>。</p>
+<p>在本文中，我们将会看到AnnotationUtils类是如何给我们提供极大的便利的。首先，我们将关注下其所有可用的方法。进而，我们来看看这些方法用在了什么地方。最后，老规矩，Demo。</p>
+<p>代码截的不少，主要还是为了在平时不一定有IDE环境下清楚的看清弄懂上下文的调用关系，也方面读者可以快速的找到相应的代码所在地。</p>
+<p>另外，这一篇融合了前面很多篇的细节，有些不清晰明了的地方，请回头看前面的系列。</p> <a id="more"></a>
+<h2 id="什么是Spring中的AnnotationUtils类？">
+<a href="#%E4%BB%80%E4%B9%88%E6%98%AFSpring%E4%B8%AD%E7%9A%84AnnotationUtils%E7%B1%BB%EF%BC%9F" title="什么是Spring中的AnnotationUtils类？"></a>什么是Spring中的AnnotationUtils类？</h2>
+<p><code>AnnotationUtils</code>是一个专门用于处理复杂注解问题的类。其主要由公共和静态方法组成，它允许在类，方法或字段上检查注解。另外，<code>AnnotationUtils</code>不仅仅来做简单的类分析。它也通过查找在超类和接口上的注解来做更多的事情。基于反射的API，<code>AnnotationUtils</code>使用<strong>java.lang.reflect的</strong> 3个元素来处理注解: </p>
+<ul>
+<li>
+<strong>Annotation</strong>:表示注解。</li>
+</ul>
+<ul>
+<li>
+<strong>AnnotatedElement</strong>:表示被注解元素。</li>
+    <li>
+<strong>Method</strong>:提供某些类或接口中的方法的信息。</li>
+</ul>
+<p>现在，我们来看看<code>AnnotationUtils</code>类中的最重要的几个public 方法: </p>
+<ul>
+<li>
+<strong>getAnnotation</strong>:有3个这样的名字的方法存在。 第一个接收参数<code>Annotation的对象实例</code>。第二个是<code>AnnotatedElement</code>的实例。第三个<code>getAnnotation</code>方法接收参数<code>Method</code>对象。它们都从字段，类或方法得到并返回注解。</li>
+</ul>
+<pre><code class="hljs java">
+<span class="hljs-comment">/**
+ * Get a single {<span class="hljs-doctag">@link</span> Annotation} of {<span class="hljs-doctag">@code</span> annotationType} from the supplied
+ * annotation: either the given annotation itself or a direct meta-annotation
+ * thereof.
+ * &lt;p&gt;Note that this method supports only a single level of meta-annotations.
+ * For support for arbitrary levels of meta-annotations, use one of the
+ * {<span class="hljs-doctag">@code</span> find*()} methods instead.
+ * <span class="hljs-doctag">@param</span> ann the Annotation to check
+ * <span class="hljs-doctag">@param</span> annotationType the annotation type to look for, both locally and as a meta-annotation
+ * <span class="hljs-doctag">@return</span> the first matching annotation, or {<span class="hljs-doctag">@code</span> null} if not found
+ * <span class="hljs-doctag">@since</span> 4.0
+ */</span>
+<span class="hljs-meta">@SuppressWarnings</span>(<span class="hljs-string">"unchecked"</span>)
+<span class="hljs-meta">@Nullable</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> &lt;A extends Annotation&gt; <span class="hljs-function">A <span class="hljs-title">getAnnotation</span><span class="hljs-params">(Annotation ann, Class&lt;A&gt; annotationType)</span> </span>{
+	<span class="hljs-keyword">if</span> (annotationType.isInstance(ann)) {
+		<span class="hljs-keyword">return</span> synthesizeAnnotation((A) ann);
+	}
+	Class&lt;? extends Annotation&gt; annotatedElement = ann.annotationType();
+	<span class="hljs-keyword">try</span> {
+		<span class="hljs-keyword">return</span> synthesizeAnnotation(annotatedElement.getAnnotation(annotationType), annotatedElement);
+	}
+	<span class="hljs-keyword">catch</span> (Throwable ex) {
+		handleIntrospectionFailure(annotatedElement, ex);
+		<span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;
+	}
+}
+<span class="hljs-comment">/**
+ * Get a single {<span class="hljs-doctag">@link</span> Annotation} of {<span class="hljs-doctag">@code</span> annotationType} from the supplied
+ * {<span class="hljs-doctag">@link</span> AnnotatedElement}, where the annotation is either &lt;em&gt;present&lt;/em&gt; or
+ * &lt;em&gt;meta-present&lt;/em&gt; on the {<span class="hljs-doctag">@code</span> AnnotatedElement}.
+ * &lt;p&gt;Note that this method supports only a single level of meta-annotations.
+ * For support for arbitrary levels of meta-annotations, use
+ * {<span class="hljs-doctag">@link</span> #findAnnotation(AnnotatedElement, Class)} instead.
+ * <span class="hljs-doctag">@param</span> annotatedElement the {<span class="hljs-doctag">@code</span> AnnotatedElement} from which to get the annotation
+ * <span class="hljs-doctag">@param</span> annotationType the annotation type to look for, both locally and as a meta-annotation
+ * <span class="hljs-doctag">@return</span> the first matching annotation, or {<span class="hljs-doctag">@code</span> null} if not found
+ * <span class="hljs-doctag">@since</span> 3.1
+ */</span>
+<span class="hljs-meta">@Nullable</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> &lt;A extends Annotation&gt; <span class="hljs-function">A <span class="hljs-title">getAnnotation</span><span class="hljs-params">(AnnotatedElement annotatedElement, Class&lt;A&gt; annotationType)</span> </span>{
+	<span class="hljs-keyword">try</span> {
+		A annotation = annotatedElement.getAnnotation(annotationType);
+		<span class="hljs-keyword">if</span> (annotation == <span class="hljs-keyword">null</span>) {
+			<span class="hljs-keyword">for</span> (Annotation metaAnn : annotatedElement.getAnnotations()) {
+				annotation = metaAnn.annotationType().getAnnotation(annotationType);
+				<span class="hljs-keyword">if</span> (annotation != <span class="hljs-keyword">null</span>) {
+					<span class="hljs-keyword">break</span>;
+				}
+			}
+		}
+		<span class="hljs-keyword">return</span> (annotation != <span class="hljs-keyword">null</span> ? synthesizeAnnotation(annotation, annotatedElement) : <span class="hljs-keyword">null</span>);
+	}
+	<span class="hljs-keyword">catch</span> (Throwable ex) {
+		handleIntrospectionFailure(annotatedElement, ex);
+		<span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;
+	}
+}
+<span class="hljs-comment">/**
+ * Get a single {<span class="hljs-doctag">@link</span> Annotation} of {<span class="hljs-doctag">@code</span> annotationType} from the
+ * supplied {<span class="hljs-doctag">@link</span> Method}, where the annotation is either &lt;em&gt;present&lt;/em&gt;
+ * or &lt;em&gt;meta-present&lt;/em&gt; on the method.
+ * &lt;p&gt;Correctly handles bridge {<span class="hljs-doctag">@link</span> Method Methods} generated by the compiler.
+ * &lt;p&gt;Note that this method supports only a single level of meta-annotations.
+ * For support for arbitrary levels of meta-annotations, use
+ * {<span class="hljs-doctag">@link</span> #findAnnotation(Method, Class)} instead.
+ * <span class="hljs-doctag">@param</span> method the method to look for annotations on
+ * <span class="hljs-doctag">@param</span> annotationType the annotation type to look for
+ * <span class="hljs-doctag">@return</span> the first matching annotation, or {<span class="hljs-doctag">@code</span> null} if not found
+ * <span class="hljs-doctag">@see</span> org.springframework.core.BridgeMethodResolver#findBridgedMethod(Method)
+ * <span class="hljs-doctag">@see</span> #getAnnotation(AnnotatedElement, Class)
+ */</span>
+<span class="hljs-meta">@Nullable</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> &lt;A extends Annotation&gt; <span class="hljs-function">A <span class="hljs-title">getAnnotation</span><span class="hljs-params">(Method method, Class&lt;A&gt; annotationType)</span> </span>{
+	Method resolvedMethod = BridgeMethodResolver.findBridgedMethod(method);
+	<span class="hljs-keyword">return</span> getAnnotation((AnnotatedElement) resolvedMethod, annotationType);
+}</code></pre>
+<ul>
+<li>
+<strong>getRepeatableAnnotations</strong>:通过向参数中传递<code>AnnotatedElement</code>和<code>所要查找的注解类型</code>来访问，有两个使用此名称的方法。 这两个方法从所提供的<code>AnnotatedElement</code>上得到可重复的注解(即传入的<code>annotationType</code>)对应的元素。例如，它可以返回使用<code>@RequestMapping</code>注解所注解的方法(请看下面的源码)。</li>
+</ul>
+<pre><code class="hljs java">	<span class="hljs-comment">/**
+	 * Get the &lt;em&gt;repeatable&lt;/em&gt; {<span class="hljs-doctag">@linkplain</span> Annotation annotations} of
+	 * {<span class="hljs-doctag">@code</span> annotationType} from the supplied {<span class="hljs-doctag">@link</span> AnnotatedElement}, where
+	 * such annotations are either &lt;em&gt;present&lt;/em&gt;, &lt;em&gt;indirectly present&lt;/em&gt;,
+	 * or &lt;em&gt;meta-present&lt;/em&gt; on the element.
+	 * &lt;p&gt;This method mimics the functionality of Java 8's
+	 * {<span class="hljs-doctag">@link</span> java.lang.reflect.AnnotatedElement#getAnnotationsByType(Class)}
+	 * with support for automatic detection of a &lt;em&gt;container annotation&lt;/em&gt;
+	 * declared via @{<span class="hljs-doctag">@link</span> java.lang.annotation.Repeatable} (when running on
+	 * Java 8 or higher) and with additional support for meta-annotations.
+	 * &lt;p&gt;Handles both single annotations and annotations nested within a
+	 * &lt;em&gt;container annotation&lt;/em&gt;.
+	 * &lt;p&gt;Correctly handles &lt;em&gt;bridge methods&lt;/em&gt; generated by the
+	 * compiler if the supplied element is a {<span class="hljs-doctag">@link</span> Method}.
+	 * &lt;p&gt;Meta-annotations will be searched if the annotation is not
+	 * &lt;em&gt;present&lt;/em&gt; on the supplied element.
+	 * <span class="hljs-doctag">@param</span> annotatedElement the element to look for annotations on
+	 * <span class="hljs-doctag">@param</span> annotationType the annotation type to look for
+	 * <span class="hljs-doctag">@return</span> the annotations found or an empty set (never {<span class="hljs-doctag">@code</span> null})
+	 * <span class="hljs-doctag">@since</span> 4.2
+	 * <span class="hljs-doctag">@see</span> #getRepeatableAnnotations(AnnotatedElement, Class, Class)
+	 * <span class="hljs-doctag">@see</span> #getDeclaredRepeatableAnnotations(AnnotatedElement, Class, Class)
+	 * <span class="hljs-doctag">@see</span> AnnotatedElementUtils#getMergedRepeatableAnnotations(AnnotatedElement, Class)
+	 * <span class="hljs-doctag">@see</span> org.springframework.core.BridgeMethodResolver#findBridgedMethod
+	 * <span class="hljs-doctag">@see</span> java.lang.annotation.Repeatable
+	 * <span class="hljs-doctag">@see</span> java.lang.reflect.AnnotatedElement#getAnnotationsByType
+	 */</span>
+	<span class="hljs-meta">@Nullable</span>
+	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> &lt;A extends Annotation&gt; <span class="hljs-function">Set&lt;A&gt; <span class="hljs-title">getRepeatableAnnotations</span><span class="hljs-params">(AnnotatedElement annotatedElement,
+			Class&lt;A&gt; annotationType)</span> </span>{
+		<span class="hljs-keyword">return</span> getRepeatableAnnotations(annotatedElement, annotationType, <span class="hljs-keyword">null</span>);
+	}
+	<span class="hljs-comment">/**
+	 * Get the &lt;em&gt;repeatable&lt;/em&gt; {<span class="hljs-doctag">@linkplain</span> Annotation annotations} of
+	 * {<span class="hljs-doctag">@code</span> annotationType} from the supplied {<span class="hljs-doctag">@link</span> AnnotatedElement}, where
+	 * such annotations are either &lt;em&gt;present&lt;/em&gt;, &lt;em&gt;indirectly present&lt;/em&gt;,
+	 * or &lt;em&gt;meta-present&lt;/em&gt; on the element.
+	 * &lt;p&gt;This method mimics the functionality of Java 8's
+	 * {<span class="hljs-doctag">@link</span> java.lang.reflect.AnnotatedElement#getAnnotationsByType(Class)}
+	 * with additional support for meta-annotations.
+	 * &lt;p&gt;Handles both single annotations and annotations nested within a
+	 * &lt;em&gt;container annotation&lt;/em&gt;.
+	 * &lt;p&gt;Correctly handles &lt;em&gt;bridge methods&lt;/em&gt; generated by the
+	 * compiler if the supplied element is a {<span class="hljs-doctag">@link</span> Method}.
+	 * &lt;p&gt;Meta-annotations will be searched if the annotation is not
+	 * &lt;em&gt;present&lt;/em&gt; on the supplied element.
+	 * <span class="hljs-doctag">@param</span> annotatedElement the element to look for annotations on
+	 * <span class="hljs-doctag">@param</span> annotationType the annotation type to look for
+	 * <span class="hljs-doctag">@param</span> containerAnnotationType the type of the container that holds
+	 * the annotations; may be {<span class="hljs-doctag">@code</span> null} if a container is not supported
+	 * or if it should be looked up via @{<span class="hljs-doctag">@link</span> java.lang.annotation.Repeatable}
+	 * when running on Java 8 or higher
+	 * <span class="hljs-doctag">@return</span> the annotations found or an empty set (never {<span class="hljs-doctag">@code</span> null})
+	 * <span class="hljs-doctag">@since</span> 4.2
+	 * <span class="hljs-doctag">@see</span> #getRepeatableAnnotations(AnnotatedElement, Class)
+	 * <span class="hljs-doctag">@see</span> #getDeclaredRepeatableAnnotations(AnnotatedElement, Class)
+	 * <span class="hljs-doctag">@see</span> #getDeclaredRepeatableAnnotations(AnnotatedElement, Class, Class)
+	 * <span class="hljs-doctag">@see</span> AnnotatedElementUtils#getMergedRepeatableAnnotations(AnnotatedElement, Class, Class)
+	 * <span class="hljs-doctag">@see</span> org.springframework.core.BridgeMethodResolver#findBridgedMethod
+	 * <span class="hljs-doctag">@see</span> java.lang.annotation.Repeatable
+	 * <span class="hljs-doctag">@see</span> java.lang.reflect.AnnotatedElement#getAnnotationsByType
+	 */</span>
+	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> &lt;A extends Annotation&gt; <span class="hljs-function">Set&lt;A&gt; <span class="hljs-title">getRepeatableAnnotations</span><span class="hljs-params">(AnnotatedElement annotatedElement,
+			Class&lt;A&gt; annotationType, @Nullable Class&lt;? extends Annotation&gt; containerAnnotationType)</span> </span>{
+		Set&lt;A&gt; annotations = getDeclaredRepeatableAnnotations(annotatedElement, annotationType, containerAnnotationType);
+		<span class="hljs-keyword">if</span> (!annotations.isEmpty()) {
+			<span class="hljs-keyword">return</span> annotations;
+		}
+		<span class="hljs-keyword">if</span> (annotatedElement <span class="hljs-keyword">instanceof</span> Class) {
+			Class&lt;?&gt; superclass = ((Class&lt;?&gt;) annotatedElement).getSuperclass();
+			<span class="hljs-keyword">if</span> (superclass != <span class="hljs-keyword">null</span> &amp;&amp; Object.class != superclass) {
+				<span class="hljs-keyword">return</span> getRepeatableAnnotations(superclass, annotationType, containerAnnotationType);
+			}
+		}
+		<span class="hljs-keyword">return</span> getRepeatableAnnotations(annotatedElement, annotationType, containerAnnotationType, <span class="hljs-keyword">false</span>);
+	}
+<span class="hljs-comment">/**
+	 * Get the declared &lt;em&gt;repeatable&lt;/em&gt; {<span class="hljs-doctag">@linkplain</span> Annotation annotations}
+	 * of {<span class="hljs-doctag">@code</span> annotationType} from the supplied {<span class="hljs-doctag">@link</span> AnnotatedElement},
+	 * where such annotations are either &lt;em&gt;directly present&lt;/em&gt;,
+	 * &lt;em&gt;indirectly present&lt;/em&gt;, or &lt;em&gt;meta-present&lt;/em&gt; on the element.
+	 * &lt;p&gt;This method mimics the functionality of Java 8's
+	 * {<span class="hljs-doctag">@link</span> java.lang.reflect.AnnotatedElement#getDeclaredAnnotationsByType(Class)}
+	 * with support for automatic detection of a &lt;em&gt;container annotation&lt;/em&gt;
+	 * declared via @{<span class="hljs-doctag">@link</span> java.lang.annotation.Repeatable} (when running on
+	 * Java 8 or higher) and with additional support for meta-annotations.
+	 * &lt;p&gt;Handles both single annotations and annotations nested within a
+	 * &lt;em&gt;container annotation&lt;/em&gt;.
+	 * &lt;p&gt;Correctly handles &lt;em&gt;bridge methods&lt;/em&gt; generated by the
+	 * compiler if the supplied element is a {<span class="hljs-doctag">@link</span> Method}.
+	 * &lt;p&gt;Meta-annotations will be searched if the annotation is not
+	 * &lt;em&gt;present&lt;/em&gt; on the supplied element.
+	 * <span class="hljs-doctag">@param</span> annotatedElement the element to look for annotations on
+	 * <span class="hljs-doctag">@param</span> annotationType the annotation type to look for
+	 * <span class="hljs-doctag">@return</span> the annotations found or an empty set (never {<span class="hljs-doctag">@code</span> null})
+	 * <span class="hljs-doctag">@since</span> 4.2
+	 * <span class="hljs-doctag">@see</span> #getRepeatableAnnotations(AnnotatedElement, Class)
+	 * <span class="hljs-doctag">@see</span> #getRepeatableAnnotations(AnnotatedElement, Class, Class)
+	 * <span class="hljs-doctag">@see</span> #getDeclaredRepeatableAnnotations(AnnotatedElement, Class, Class)
+	 * <span class="hljs-doctag">@see</span> AnnotatedElementUtils#getMergedRepeatableAnnotations(AnnotatedElement, Class)
+	 * <span class="hljs-doctag">@see</span> org.springframework.core.BridgeMethodResolver#findBridgedMethod
+	 * <span class="hljs-doctag">@see</span> java.lang.annotation.Repeatable
+	 * <span class="hljs-doctag">@see</span> java.lang.reflect.AnnotatedElement#getDeclaredAnnotationsByType
+	 */</span>
+	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> &lt;A extends Annotation&gt; <span class="hljs-function">Set&lt;A&gt; <span class="hljs-title">getDeclaredRepeatableAnnotations</span><span class="hljs-params">(AnnotatedElement annotatedElement,
+			Class&lt;A&gt; annotationType)</span> </span>{
+		<span class="hljs-keyword">return</span> getDeclaredRepeatableAnnotations(annotatedElement, annotationType, <span class="hljs-keyword">null</span>);
+	}
+	<span class="hljs-comment">/**
+	 * Get the declared &lt;em&gt;repeatable&lt;/em&gt; {<span class="hljs-doctag">@linkplain</span> Annotation annotations}
+	 * of {<span class="hljs-doctag">@code</span> annotationType} from the supplied {<span class="hljs-doctag">@link</span> AnnotatedElement},
+	 * where such annotations are either &lt;em&gt;directly present&lt;/em&gt;,
+	 * &lt;em&gt;indirectly present&lt;/em&gt;, or &lt;em&gt;meta-present&lt;/em&gt; on the element.
+	 * &lt;p&gt;This method mimics the functionality of Java 8's
+	 * {<span class="hljs-doctag">@link</span> java.lang.reflect.AnnotatedElement#getDeclaredAnnotationsByType(Class)}
+	 * with additional support for meta-annotations.
+	 * &lt;p&gt;Handles both single annotations and annotations nested within a
+	 * &lt;em&gt;container annotation&lt;/em&gt;.
+	 * &lt;p&gt;Correctly handles &lt;em&gt;bridge methods&lt;/em&gt; generated by the
+	 * compiler if the supplied element is a {<span class="hljs-doctag">@link</span> Method}.
+	 * &lt;p&gt;Meta-annotations will be searched if the annotation is not
+	 * &lt;em&gt;present&lt;/em&gt; on the supplied element.
+	 * <span class="hljs-doctag">@param</span> annotatedElement the element to look for annotations on
+	 * <span class="hljs-doctag">@param</span> annotationType the annotation type to look for
+	 * <span class="hljs-doctag">@param</span> containerAnnotationType the type of the container that holds
+	 * the annotations; may be {<span class="hljs-doctag">@code</span> null} if a container is not supported
+	 * or if it should be looked up via @{<span class="hljs-doctag">@link</span> java.lang.annotation.Repeatable}
+	 * when running on Java 8 or higher
+	 * <span class="hljs-doctag">@return</span> the annotations found or an empty set (never {<span class="hljs-doctag">@code</span> null})
+	 * <span class="hljs-doctag">@since</span> 4.2
+	 * <span class="hljs-doctag">@see</span> #getRepeatableAnnotations(AnnotatedElement, Class)
+	 * <span class="hljs-doctag">@see</span> #getRepeatableAnnotations(AnnotatedElement, Class, Class)
+	 * <span class="hljs-doctag">@see</span> #getDeclaredRepeatableAnnotations(AnnotatedElement, Class)
+	 * <span class="hljs-doctag">@see</span> AnnotatedElementUtils#getMergedRepeatableAnnotations(AnnotatedElement, Class, Class)
+	 * <span class="hljs-doctag">@see</span> org.springframework.core.BridgeMethodResolver#findBridgedMethod
+	 * <span class="hljs-doctag">@see</span> java.lang.annotation.Repeatable
+	 * <span class="hljs-doctag">@see</span> java.lang.reflect.AnnotatedElement#getDeclaredAnnotationsByType
+	 */</span>
+	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> &lt;A extends Annotation&gt; <span class="hljs-function">Set&lt;A&gt; <span class="hljs-title">getDeclaredRepeatableAnnotations</span><span class="hljs-params">(AnnotatedElement annotatedElement,
+			Class&lt;A&gt; annotationType, @Nullable Class&lt;? extends Annotation&gt; containerAnnotationType)</span> </span>{
+		<span class="hljs-comment">//得到一个set集合，看下面源码</span>
+		<span class="hljs-keyword">return</span> getRepeatableAnnotations(annotatedElement, annotationType, containerAnnotationType, <span class="hljs-keyword">true</span>);
+	}
+	<span class="hljs-comment">/**
+	 * 最主要的实现是这个方法
+	 * Perform the actual work for {<span class="hljs-doctag">@link</span> #getRepeatableAnnotations(AnnotatedElement, Class, Class)}
+	 * and {<span class="hljs-doctag">@link</span> #getDeclaredRepeatableAnnotations(AnnotatedElement, Class, Class)}.
+	 * &lt;p&gt;Correctly handles &lt;em&gt;bridge methods&lt;/em&gt; generated by the
+	 * compiler if the supplied element is a {<span class="hljs-doctag">@link</span> Method}.
+	 * &lt;p&gt;Meta-annotations will be searched if the annotation is not
+	 * &lt;em&gt;present&lt;/em&gt; on the supplied element.
+	 * <span class="hljs-doctag">@param</span> annotatedElement the element to look for annotations on
+	 * <span class="hljs-doctag">@param</span> annotationType the annotation type to look for
+	 * <span class="hljs-doctag">@param</span> containerAnnotationType the type of the container that holds
+	 * the annotations; may be {<span class="hljs-doctag">@code</span> null} if a container is not supported
+	 * or if it should be looked up via @{<span class="hljs-doctag">@link</span> java.lang.annotation.Repeatable}
+	 * when running on Java 8 or higher
+	 * <span class="hljs-doctag">@param</span> declaredMode {<span class="hljs-doctag">@code</span> true} if only declared annotations (i.e.,
+	 * directly or indirectly present) should be considered
+	 * <span class="hljs-doctag">@return</span> the annotations found or an empty set (never {<span class="hljs-doctag">@code</span> null})
+	 * <span class="hljs-doctag">@since</span> 4.2
+	 * <span class="hljs-doctag">@see</span> org.springframework.core.BridgeMethodResolver#findBridgedMethod
+	 * <span class="hljs-doctag">@see</span> java.lang.annotation.Repeatable
+	 */</span>
+	<span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> &lt;A extends Annotation&gt; <span class="hljs-function">Set&lt;A&gt; <span class="hljs-title">getRepeatableAnnotations</span><span class="hljs-params">(AnnotatedElement annotatedElement,
+			Class&lt;A&gt; annotationType, @Nullable Class&lt;? extends Annotation&gt; containerAnnotationType, <span class="hljs-keyword">boolean</span> declaredMode)</span> </span>{
+		Assert.notNull(annotatedElement, <span class="hljs-string">"AnnotatedElement must not be null"</span>);
+		Assert.notNull(annotationType, <span class="hljs-string">"Annotation type must not be null"</span>);
+		<span class="hljs-keyword">try</span> {
+			<span class="hljs-keyword">if</span> (annotatedElement <span class="hljs-keyword">instanceof</span> Method) {
+				annotatedElement = BridgeMethodResolver.findBridgedMethod((Method) annotatedElement);
+			}
+          <span class="hljs-comment">//返回的这个set集合包含的是要查找的注解及其被注解的元素，看下面源码</span>
+			<span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> AnnotationCollector&lt;&gt;(annotationType, containerAnnotationType, declaredMode).getResult(annotatedElement);
+		}
+		<span class="hljs-keyword">catch</span> (Throwable ex) {
+			handleIntrospectionFailure(annotatedElement, ex);
+			<span class="hljs-keyword">return</span> Collections.emptySet();
+		}
+	}
+...
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AnnotationCollector</span>&lt;<span class="hljs-title">A</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Annotation</span>&gt; </span>{
+		<span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Class&lt;A&gt; annotationType;
+		<span class="hljs-meta">@Nullable</span>
+		<span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Class&lt;? extends Annotation&gt; containerAnnotationType;
+		<span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">boolean</span> declaredMode;
+		<span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Set&lt;AnnotatedElement&gt; visited = <span class="hljs-keyword">new</span> HashSet&lt;&gt;();
+		<span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Set&lt;A&gt; result = <span class="hljs-keyword">new</span> LinkedHashSet&lt;&gt;();
+		AnnotationCollector(Class&lt;A&gt; annotationType,
+				<span class="hljs-meta">@Nullable</span> Class&lt;? extends Annotation&gt; containerAnnotationType, <span class="hljs-keyword">boolean</span> declaredMode) {
+			<span class="hljs-keyword">this</span>.annotationType = annotationType;
+			<span class="hljs-keyword">this</span>.containerAnnotationType = (containerAnnotationType != <span class="hljs-keyword">null</span> ? containerAnnotationType :
+					resolveContainerAnnotationType(annotationType));
+			<span class="hljs-keyword">this</span>.declaredMode = declaredMode;
+		}
+		<span class="hljs-function">Set&lt;A&gt; <span class="hljs-title">getResult</span><span class="hljs-params">(AnnotatedElement element)</span> </span>{
+			process(element);
+			<span class="hljs-keyword">return</span> Collections.unmodifiableSet(<span class="hljs-keyword">this</span>.result);
+		}
+		<span class="hljs-meta">@SuppressWarnings</span>(<span class="hljs-string">"unchecked"</span>)
+		<span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">process</span><span class="hljs-params">(AnnotatedElement element)</span> </span>{
+			<span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.visited.add(element)) {
+				<span class="hljs-keyword">try</span> {
+					Annotation[] annotations = (<span class="hljs-keyword">this</span>.declaredMode ? element.getDeclaredAnnotations() : element.getAnnotations());<span class="hljs-comment">//从元素上得到注解</span>
+					<span class="hljs-keyword">for</span> (Annotation ann : annotations) {
+						Class&lt;? extends Annotation&gt; currentAnnotationType = ann.annotationType();
+						<span class="hljs-keyword">if</span> (ObjectUtils.nullSafeEquals(<span class="hljs-keyword">this</span>.annotationType, currentAnnotationType)) {							<span class="hljs-comment">//这个set集合添加的是要查找的注解及其被注解的元素</span>
+							<span class="hljs-keyword">this</span>.result.add(synthesizeAnnotation((A) ann, element));
+						}
+						<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (ObjectUtils.nullSafeEquals(<span class="hljs-keyword">this</span>.containerAnnotationType, currentAnnotationType)) {
+							<span class="hljs-keyword">this</span>.result.addAll(getValue(element, ann));
+						}
+						<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!isInJavaLangAnnotationPackage(currentAnnotationType)) {
+							process(currentAnnotationType);
+						}
+					}
+				}
+				<span class="hljs-keyword">catch</span> (Throwable ex) {
+					handleIntrospectionFailure(element, ex);
+				}
+			}
+		}</code></pre>
+<ul>
+<li>
+        <p><strong>findAnnotation</strong>:通过传入<code>AnnotatedElement</code>和<code>注解类型</code>来查找方法或者类对象上的注解。</p>
+        <pre><code class="hljs java">   <span class="hljs-comment">/**
+ * Find a single {<span class="hljs-doctag">@link</span> Annotation} of {<span class="hljs-doctag">@code</span> annotationType} on the
+ * supplied {<span class="hljs-doctag">@link</span> AnnotatedElement}.
+ * &lt;p&gt;Meta-annotations will be searched if the annotation is not
+ * &lt;em&gt;directly present&lt;/em&gt; on the supplied element.
+ * &lt;p&gt;&lt;strong&gt;Warning&lt;/strong&gt;: this method operates generically on
+ * annotated elements. In other words, this method does not execute
+ * specialized search algorithms for classes or methods. If you require
+ * the more specific semantics of {<span class="hljs-doctag">@link</span> #findAnnotation(Class, Class)}
+ * or {<span class="hljs-doctag">@link</span> #findAnnotation(Method, Class)}, invoke one of those methods
+ * instead.
+ * <span class="hljs-doctag">@param</span> annotatedElement the {<span class="hljs-doctag">@code</span> AnnotatedElement} on which to find the annotation
+ * <span class="hljs-doctag">@param</span> annotationType the annotation type to look for, both locally and as a meta-annotation
+ * <span class="hljs-doctag">@return</span> the first matching annotation, or {<span class="hljs-doctag">@code</span> null} if not found
+ * <span class="hljs-doctag">@since</span> 4.2
+ */</span>
+<span class="hljs-meta">@Nullable</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> &lt;A extends Annotation&gt; <span class="hljs-function">A <span class="hljs-title">findAnnotation</span><span class="hljs-params">(AnnotatedElement annotatedElement, Class&lt;A&gt; annotationType)</span> </span>{
+	Assert.notNull(annotatedElement, <span class="hljs-string">"AnnotatedElement must not be null"</span>);
+	<span class="hljs-comment">// Do NOT store result in the findAnnotationCache since doing so could break</span>
+	<span class="hljs-comment">// findAnnotation(Class, Class) and findAnnotation(Method, Class).</span>
+	A ann = findAnnotation(annotatedElement, annotationType, <span class="hljs-keyword">new</span> HashSet&lt;&gt;());
+	<span class="hljs-keyword">return</span> (ann != <span class="hljs-keyword">null</span> ? synthesizeAnnotation(ann, annotatedElement) : <span class="hljs-keyword">null</span>);
+}
+<span class="hljs-comment">/**
+ 	 * Perform the search algorithm for {<span class="hljs-doctag">@link</span> #findAnnotation(AnnotatedElement, Class)}
+ 	 * avoiding endless recursion by tracking which annotations have already
+ 	 * been &lt;em&gt;visited&lt;/em&gt;.
+ 	 * <span class="hljs-doctag">@param</span> annotatedElement the {<span class="hljs-doctag">@code</span> AnnotatedElement} on which to find the annotation
+ 	 * <span class="hljs-doctag">@param</span> annotationType the annotation type to look for, both locally and as a meta-annotation
+ 	 * <span class="hljs-doctag">@param</span> visited the set of annotations that have already been visited
+ 	 * <span class="hljs-doctag">@return</span> the first matching annotation, or {<span class="hljs-doctag">@code</span> null} if not found
+ 	 * <span class="hljs-doctag">@since</span> 4.2
+ 	 */</span>
+ 	<span class="hljs-meta">@Nullable</span>
+ 	<span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> &lt;A extends Annotation&gt; <span class="hljs-function">A <span class="hljs-title">findAnnotation</span><span class="hljs-params">(
+ 			AnnotatedElement annotatedElement, Class&lt;A&gt; annotationType, Set&lt;Annotation&gt; visited)</span> </span>{
+ 		<span class="hljs-keyword">try</span> {
+ 			A annotation = annotatedElement.getDeclaredAnnotation(annotationType);
+ 			<span class="hljs-keyword">if</span> (annotation != <span class="hljs-keyword">null</span>) {
+ 				<span class="hljs-keyword">return</span> annotation;
+ 			}
+ 			<span class="hljs-keyword">for</span> (Annotation declaredAnn : annotatedElement.getDeclaredAnnotations()) {
+ 				Class&lt;? extends Annotation&gt; declaredType = declaredAnn.annotationType();
+ 				<span class="hljs-keyword">if</span> (!isInJavaLangAnnotationPackage(declaredType) &amp;&amp; visited.add(declaredAnn)) {
+ 					annotation = findAnnotation((AnnotatedElement) declaredType, annotationType, visited);
+ 					<span class="hljs-keyword">if</span> (annotation != <span class="hljs-keyword">null</span>) {
+ 						<span class="hljs-keyword">return</span> annotation;
+ 					}
+ 				}
+ 			}
+ 		}
+ 		<span class="hljs-keyword">catch</span> (Throwable ex) {
+ 			handleIntrospectionFailure(annotatedElement, ex);
+ 		}
+ 		<span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;
+ 	}</code></pre> </li>
+    <li>
+        <p><strong>isAnnotationDeclaredLocally</strong>:检查注解是否在类中本地声明，而不是继承。 </p>
+    </li>
+</ul>
+<pre><code class="hljs php"><span class="hljs-comment">/**
+	 * Determine whether an annotation of the specified {<span class="hljs-doctag">@code</span> annotationType}
+	 * is declared locally (i.e., &lt;em&gt;directly present&lt;/em&gt;) on the supplied
+	 * {<span class="hljs-doctag">@code</span> clazz}.
+	 * &lt;p&gt;The supplied {<span class="hljs-doctag">@link</span> Class} may represent any type.
+	 * &lt;p&gt;Meta-annotations will &lt;em&gt;not&lt;/em&gt; be searched.
+	 * &lt;p&gt;<span class="hljs-doctag">Note:</span> This method does &lt;strong&gt;not&lt;/strong&gt; determine if the annotation
+	 * is {<span class="hljs-doctag">@linkplain</span> java.lang.annotation.Inherited inherited}. For greater
+	 * clarity regarding inherited annotations, consider using
+	 * {<span class="hljs-doctag">@link</span> #isAnnotationInherited(Class, Class)} instead.
+	 * <span class="hljs-doctag">@param</span> annotationType the annotation type to look for
+	 * <span class="hljs-doctag">@param</span> clazz the class to check for the annotation on
+	 * <span class="hljs-doctag">@return</span> {<span class="hljs-doctag">@code</span> true} if an annotation of the specified {<span class="hljs-doctag">@code</span> annotationType}
+	 * is &lt;em&gt;directly present&lt;/em&gt;
+	 * <span class="hljs-doctag">@see</span> java.lang.Class#getDeclaredAnnotations()
+	 * <span class="hljs-doctag">@see</span> java.lang.Class#getDeclaredAnnotation(Class)
+	 * <span class="hljs-doctag">@see</span> #isAnnotationInherited(Class, Class)
+	 */</span>
+	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> boolean isAnnotationDeclaredLocally(<span class="hljs-class"><span class="hljs-keyword">Class</span>&lt;? <span class="hljs-keyword">extends</span> <span class="hljs-title">Annotation</span>&gt; <span class="hljs-title">annotationType</span>, <span class="hljs-title">Class</span>&lt;?&gt; <span class="hljs-title">clazz</span>) </span>{
+		Assert.notNull(annotationType, <span class="hljs-string">"Annotation type must not be null"</span>);
+		Assert.notNull(clazz, <span class="hljs-string">"Class must not be null"</span>);
+		<span class="hljs-keyword">try</span> {
+			<span class="hljs-keyword">return</span> (clazz.getDeclaredAnnotation(annotationType) != <span class="hljs-keyword">null</span>);
+		}
+		<span class="hljs-keyword">catch</span> (Throwable ex) {
+			handleIntrospectionFailure(clazz, ex);
+			<span class="hljs-keyword">return</span> <span class="hljs-keyword">false</span>;
+		}
+	}</code></pre>
+<ul>
+<li>
+<strong>isAnnotationInherited</strong>:检查注解是否从另一个类继承(即未在本地声明)。 </li>
+</ul>
+<pre><code class="hljs php"><span class="hljs-comment">/**
+	 * Determine whether an annotation of the specified {<span class="hljs-doctag">@code</span> annotationType}
+	 * is &lt;em&gt;present&lt;/em&gt; on the supplied {<span class="hljs-doctag">@code</span> clazz} and is
+	 * {<span class="hljs-doctag">@linkplain</span> java.lang.annotation.Inherited inherited} (i.e., not
+	 * &lt;em&gt;directly present&lt;/em&gt;).
+	 * &lt;p&gt;Meta-annotations will &lt;em&gt;not&lt;/em&gt; be searched.
+	 * &lt;p&gt;If the supplied {<span class="hljs-doctag">@code</span> clazz} is an interface, only the interface
+	 * itself will be checked. In accordance with standard meta-annotation
+	 * semantics in Java, the inheritance hierarchy for interfaces will not
+	 * be traversed. See the {<span class="hljs-doctag">@linkplain</span> java.lang.annotation.Inherited javadoc}
+	 * for the {<span class="hljs-doctag">@code</span> <span class="hljs-doctag">@Inherited</span>} meta-annotation for further details regarding
+	 * annotation inheritance.
+	 * <span class="hljs-doctag">@param</span> annotationType the annotation type to look for
+	 * <span class="hljs-doctag">@param</span> clazz the class to check for the annotation on
+	 * <span class="hljs-doctag">@return</span> {<span class="hljs-doctag">@code</span> true} if an annotation of the specified {<span class="hljs-doctag">@code</span> annotationType}
+	 * is &lt;em&gt;present&lt;/em&gt; and &lt;em&gt;inherited&lt;/em&gt;
+	 * <span class="hljs-doctag">@see</span> Class#isAnnotationPresent(Class)
+	 * <span class="hljs-doctag">@see</span> #isAnnotationDeclaredLocally(Class, Class)
+	 */</span>
+	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> boolean isAnnotationInherited(<span class="hljs-class"><span class="hljs-keyword">Class</span>&lt;? <span class="hljs-keyword">extends</span> <span class="hljs-title">Annotation</span>&gt; <span class="hljs-title">annotationType</span>, <span class="hljs-title">Class</span>&lt;?&gt; <span class="hljs-title">clazz</span>) </span>{
+		Assert.notNull(annotationType, <span class="hljs-string">"Annotation type must not be null"</span>);
+		Assert.notNull(clazz, <span class="hljs-string">"Class must not be null"</span>);
+		<span class="hljs-keyword">return</span> (clazz.isAnnotationPresent(annotationType) &amp;&amp; !isAnnotationDeclaredLocally(annotationType, clazz));
+	}</code></pre>
+<ul>
+<li>
+<strong>getAnnotationAttributes</strong>:获取给定注解的属性。 </li>
+</ul>
+<pre><code class="hljs java"><span class="hljs-comment">/**
+	 * Retrieve the given annotation's attributes as a {<span class="hljs-doctag">@link</span> Map}, preserving all
+	 * attribute types.
+	 * &lt;p&gt;Equivalent to calling {<span class="hljs-doctag">@link</span> #getAnnotationAttributes(Annotation, boolean, boolean)}
+	 * with the {<span class="hljs-doctag">@code</span> classValuesAsString} and {<span class="hljs-doctag">@code</span> nestedAnnotationsAsMap} parameters
+	 * set to {<span class="hljs-doctag">@code</span> false}.
+	 * &lt;p&gt;Note: This method actually returns an {<span class="hljs-doctag">@link</span> AnnotationAttributes} instance.
+	 * However, the {<span class="hljs-doctag">@code</span> Map} signature has been preserved for binary compatibility.
+	 * <span class="hljs-doctag">@param</span> annotation the annotation to retrieve the attributes for
+	 * <span class="hljs-doctag">@return</span> the Map of annotation attributes, with attribute names as keys and
+	 * corresponding attribute values as values (never {<span class="hljs-doctag">@code</span> null})
+	 * <span class="hljs-doctag">@see</span> #getAnnotationAttributes(AnnotatedElement, Annotation)
+	 * <span class="hljs-doctag">@see</span> #getAnnotationAttributes(Annotation, boolean, boolean)
+	 * <span class="hljs-doctag">@see</span> #getAnnotationAttributes(AnnotatedElement, Annotation, boolean, boolean)
+	 */</span>
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Map&lt;String, Object&gt; <span class="hljs-title">getAnnotationAttributes</span><span class="hljs-params">(Annotation annotation)</span> </span>{
+		<span class="hljs-keyword">return</span> getAnnotationAttributes(<span class="hljs-keyword">null</span>, annotation);
+	}
+	<span class="hljs-comment">/**
+	 * Retrieve the given annotation's attributes as a {<span class="hljs-doctag">@link</span> Map}.
+	 * &lt;p&gt;Equivalent to calling {<span class="hljs-doctag">@link</span> #getAnnotationAttributes(Annotation, boolean, boolean)}
+	 * with the {<span class="hljs-doctag">@code</span> nestedAnnotationsAsMap} parameter set to {<span class="hljs-doctag">@code</span> false}.
+	 * &lt;p&gt;Note: This method actually returns an {<span class="hljs-doctag">@link</span> AnnotationAttributes} instance.
+	 * However, the {<span class="hljs-doctag">@code</span> Map} signature has been preserved for binary compatibility.
+	 * <span class="hljs-doctag">@param</span> annotation the annotation to retrieve the attributes for
+	 * <span class="hljs-doctag">@param</span> classValuesAsString whether to convert Class references into Strings (for
+	 * compatibility with {<span class="hljs-doctag">@link</span> org.springframework.core.type.AnnotationMetadata})
+	 * or to preserve them as Class references
+	 * <span class="hljs-doctag">@return</span> the Map of annotation attributes, with attribute names as keys and
+	 * corresponding attribute values as values (never {<span class="hljs-doctag">@code</span> null})
+	 * <span class="hljs-doctag">@see</span> #getAnnotationAttributes(Annotation, boolean, boolean)
+	 */</span>
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Map&lt;String, Object&gt; <span class="hljs-title">getAnnotationAttributes</span><span class="hljs-params">(Annotation annotation, <span class="hljs-keyword">boolean</span> classValuesAsString)</span> </span>{
+		<span class="hljs-keyword">return</span> getAnnotationAttributes(annotation, classValuesAsString, <span class="hljs-keyword">false</span>);
+	}
+	<span class="hljs-comment">/**
+	 * Retrieve the given annotation's attributes as an {<span class="hljs-doctag">@link</span> AnnotationAttributes} map.
+	 * &lt;p&gt;This method provides fully recursive annotation reading capabilities on par with
+	 * the reflection-based {<span class="hljs-doctag">@link</span> org.springframework.core.type.StandardAnnotationMetadata}.
+	 * <span class="hljs-doctag">@param</span> annotation the annotation to retrieve the attributes for
+	 * <span class="hljs-doctag">@param</span> classValuesAsString whether to convert Class references into Strings (for
+	 * compatibility with {<span class="hljs-doctag">@link</span> org.springframework.core.type.AnnotationMetadata})
+	 * or to preserve them as Class references
+	 * <span class="hljs-doctag">@param</span> nestedAnnotationsAsMap whether to convert nested annotations into
+	 * {<span class="hljs-doctag">@link</span> AnnotationAttributes} maps (for compatibility with
+	 * {<span class="hljs-doctag">@link</span> org.springframework.core.type.AnnotationMetadata}) or to preserve them as
+	 * {<span class="hljs-doctag">@code</span> Annotation} instances
+	 * <span class="hljs-doctag">@return</span> the annotation attributes (a specialized Map) with attribute names as keys
+	 * and corresponding attribute values as values (never {<span class="hljs-doctag">@code</span> null})
+	 * <span class="hljs-doctag">@since</span> 3.1.1
+	 */</span>
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> AnnotationAttributes <span class="hljs-title">getAnnotationAttributes</span><span class="hljs-params">(Annotation annotation, <span class="hljs-keyword">boolean</span> classValuesAsString,
+			<span class="hljs-keyword">boolean</span> nestedAnnotationsAsMap)</span> </span>{
+		<span class="hljs-keyword">return</span> getAnnotationAttributes(<span class="hljs-keyword">null</span>, annotation, classValuesAsString, nestedAnnotationsAsMap);
+	}
+	<span class="hljs-comment">/**
+	 * Retrieve the given annotation's attributes as an {<span class="hljs-doctag">@link</span> AnnotationAttributes} map.
+	 * &lt;p&gt;Equivalent to calling {<span class="hljs-doctag">@link</span> #getAnnotationAttributes(AnnotatedElement, Annotation, boolean, boolean)}
+	 * with the {<span class="hljs-doctag">@code</span> classValuesAsString} and {<span class="hljs-doctag">@code</span> nestedAnnotationsAsMap} parameters
+	 * set to {<span class="hljs-doctag">@code</span> false}.
+	 * <span class="hljs-doctag">@param</span> annotatedElement the element that is annotated with the supplied annotation;
+	 * may be {<span class="hljs-doctag">@code</span> null} if unknown
+	 * <span class="hljs-doctag">@param</span> annotation the annotation to retrieve the attributes for
+	 * <span class="hljs-doctag">@return</span> the annotation attributes (a specialized Map) with attribute names as keys
+	 * and corresponding attribute values as values (never {<span class="hljs-doctag">@code</span> null})
+	 * <span class="hljs-doctag">@since</span> 4.2
+	 * <span class="hljs-doctag">@see</span> #getAnnotationAttributes(AnnotatedElement, Annotation, boolean, boolean)
+	 */</span>
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> AnnotationAttributes <span class="hljs-title">getAnnotationAttributes</span><span class="hljs-params">(@Nullable AnnotatedElement annotatedElement, Annotation annotation)</span> </span>{
+		<span class="hljs-keyword">return</span> getAnnotationAttributes(annotatedElement, annotation, <span class="hljs-keyword">false</span>, <span class="hljs-keyword">false</span>);
+	}
+	<span class="hljs-comment">/**
+	 * Retrieve the given annotation's attributes as an {<span class="hljs-doctag">@link</span> AnnotationAttributes} map.
+	 * &lt;p&gt;This method provides fully recursive annotation reading capabilities on par with
+	 * the reflection-based {<span class="hljs-doctag">@link</span> org.springframework.core.type.StandardAnnotationMetadata}.
+	 * <span class="hljs-doctag">@param</span> annotatedElement the element that is annotated with the supplied annotation;
+	 * may be {<span class="hljs-doctag">@code</span> null} if unknown
+	 * <span class="hljs-doctag">@param</span> annotation the annotation to retrieve the attributes for
+	 * <span class="hljs-doctag">@param</span> classValuesAsString whether to convert Class references into Strings (for
+	 * compatibility with {<span class="hljs-doctag">@link</span> org.springframework.core.type.AnnotationMetadata})
+	 * or to preserve them as Class references
+	 * <span class="hljs-doctag">@param</span> nestedAnnotationsAsMap whether to convert nested annotations into
+	 * {<span class="hljs-doctag">@link</span> AnnotationAttributes} maps (for compatibility with
+	 * {<span class="hljs-doctag">@link</span> org.springframework.core.type.AnnotationMetadata}) or to preserve them as
+	 * {<span class="hljs-doctag">@code</span> Annotation} instances
+	 * <span class="hljs-doctag">@return</span> the annotation attributes (a specialized Map) with attribute names as keys
+	 * and corresponding attribute values as values (never {<span class="hljs-doctag">@code</span> null})
+	 * <span class="hljs-doctag">@since</span> 4.2
+	 */</span>
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> AnnotationAttributes <span class="hljs-title">getAnnotationAttributes</span><span class="hljs-params">(@Nullable AnnotatedElement annotatedElement,
+			Annotation annotation, <span class="hljs-keyword">boolean</span> classValuesAsString, <span class="hljs-keyword">boolean</span> nestedAnnotationsAsMap)</span> </span>{
+		<span class="hljs-keyword">return</span> getAnnotationAttributes(
+				(Object) annotatedElement, annotation, classValuesAsString, nestedAnnotationsAsMap);
+	}
+	<span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> AnnotationAttributes <span class="hljs-title">getAnnotationAttributes</span><span class="hljs-params">(@Nullable Object annotatedElement,
+			Annotation annotation, <span class="hljs-keyword">boolean</span> classValuesAsString, <span class="hljs-keyword">boolean</span> nestedAnnotationsAsMap)</span> </span>{
+		AnnotationAttributes attributes =
+				retrieveAnnotationAttributes(annotatedElement, annotation, classValuesAsString, nestedAnnotationsAsMap);
+		postProcessAnnotationAttributes(annotatedElement, attributes, classValuesAsString, nestedAnnotationsAsMap);
+		<span class="hljs-keyword">return</span> attributes;
+	}
+	<span class="hljs-comment">/**
+	 * Retrieve the given annotation's attributes as an {<span class="hljs-doctag">@link</span> AnnotationAttributes} map.
+	 * &lt;p&gt;This method provides fully recursive annotation reading capabilities on par with
+	 * the reflection-based {<span class="hljs-doctag">@link</span> org.springframework.core.type.StandardAnnotationMetadata}.
+	 * &lt;p&gt;&lt;strong&gt;NOTE&lt;/strong&gt;: This variant of {<span class="hljs-doctag">@code</span> getAnnotationAttributes()} is
+	 * only intended for use within the framework. The following special rules apply:
+	 * &lt;ol&gt;
+	 * &lt;li&gt;Default values will be replaced with default value placeholders.&lt;/li&gt;
+	 * &lt;li&gt;The resulting, merged annotation attributes should eventually be
+	 * {<span class="hljs-doctag">@linkplain</span> #postProcessAnnotationAttributes post-processed} in order to
+	 * ensure that placeholders have been replaced by actual default values and
+	 * in order to enforce {<span class="hljs-doctag">@code</span> <span class="hljs-doctag">@AliasFor</span>} semantics.&lt;/li&gt;
+	 * &lt;/ol&gt;
+	 * <span class="hljs-doctag">@param</span> annotatedElement the element that is annotated with the supplied annotation;
+	 * may be {<span class="hljs-doctag">@code</span> null} if unknown
+	 * <span class="hljs-doctag">@param</span> annotation the annotation to retrieve the attributes for
+	 * <span class="hljs-doctag">@param</span> classValuesAsString whether to convert Class references into Strings (for
+	 * compatibility with {<span class="hljs-doctag">@link</span> org.springframework.core.type.AnnotationMetadata})
+	 * or to preserve them as Class references
+	 * <span class="hljs-doctag">@param</span> nestedAnnotationsAsMap whether to convert nested annotations into
+	 * {<span class="hljs-doctag">@link</span> AnnotationAttributes} maps (for compatibility with
+	 * {<span class="hljs-doctag">@link</span> org.springframework.core.type.AnnotationMetadata}) or to preserve them as
+	 * {<span class="hljs-doctag">@code</span> Annotation} instances
+	 * <span class="hljs-doctag">@return</span> the annotation attributes (a specialized Map) with attribute names as keys
+	 * and corresponding attribute values as values (never {<span class="hljs-doctag">@code</span> null})
+	 * <span class="hljs-doctag">@since</span> 4.2
+	 * <span class="hljs-doctag">@see</span> #postProcessAnnotationAttributes
+	 */</span>
+	<span class="hljs-function"><span class="hljs-keyword">static</span> AnnotationAttributes <span class="hljs-title">retrieveAnnotationAttributes</span><span class="hljs-params">(@Nullable Object annotatedElement, Annotation annotation,
+			<span class="hljs-keyword">boolean</span> classValuesAsString, <span class="hljs-keyword">boolean</span> nestedAnnotationsAsMap)</span> </span>{
+		Class&lt;? extends Annotation&gt; annotationType = annotation.annotationType();
+		AnnotationAttributes attributes = <span class="hljs-keyword">new</span> AnnotationAttributes(annotationType);
+		<span class="hljs-keyword">for</span> (Method method : getAttributeMethods(annotationType)) {
+			<span class="hljs-keyword">try</span> {
+				Object attributeValue = method.invoke(annotation);
+				Object defaultValue = method.getDefaultValue();
+				<span class="hljs-keyword">if</span> (defaultValue != <span class="hljs-keyword">null</span> &amp;&amp; ObjectUtils.nullSafeEquals(attributeValue, defaultValue)) {
+					attributeValue = <span class="hljs-keyword">new</span> DefaultValueHolder(defaultValue);
+				}
+				attributes.put(method.getName(),
+						adaptValue(annotatedElement, attributeValue, classValuesAsString, nestedAnnotationsAsMap));
+			}
+			<span class="hljs-keyword">catch</span> (Throwable ex) {
+				<span class="hljs-keyword">if</span> (ex <span class="hljs-keyword">instanceof</span> InvocationTargetException) {
+					Throwable targetException = ((InvocationTargetException) ex).getTargetException();
+					rethrowAnnotationConfigurationException(targetException);
+				}
+				<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalStateException(<span class="hljs-string">"Could not obtain annotation attribute value for "</span> + method, ex);
+			}
+		}
+		<span class="hljs-keyword">return</span> attributes;
+	}
+	<span class="hljs-comment">/**
+	 * Adapt the given value according to the given class and nested annotation settings.
+	 * &lt;p&gt;Nested annotations will be
+	 * {<span class="hljs-doctag">@linkplain</span> #synthesizeAnnotation(Annotation, AnnotatedElement) synthesized}.
+	 * <span class="hljs-doctag">@param</span> annotatedElement the element that is annotated, used for contextual
+	 * logging; may be {<span class="hljs-doctag">@code</span> null} if unknown
+	 * <span class="hljs-doctag">@param</span> value the annotation attribute value
+	 * <span class="hljs-doctag">@param</span> classValuesAsString whether to convert Class references into Strings (for
+	 * compatibility with {<span class="hljs-doctag">@link</span> org.springframework.core.type.AnnotationMetadata})
+	 * or to preserve them as Class references
+	 * <span class="hljs-doctag">@param</span> nestedAnnotationsAsMap whether to convert nested annotations into
+	 * {<span class="hljs-doctag">@link</span> AnnotationAttributes} maps (for compatibility with
+	 * {<span class="hljs-doctag">@link</span> org.springframework.core.type.AnnotationMetadata}) or to preserve them as
+	 * {<span class="hljs-doctag">@code</span> Annotation} instances
+	 * <span class="hljs-doctag">@return</span> the adapted value, or the original value if no adaptation is needed
+	 */</span>
+	<span class="hljs-meta">@Nullable</span>
+	<span class="hljs-function"><span class="hljs-keyword">static</span> Object <span class="hljs-title">adaptValue</span><span class="hljs-params">(@Nullable Object annotatedElement, @Nullable Object value,
+			<span class="hljs-keyword">boolean</span> classValuesAsString, <span class="hljs-keyword">boolean</span> nestedAnnotationsAsMap)</span> </span>{
+		<span class="hljs-keyword">if</span> (classValuesAsString) {
+			<span class="hljs-keyword">if</span> (value <span class="hljs-keyword">instanceof</span> Class) {
+				<span class="hljs-keyword">return</span> ((Class&lt;?&gt;) value).getName();
+			}
+			<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (value <span class="hljs-keyword">instanceof</span> Class[]) {
+				Class&lt;?&gt;[] clazzArray = (Class&lt;?&gt;[]) value;
+				String[] classNames = <span class="hljs-keyword">new</span> String[clazzArray.length];
+				<span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; clazzArray.length; i++) {
+					classNames[i] = clazzArray[i].getName();
+				}
+				<span class="hljs-keyword">return</span> classNames;
+			}
+		}
+		<span class="hljs-keyword">if</span> (value <span class="hljs-keyword">instanceof</span> Annotation) {
+			Annotation annotation = (Annotation) value;
+			<span class="hljs-keyword">if</span> (nestedAnnotationsAsMap) {
+				<span class="hljs-keyword">return</span> getAnnotationAttributes(annotatedElement, annotation, classValuesAsString, <span class="hljs-keyword">true</span>);
+			}
+			<span class="hljs-keyword">else</span> {
+				<span class="hljs-keyword">return</span> synthesizeAnnotation(annotation, annotatedElement);
+			}
+		}
+		<span class="hljs-keyword">if</span> (value <span class="hljs-keyword">instanceof</span> Annotation[]) {
+			Annotation[] annotations = (Annotation[]) value;
+			<span class="hljs-keyword">if</span> (nestedAnnotationsAsMap) {
+				AnnotationAttributes[] mappedAnnotations = <span class="hljs-keyword">new</span> AnnotationAttributes[annotations.length];
+				<span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; annotations.length; i++) {
+					mappedAnnotations[i] =
+							getAnnotationAttributes(annotatedElement, annotations[i], classValuesAsString, <span class="hljs-keyword">true</span>);
+				}
+				<span class="hljs-keyword">return</span> mappedAnnotations;
+			}
+			<span class="hljs-keyword">else</span> {
+				<span class="hljs-keyword">return</span> synthesizeAnnotationArray(annotations, annotatedElement);
+			}
+		}
+		<span class="hljs-comment">// Fallback</span>
+		<span class="hljs-keyword">return</span> value;
+	}</code></pre>
+<ul>
+<li>
+<strong>getValue</strong>:获取给定注解的值。 有这个名称的存在两种方法。第一个返回注解的全局值。第二个是指定注解参数的值。</li>
+</ul>
+<pre><code class="hljs java"><span class="hljs-comment">/**
+ * Retrieve the &lt;em&gt;value&lt;/em&gt; of the {<span class="hljs-doctag">@code</span> value} attribute of a
+ * single-element Annotation, given an annotation instance.
+ * <span class="hljs-doctag">@param</span> annotation the annotation instance from which to retrieve the value
+ * <span class="hljs-doctag">@return</span> the attribute value, or {<span class="hljs-doctag">@code</span> null} if not found unless the attribute
+ * value cannot be retrieved due to an {<span class="hljs-doctag">@link</span> AnnotationConfigurationException},
+ * in which case such an exception will be rethrown
+ * <span class="hljs-doctag">@see</span> #getValue(Annotation, String)
+ */</span>
+<span class="hljs-meta">@Nullable</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Object <span class="hljs-title">getValue</span><span class="hljs-params">(Annotation annotation)</span> </span>{
+	<span class="hljs-keyword">return</span> getValue(annotation, VALUE);
+}
+<span class="hljs-comment">/**
+ * Retrieve the &lt;em&gt;value&lt;/em&gt; of a named attribute, given an annotation instance.
+ * <span class="hljs-doctag">@param</span> annotation the annotation instance from which to retrieve the value
+ * <span class="hljs-doctag">@param</span> attributeName the name of the attribute value to retrieve
+ * <span class="hljs-doctag">@return</span> the attribute value, or {<span class="hljs-doctag">@code</span> null} if not found unless the attribute
+ * value cannot be retrieved due to an {<span class="hljs-doctag">@link</span> AnnotationConfigurationException},
+ * in which case such an exception will be rethrown
+ * <span class="hljs-doctag">@see</span> #getValue(Annotation)
+ * <span class="hljs-doctag">@see</span> #rethrowAnnotationConfigurationException(Throwable)
+ */</span>
+<span class="hljs-meta">@Nullable</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Object <span class="hljs-title">getValue</span><span class="hljs-params">(@Nullable Annotation annotation, @Nullable String attributeName)</span> </span>{
+	<span class="hljs-keyword">if</span> (annotation == <span class="hljs-keyword">null</span> || !StringUtils.hasText(attributeName)) {
+		<span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;
+	}
+	<span class="hljs-keyword">try</span> {
+		Method method = annotation.annotationType().getDeclaredMethod(attributeName);
+		ReflectionUtils.makeAccessible(method);
+		<span class="hljs-keyword">return</span> method.invoke(annotation);
+	}
+	<span class="hljs-keyword">catch</span> (InvocationTargetException ex) {
+		rethrowAnnotationConfigurationException(ex.getTargetException());
+		<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IllegalStateException(
+				<span class="hljs-string">"Could not obtain value for annotation attribute '"</span> + attributeName + <span class="hljs-string">"' in "</span> + annotation, ex);
+	}
+	<span class="hljs-keyword">catch</span> (Throwable ex) {
+		handleIntrospectionFailure(annotation.getClass(), ex);
+		<span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;
+	}
+}</code></pre>
+<ul>
+<li>
+<strong>getDefaultValue</strong>:获取给定注解或注解属性的默认值(注意<code>@Nullable</code>注解就知道为什么这么说了)。</li>
+</ul>
+<pre><code class="hljs php"><span class="hljs-comment">/**
+ * Retrieve the &lt;em&gt;default value&lt;/em&gt; of the {<span class="hljs-doctag">@code</span> value} attribute
+ * of a single-element Annotation, given an annotation instance.
+ * <span class="hljs-doctag">@param</span> annotation the annotation instance from which to retrieve the default value
+ * <span class="hljs-doctag">@return</span> the default value, or {<span class="hljs-doctag">@code</span> null} if not found
+ * <span class="hljs-doctag">@see</span> #getDefaultValue(Annotation, String)
+ */</span>
+@Nullable
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Object getDefaultValue(Annotation annotation) {
+	<span class="hljs-keyword">return</span> getDefaultValue(annotation, VALUE);
+}
+<span class="hljs-comment">/**
+ * Retrieve the &lt;em&gt;default value&lt;/em&gt; of a named attribute, given an annotation instance.
+ * <span class="hljs-doctag">@param</span> annotation the annotation instance from which to retrieve the default value
+ * <span class="hljs-doctag">@param</span> attributeName the name of the attribute value to retrieve
+ * <span class="hljs-doctag">@return</span> the default value of the named attribute, or {<span class="hljs-doctag">@code</span> null} if not found
+ * <span class="hljs-doctag">@see</span> #getDefaultValue(Class, String)
+ */</span>
+@Nullable
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Object getDefaultValue(@Nullable Annotation annotation, @Nullable String attributeName) {
+	<span class="hljs-keyword">if</span> (annotation == <span class="hljs-keyword">null</span>) {
+		<span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;
+	}
+	<span class="hljs-keyword">return</span> getDefaultValue(annotation.annotationType(), attributeName);
+}
+<span class="hljs-comment">/**
+ * Retrieve the &lt;em&gt;default value&lt;/em&gt; of the {<span class="hljs-doctag">@code</span> value} attribute
+ * of a single-element Annotation, given the {<span class="hljs-doctag">@link</span> Class annotation type}.
+ * <span class="hljs-doctag">@param</span> annotationType the &lt;em&gt;annotation type&lt;/em&gt; for which the default value should be retrieved
+ * <span class="hljs-doctag">@return</span> the default value, or {<span class="hljs-doctag">@code</span> null} if not found
+ * <span class="hljs-doctag">@see</span> #getDefaultValue(Class, String)
+ */</span>
+@Nullable
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Object getDefaultValue(<span class="hljs-class"><span class="hljs-keyword">Class</span>&lt;? <span class="hljs-keyword">extends</span> <span class="hljs-title">Annotation</span>&gt; <span class="hljs-title">annotationType</span>) </span>{
+	<span class="hljs-keyword">return</span> getDefaultValue(annotationType, VALUE);
+}
+<span class="hljs-comment">/**
+ * Retrieve the &lt;em&gt;default value&lt;/em&gt; of a named attribute, given the
+ * {<span class="hljs-doctag">@link</span> Class annotation type}.
+ * <span class="hljs-doctag">@param</span> annotationType the &lt;em&gt;annotation type&lt;/em&gt; for which the default value should be retrieved
+ * <span class="hljs-doctag">@param</span> attributeName the name of the attribute value to retrieve.
+ * <span class="hljs-doctag">@return</span> the default value of the named attribute, or {<span class="hljs-doctag">@code</span> null} if not found
+ * <span class="hljs-doctag">@see</span> #getDefaultValue(Annotation, String)
+ */</span>
+@Nullable
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Object getDefaultValue(
+		@Nullable <span class="hljs-class"><span class="hljs-keyword">Class</span>&lt;? <span class="hljs-keyword">extends</span> <span class="hljs-title">Annotation</span>&gt; <span class="hljs-title">annotationType</span>, @<span class="hljs-title">Nullable</span> <span class="hljs-title">String</span> <span class="hljs-title">attributeName</span>) </span>{
+	<span class="hljs-keyword">if</span> (annotationType == <span class="hljs-keyword">null</span> || !StringUtils.hasText(attributeName)) {
+		<span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;
+	}
+	<span class="hljs-keyword">try</span> {
+		<span class="hljs-keyword">return</span> annotationType.getDeclaredMethod(attributeName).getDefaultValue();
+	}
+	<span class="hljs-keyword">catch</span> (Throwable ex) {
+		handleIntrospectionFailure(annotationType, ex);
+		<span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;
+	}
+}</code></pre>
+<h2 id="有哪些地方使用了AnnotationUtils方法？">
+<a href="#%E6%9C%89%E5%93%AA%E4%BA%9B%E5%9C%B0%E6%96%B9%E4%BD%BF%E7%94%A8%E4%BA%86AnnotationUtils%E6%96%B9%E6%B3%95%EF%BC%9F" title="有哪些地方使用了AnnotationUtils方法？"></a>有哪些地方使用了AnnotationUtils方法？</h2>
+<p>很多Spring项目模块都用了<code>AnnotationUtils</code>。这里我们将重点关注与<code>core</code>和Web开发相关的项目模块:<code>Web</code>，<code>Web MVC</code>，<code>context</code>和<code>bean</code>。这里就不罗嗦太多了，只列出在这些Spring项目中使用的<code>AnnotationUtils</code>的地方:</p>
+<ol>
+<li>
+        <p>web MVC</p>
+        <ul>
+<li>
+<code>AnnotationMethodHandlerAdapter</code>，直到 Spring 3.1的版本都是作为注解方法的主要处理程序，使用<code>AnnotationUtils</code>来检查可用于方法级别的不同注解，如:<code>@RequestMapping</code>，<code>@ResponseStatus</code>，<code>@ResponseBody</code>或<code>@ModelAttribute</code>。</li>
+            <li>作为<code>AnnotationMethodHandlerAdapter</code>接班人，<code>RequestMappingHandlerMapping</code>与<code>AnnotationUtils</code>一起解析<code>@RequestMapping</code>并构造了封装映射配置(变量，HTTP方法， accepted headers 等)的<code>RequestMappingInfo</code>对象。</li>
+        </ul>
+<pre><code class="hljs java"><span class="hljs-comment">/**
+ * Uses method and type-level @{<span class="hljs-doctag">@link</span> RequestMapping} annotations to create
+ * the RequestMappingInfo.
+ * <span class="hljs-doctag">@return</span> the created RequestMappingInfo, or {<span class="hljs-doctag">@code</span> null} if the method
+ * does not have a {<span class="hljs-doctag">@code</span> <span class="hljs-doctag">@RequestMapping</span>} annotation.
+ * <span class="hljs-doctag">@see</span> #getCustomMethodCondition(Method)
+ * <span class="hljs-doctag">@see</span> #getCustomTypeCondition(Class)
+ */</span>
+<span class="hljs-meta">@Override</span>
+<span class="hljs-function"><span class="hljs-keyword">protected</span> RequestMappingInfo <span class="hljs-title">getMappingForMethod</span><span class="hljs-params">(Method method, Class&lt;?&gt; handlerType)</span> </span>{
+	RequestMappingInfo info = createRequestMappingInfo(method);
+	<span class="hljs-keyword">if</span> (info != <span class="hljs-keyword">null</span>) {
+		RequestMappingInfo typeInfo = createRequestMappingInfo(handlerType);
+		<span class="hljs-keyword">if</span> (typeInfo != <span class="hljs-keyword">null</span>) {
+			info = typeInfo.combine(info);
+		}
+	}
+	<span class="hljs-keyword">return</span> info;
+}
+<span class="hljs-comment">/**
+ * Delegates to {<span class="hljs-doctag">@link</span> #createRequestMappingInfo(RequestMapping, RequestCondition)},
+ * supplying the appropriate custom {<span class="hljs-doctag">@link</span> RequestCondition} depending on whether
+ * the supplied {<span class="hljs-doctag">@code</span> annotatedElement} is a class or method.
+ * <span class="hljs-doctag">@see</span> #getCustomTypeCondition(Class)
+ * <span class="hljs-doctag">@see</span> #getCustomMethodCondition(Method)
+ */</span>
+<span class="hljs-function"><span class="hljs-keyword">private</span> RequestMappingInfo <span class="hljs-title">createRequestMappingInfo</span><span class="hljs-params">(AnnotatedElement element)</span> </span>{
+	RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(element, RequestMapping.class);
+	RequestCondition&lt;?&gt; condition = (element <span class="hljs-keyword">instanceof</span> Class ?
+			getCustomTypeCondition((Class&lt;?&gt;) element) : getCustomMethodCondition((Method) element));
+	<span class="hljs-keyword">return</span> (requestMapping != <span class="hljs-keyword">null</span> ? createRequestMappingInfo(requestMapping, condition) : <span class="hljs-keyword">null</span>);
+}</code></pre>
+        <ul>
+<li>
+<code>RequestMappingHandlerAdapter</code>是<code>Web MVC</code>项目中使用<code>AnnotationUtils</code>的第三个重要类。我们可以找到2个调用了<code>findAnnotation()</code>方法并都返回<code>MethodFilter</code>类的实例的方法。一个表示<code>@InitBinder</code>注解，第一个表示<code>@ModelAttribute</code>。</li>
+        </ul>
+<pre><code class="hljs java">	<span class="hljs-comment">/**
+	 * MethodFilter that matches {<span class="hljs-doctag">@link</span> InitBinder <span class="hljs-doctag">@InitBinder</span>} methods.
+	 */</span>
+	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> MethodFilter INIT_BINDER_METHODS = method -&gt;
+			AnnotationUtils.findAnnotation(method, InitBinder.class) != <span class="hljs-keyword">null</span>;
+	<span class="hljs-comment">/**
+	 * MethodFilter that matches {<span class="hljs-doctag">@link</span> ModelAttribute <span class="hljs-doctag">@ModelAttribute</span>} methods.
+	 */</span>
+	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> MethodFilter MODEL_ATTRIBUTE_METHODS = method -&gt;
+			((AnnotationUtils.findAnnotation(method, RequestMapping.class) == <span class="hljs-keyword">null</span>) &amp;&amp;
+			(AnnotationUtils.findAnnotation(method, ModelAttribute.class) != <span class="hljs-keyword">null</span>));
+	<span class="hljs-comment">//以上两个方法的用法</span>
+<span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">initControllerAdviceCache</span><span class="hljs-params">()</span> </span>{
+		<span class="hljs-keyword">if</span> (getApplicationContext() == <span class="hljs-keyword">null</span>) {
+			<span class="hljs-keyword">return</span>;
+		}
+		<span class="hljs-keyword">if</span> (logger.isInfoEnabled()) {
+			logger.info(<span class="hljs-string">"Looking for @ControllerAdvice: "</span> + getApplicationContext());
+		}
+		List&lt;ControllerAdviceBean&gt; beans = ControllerAdviceBean.findAnnotatedBeans(getApplicationContext());
+		AnnotationAwareOrderComparator.sort(beans);
+		List&lt;Object&gt; requestResponseBodyAdviceBeans = <span class="hljs-keyword">new</span> ArrayList&lt;Object&gt;();
+		<span class="hljs-keyword">for</span> (ControllerAdviceBean bean : beans) {
+          <span class="hljs-comment">//传入MODEL_ATTRIBUTE_METHODS这个表达式</span>
+			Set&lt;Method&gt; attrMethods = MethodIntrospector.selectMethods(bean.getBeanType(), MODEL_ATTRIBUTE_METHODS);
+			<span class="hljs-keyword">if</span> (!attrMethods.isEmpty()) {
+				<span class="hljs-keyword">this</span>.modelAttributeAdviceCache.put(bean, attrMethods);
+				<span class="hljs-keyword">if</span> (logger.isInfoEnabled()) {
+					logger.info(<span class="hljs-string">"Detected @ModelAttribute methods in "</span> + bean);
+				}
+			}
+          <span class="hljs-comment">//传入 INIT_BINDER_METHODS 这个表达式</span>
+			Set&lt;Method&gt; binderMethods = MethodIntrospector.selectMethods(bean.getBeanType(), INIT_BINDER_METHODS);
+			<span class="hljs-keyword">if</span> (!binderMethods.isEmpty()) {
+				<span class="hljs-keyword">this</span>.initBinderAdviceCache.put(bean, binderMethods);
+				<span class="hljs-keyword">if</span> (logger.isInfoEnabled()) {
+					logger.info(<span class="hljs-string">"Detected @InitBinder methods in "</span> + bean);
+				}
+			}
+			<span class="hljs-keyword">if</span> (RequestBodyAdvice.class.isAssignableFrom(bean.getBeanType())) {
+				requestResponseBodyAdviceBeans.add(bean);
+				<span class="hljs-keyword">if</span> (logger.isInfoEnabled()) {
+					logger.info(<span class="hljs-string">"Detected RequestBodyAdvice bean in "</span> + bean);
+				}
+			}
+			<span class="hljs-keyword">if</span> (ResponseBodyAdvice.class.isAssignableFrom(bean.getBeanType())) {
+				requestResponseBodyAdviceBeans.add(bean);
+				<span class="hljs-keyword">if</span> (logger.isInfoEnabled()) {
+					logger.info(<span class="hljs-string">"Detected ResponseBodyAdvice bean in "</span> + bean);
+				}
+			}
+		}
+		<span class="hljs-keyword">if</span> (!requestResponseBodyAdviceBeans.isEmpty()) {
+			<span class="hljs-keyword">this</span>.requestResponseBodyAdvice.addAll(<span class="hljs-number">0</span>, requestResponseBodyAdviceBeans);
+		}
+	}</code></pre> </li>
+</ol>
+<p>接上面最后一个方法<code>selectMethods</code>的实现，然后，我们平时写代码的时候也可以参考此实现形式:</p>
+<p><strong>org.springframework.core.MethodIntrospector</strong></p>
+<pre><code class="hljs php">	<span class="hljs-comment">/**
+	 * Select methods on the given target type based on a filter.
+	 * &lt;p&gt;Callers define methods of interest through the {<span class="hljs-doctag">@code</span> MethodFilter} parameter.
+	 * <span class="hljs-doctag">@param</span> targetType the target type to search methods on
+	 * <span class="hljs-doctag">@param</span> methodFilter a {<span class="hljs-doctag">@code</span> MethodFilter} to help
+	 * recognize handler methods of interest
+	 * <span class="hljs-doctag">@return</span> the selected methods, or an empty set in case of no match
+	 */</span>
+	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Set&lt;Method&gt; selectMethods(<span class="hljs-class"><span class="hljs-keyword">Class</span>&lt;?&gt; <span class="hljs-title">targetType</span>, <span class="hljs-title">final</span> <span class="hljs-title">ReflectionUtils</span>.<span class="hljs-title">MethodFilter</span> <span class="hljs-title">methodFilter</span>) </span>{
+		<span class="hljs-keyword">return</span> selectMethods(targetType, <span class="hljs-keyword">new</span> MetadataLookup&lt;Boolean&gt;() {
+			@Override
+			<span class="hljs-keyword">public</span> Boolean inspect(Method method) {
+				<span class="hljs-keyword">return</span> (methodFilter.matches(method) ? Boolean.<span class="hljs-keyword">TRUE</span> : <span class="hljs-keyword">null</span>);
+			}
+		}).keySet();
+	}
+<span class="hljs-comment">//此段代码可迭代为下面形式,这样更加符合之前定义methodFilter的习惯</span>
+	<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Set&lt;Method&gt; selectMethods(<span class="hljs-class"><span class="hljs-keyword">Class</span>&lt;?&gt; <span class="hljs-title">targetType</span>, <span class="hljs-title">final</span> <span class="hljs-title">ReflectionUtils</span>.<span class="hljs-title">MethodFilter</span> <span class="hljs-title">methodFilter</span>) </span>{
+		<span class="hljs-keyword">return</span> selectMethods(targetType, (MetadataLookup)(method)-&gt; {
+				<span class="hljs-keyword">return</span> (methodFilter.matches(method) ? Boolean.<span class="hljs-keyword">TRUE</span> : <span class="hljs-keyword">null</span>);
+		}).keySet();
+	}</code></pre>
+<ol>
+<li>
+        <p>web(此处分析俩过时的类，Spring5里没有，但是4里面包含有，之前的文章有写)</p>
+        <ul>
+<li>如果对象必须使用<code>@Valid</code>进行验证，或者<code>@InitBinder</code>方法存在，<code>HandlerMethodInvoker</code>使用<code>AnnotationUtils</code>来知道<code>@ModelAttribute</code>注解是什么。</li>
+            <li>这个项目的另一个关键类，<code>HandlerMethodResolver</code>，通过调用<code>AnnotationUtils</code>方法来确定方法的类型(handler，binder或model-attribute)。具体点讲就是通过3种方法完成:<code>isHandlerMethod</code>，<code>isInitBinderMethod</code>和<code>isModelAttributeMethod</code>。每个都接受Method的实例为参数。</li>
+        </ul>
+</li>
+    <li>
+        <p>context</p>
+        <ul>
+<li>用于解析<strong>bean</strong>注解的类<code>BeanAnnotationHelper</code>使用<code>AnnotationUtils</code>中的<code>findMergedAnnotation()</code>方法来处理用<code>@Bean</code>注解的类。我们使用它来确定bean的名称。</li>
+        </ul>
+<pre><code class="hljs java"><span class="hljs-comment">/**
+ * Utilities for processing {<span class="hljs-doctag">@link</span> Bean}-annotated methods.
+ *
+ * <span class="hljs-doctag">@author</span> Chris Beams
+ * <span class="hljs-doctag">@author</span> Juergen Hoeller
+ * <span class="hljs-doctag">@since</span> 3.1
+ */</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">BeanAnnotationHelper</span> </span>{
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">isBeanAnnotated</span><span class="hljs-params">(Method method)</span> </span>{
+		<span class="hljs-keyword">return</span> AnnotatedElementUtils.hasAnnotation(method, Bean.class);
+	}
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title">determineBeanNameFor</span><span class="hljs-params">(Method beanMethod)</span> </span>{
+		<span class="hljs-comment">// By default, the bean name is the name of the @Bean-annotated method</span>
+		String beanName = beanMethod.getName();
+		<span class="hljs-comment">// Check to see if the user has explicitly set a custom bean name...</span>
+		Bean bean = AnnotatedElementUtils.findMergedAnnotation(beanMethod, Bean.class);
+		<span class="hljs-keyword">if</span> (bean != <span class="hljs-keyword">null</span> &amp;&amp; bean.name().length &gt; <span class="hljs-number">0</span>) {
+			beanName = bean.name()[<span class="hljs-number">0</span>];
+		}
+		<span class="hljs-keyword">return</span> beanName;
+	}
+}</code></pre>
+        <p>​</p>
+        <ul>
+<li>还有一个要说的就是<code>AnnotationAsyncExecutionInterceptor</code>类，其内同样使用<code>AnnotationUtils</code>来解析注解。它调用<code>findMergedAnnotation()</code>方法来解析在运行时所执行的方法的名称。</li>
+        </ul>
+<pre><code class="hljs java"><span class="hljs-comment">/**
+ * Specialization of {<span class="hljs-doctag">@link</span> AsyncExecutionInterceptor} that delegates method execution to
+ * an {<span class="hljs-doctag">@code</span> Executor} based on the {<span class="hljs-doctag">@link</span> Async} annotation. Specifically designed to
+ * support use of {<span class="hljs-doctag">@link</span> Async#value()} executor qualification mechanism introduced in
+ * Spring 3.1.2. Supports detecting qualifier metadata via {<span class="hljs-doctag">@code</span> <span class="hljs-doctag">@Async</span>} at the method or
+ * declaring class level. See {<span class="hljs-doctag">@link</span> #getExecutorQualifier(Method)} for details.
+ *
+ * <span class="hljs-doctag">@author</span> Chris Beams
+ * <span class="hljs-doctag">@author</span> Stephane Nicoll
+ * <span class="hljs-doctag">@since</span> 3.1.2
+ * <span class="hljs-doctag">@see</span> org.springframework.scheduling.annotation.Async
+ * <span class="hljs-doctag">@see</span> org.springframework.scheduling.annotation.AsyncAnnotationAdvisor
+ */</span>
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AnnotationAsyncExecutionInterceptor</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AsyncExecutionInterceptor</span> </span>{
+	<span class="hljs-comment">/**
+	 * Create a new {<span class="hljs-doctag">@code</span> AnnotationAsyncExecutionInterceptor} with the given executor
+	 * and a simple {<span class="hljs-doctag">@link</span> AsyncUncaughtExceptionHandler}.
+	 * <span class="hljs-doctag">@param</span> defaultExecutor the executor to be used by default if no more specific
+	 * executor has been qualified at the method level using {<span class="hljs-doctag">@link</span> Async#value()};
+	 * as of 4.2.6, a local executor for this interceptor will be built otherwise
+	 */</span>
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">AnnotationAsyncExecutionInterceptor</span><span class="hljs-params">(@Nullable Executor defaultExecutor)</span> </span>{
+		<span class="hljs-keyword">super</span>(defaultExecutor);
+	}
+	<span class="hljs-comment">/**
+	 * Create a new {<span class="hljs-doctag">@code</span> AnnotationAsyncExecutionInterceptor} with the given executor.
+	 * <span class="hljs-doctag">@param</span> defaultExecutor the executor to be used by default if no more specific
+	 * executor has been qualified at the method level using {<span class="hljs-doctag">@link</span> Async#value()};
+	 * as of 4.2.6, a local executor for this interceptor will be built otherwise
+	 * <span class="hljs-doctag">@param</span> exceptionHandler the {<span class="hljs-doctag">@link</span> AsyncUncaughtExceptionHandler} to use to
+	 * handle exceptions thrown by asynchronous method executions with {<span class="hljs-doctag">@code</span> void}
+	 * return type
+	 */</span>
+	<span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">AnnotationAsyncExecutionInterceptor</span><span class="hljs-params">(@Nullable Executor defaultExecutor, AsyncUncaughtExceptionHandler exceptionHandler)</span> </span>{
+		<span class="hljs-keyword">super</span>(defaultExecutor, exceptionHandler);
+	}
+  		<span class="hljs-comment">/**
+	 	 *  Return the qualifier or bean name of the executor to be used when executing the
+     	 * given method, specified via {<span class="hljs-doctag">@link</span> Async#value} at the method or declaring
+         * class level. If {<span class="hljs-doctag">@code</span> <span class="hljs-doctag">@Async</span>} is specified at both the method and class level, the
+         * method's {<span class="hljs-doctag">@code</span> #value} takes precedence (even if empty string, indicating that
+         * the default executor should be used preferentially).
+         * <span class="hljs-doctag">@param</span> method the method to inspect for executor qualifier metadata
+         * <span class="hljs-doctag">@return</span> the qualifier if specified, otherwise empty string indicating that the
+         * {<span class="hljs-doctag">@linkplain</span> #setExecutor(Executor) default executor} should be used
+         * <span class="hljs-doctag">@see</span> #determineAsyncExecutor(Method)
+         */</span>
+            <span class="hljs-meta">@Override</span>
+            <span class="hljs-function"><span class="hljs-keyword">protected</span> String <span class="hljs-title">getExecutorQualifier</span><span class="hljs-params">(Method method)</span> </span>{
+            <span class="hljs-comment">// Maintainer's note: changes made here should also be made in</span>
+            <span class="hljs-comment">// AnnotationAsyncExecutionAspect#getExecutorQualifier</span>
+            Async async = AnnotatedElementUtils.findMergedAnnotation(method, Async.class);
+            <span class="hljs-keyword">if</span> (async == <span class="hljs-keyword">null</span>) {
+            	async = AnnotatedElementUtils.findMergedAnnotation(method.getDeclaringClass(), Async.class);
+            }
+            <span class="hljs-keyword">return</span> (async != <span class="hljs-keyword">null</span> ? async.value() : <span class="hljs-keyword">null</span>);
+            }
+}</code></pre> </li>
+    <li>
+        <p>bean</p>
+        <ul>
+<li>我们可以在<code>StaticListableBeanFactory</code>或<code>DefaultListableBeanFactory</code>类中找到<code>AnnotationUtils</code>用来查找<code>bean</code>的注解的用法。</li>
+        </ul>
+<p><strong>org.springframework.beans.factory.support.StaticListableBeanFactory</strong></p>
+        <pre><code class="hljs javascript">
+@Override
+public <span class="hljs-built_in">Map</span>&lt;<span class="hljs-built_in">String</span>, <span class="hljs-built_in">Object</span>&gt; getBeansWithAnnotation(Class&lt;? extends Annotation&gt; annotationType)
+		throws BeansException {
+	<span class="hljs-built_in">Map</span>&lt;<span class="hljs-built_in">String</span>, <span class="hljs-built_in">Object</span>&gt; results = <span class="hljs-keyword">new</span> LinkedHashMap&lt;&gt;();
+	<span class="hljs-keyword">for</span> (<span class="hljs-built_in">String</span> beanName : <span class="hljs-keyword">this</span>.beans.keySet()) {
+		<span class="hljs-keyword">if</span> (findAnnotationOnBean(beanName, annotationType) != <span class="hljs-literal">null</span>) {
+			results.put(beanName, getBean(beanName));
+		}
+	}
+	<span class="hljs-keyword">return</span> results;
+}
+@Override
+public &lt;A extends Annotation&gt; A findAnnotationOnBean(<span class="hljs-built_in">String</span> beanName, Class&lt;A&gt; annotationType)
+		throws NoSuchBeanDefinitionException{
+	Class&lt;?&gt; beanType = getType(beanName);
+	<span class="hljs-keyword">return</span> (beanType != <span class="hljs-literal">null</span> ? AnnotationUtils.findAnnotation(beanType, annotationType) : <span class="hljs-literal">null</span>);
+}</code></pre>
+        <p><strong>org.springframework.beans.factory.support.DefaultListableBeanFactory</strong></p>
+        <pre><code class="hljs javascript">@Override
+public <span class="hljs-built_in">String</span>[] getBeanNamesForAnnotation(Class&lt;? extends Annotation&gt; annotationType) {
+	List&lt;<span class="hljs-built_in">String</span>&gt; results = <span class="hljs-keyword">new</span> ArrayList&lt;&gt;();
+	<span class="hljs-keyword">for</span> (<span class="hljs-built_in">String</span> beanName : <span class="hljs-keyword">this</span>.beanDefinitionNames) {
+		BeanDefinition beanDefinition = getBeanDefinition(beanName);
+		<span class="hljs-keyword">if</span> (!beanDefinition.isAbstract() &amp;&amp; findAnnotationOnBean(beanName, annotationType) != <span class="hljs-literal">null</span>) {
+			results.add(beanName);
+		}
+	}
+	<span class="hljs-keyword">for</span> (<span class="hljs-built_in">String</span> beanName : <span class="hljs-keyword">this</span>.manualSingletonNames) {
+		<span class="hljs-keyword">if</span> (!results.contains(beanName) &amp;&amp; findAnnotationOnBean(beanName, annotationType) != <span class="hljs-literal">null</span>) {
+			results.add(beanName);
+		}
+	}
+	<span class="hljs-keyword">return</span> results.toArray(<span class="hljs-keyword">new</span> <span class="hljs-built_in">String</span>[results.size()]);
+}
+@Override
+public <span class="hljs-built_in">Map</span>&lt;<span class="hljs-built_in">String</span>, <span class="hljs-built_in">Object</span>&gt; getBeansWithAnnotation(Class&lt;? extends Annotation&gt; annotationType) {
+	<span class="hljs-built_in">String</span>[] beanNames = getBeanNamesForAnnotation(annotationType);
+	<span class="hljs-built_in">Map</span>&lt;<span class="hljs-built_in">String</span>, <span class="hljs-built_in">Object</span>&gt; results = <span class="hljs-keyword">new</span> LinkedHashMap&lt;&gt;(beanNames.length);
+	<span class="hljs-keyword">for</span> (<span class="hljs-built_in">String</span> beanName : beanNames) {
+		results.put(beanName, getBean(beanName));
+	}
+	<span class="hljs-keyword">return</span> results;
+}
+<span class="hljs-comment">/**
+ * Find a {@link Annotation} of {@code annotationType} on the specified
+ * bean, traversing its interfaces and super classes if no annotation can be
+ * found on the given class itself, as well as checking its raw bean class
+ * if not found on the exposed bean reference (e.g. in case of a proxy).
+ */</span>
+@Override
+public &lt;A extends Annotation&gt; A findAnnotationOnBean(<span class="hljs-built_in">String</span> beanName, Class&lt;A&gt; annotationType)
+		throws NoSuchBeanDefinitionException{
+	A ann = <span class="hljs-literal">null</span>;
+	Class&lt;?&gt; beanType = getType(beanName);
+	<span class="hljs-keyword">if</span> (beanType != <span class="hljs-literal">null</span>) {
+		ann = AnnotationUtils.findAnnotation(beanType, annotationType);
+	}
+	<span class="hljs-keyword">if</span> (ann == <span class="hljs-literal">null</span> &amp;&amp; containsBeanDefinition(beanName)) {
+		BeanDefinition bd = getMergedBeanDefinition(beanName);
+		<span class="hljs-keyword">if</span> (bd <span class="hljs-keyword">instanceof</span> AbstractBeanDefinition) {
+			AbstractBeanDefinition abd = (AbstractBeanDefinition) bd;
+			<span class="hljs-keyword">if</span> (abd.hasBeanClass()) {
+				ann = AnnotationUtils.findAnnotation(abd.getBeanClass(), annotationType);
+			}
+		}
+	}
+	<span class="hljs-keyword">return</span> ann;
+}</code></pre>
+        <p>​</p>
+    </li>
+</ol>
+<h2 id="AnnotationUtils-in-Action">
+<a href="#AnnotationUtils-in-Action" title="AnnotationUtils in Action"></a>AnnotationUtils in Action</h2>
+<p>为了更好地理解Spring中AnnotationUtils的工作方式，我们来搞两个注解:第一个对应方法，第二个对应类。之后，写两个测试类和一个<code>playground</code>类，我们要达到的目的是输出由<code>AnnotationUtils</code>完成的注解分析结果。这两个注解定义如下:</p>
+<pre><code class="hljs css">@<span class="hljs-keyword">Retention</span>(<span class="hljs-keyword">RetentionPolicy</span>.<span class="hljs-keyword">RUNTIME</span>)
+@Target({<span class="hljs-selector-tag">ElementType</span><span class="hljs-selector-class">.TYPE</span>})
+<span class="hljs-selector-tag">public</span> @<span class="hljs-keyword">interface</span> ClassNameAnnotation {
+ 
+  <span class="hljs-selector-tag">String</span> <span class="hljs-selector-tag">className</span>() <span class="hljs-selector-tag">default</span> "<span class="hljs-selector-tag">Empty</span> <span class="hljs-selector-tag">class</span> <span class="hljs-selector-tag">name</span>";
+}</code></pre>
+<pre><code class="hljs java"><span class="hljs-meta">@Retention</span>(RetentionPolicy.RUNTIME)
+<span class="hljs-meta">@Target</span>({ElementType.METHOD})
+<span class="hljs-keyword">public</span> <span class="hljs-meta">@interface</span> StaticTextAnnotation {
+ 
+  <span class="hljs-function">String <span class="hljs-title">text</span><span class="hljs-params">()</span> <span class="hljs-keyword">default</span> "Default text <span class="hljs-keyword">for</span> <span class="hljs-keyword">static</span> text annotation"</span>;
+  <span class="hljs-function">String <span class="hljs-title">value</span><span class="hljs-params">()</span> <span class="hljs-keyword">default</span> "Default value"</span>;
+}</code></pre>
+<p><strong>@Retention注解是必需的(估计这里是大家的知识盲区，所以特地点出来)。否则AnnotationUtils将无法检测到这些注解。</strong>注意在<code>StaticTextAnnotation</code>中存在<code>value()</code>属性，并且在<code>ClassNameAnnotation</code>中不存在此属性。在以下代码中，你可以找到相应的测试类:</p>
+<pre><code class="hljs java"><span class="hljs-meta">@ClassNameAnnotation</span>(className = <span class="hljs-string">"TestChildren"</span>)
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TestParent</span> </span>{
+ 
+  <span class="hljs-meta">@StaticTextAnnotation</span>(value= <span class="hljs-string">"Custom text value"</span>, text = <span class="hljs-string">"Test text"</span>)
+  <span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">test</span><span class="hljs-params">(HttpServletRequest request)</span> </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"test"</span>;
+  }
+}</code></pre>
+<pre><code class="hljs php"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TestChildren</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">TestParent</span> </span>{
+}</code></pre>
+<p><code>TestChildren</code>类没有任何注解。我们使用它来测试继承注解检查。</p>
+<pre><code class="hljs cs"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">Playground</span> {
+  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span>(<span class="hljs-params">String[] args</span>) </span>{
+    <span class="hljs-keyword">try</span> {
+      Method method = TestParent.class.getMethod(<span class="hljs-string">"test"</span>, <span class="hljs-keyword">new</span> Class[]{HttpServletRequest.class});
+      Annotation staticTextAnnot = AnnotationUtils.findAnnotation(method, StaticTextAnnotation.class);
+      System.<span class="hljs-keyword">out</span>.println(<span class="hljs-string">"@StaticTextAnnotation of method is: "</span>+staticTextAnnot);
+      System.<span class="hljs-keyword">out</span>.println(<span class="hljs-string">"@StaticTextAnnotation method value: "</span>+AnnotationUtils.getValue(staticTextAnnot, <span class="hljs-string">"text"</span>));
+      System.<span class="hljs-keyword">out</span>.println(<span class="hljs-string">"@StaticTextAnnotation method default value: "</span>+AnnotationUtils.getDefaultValue(staticTextAnnot, <span class="hljs-string">"text"</span>));
+      System.<span class="hljs-keyword">out</span>.println(<span class="hljs-string">"@StaticTextAnnotation value: "</span>+AnnotationUtils.getValue(staticTextAnnot));
+ 
+      <span class="hljs-comment">// inheriting annotations tests</span>
+      Annotation classNameAnnotation = AnnotationUtils.findAnnotation(TestChildren.class, ClassNameAnnotation.class);
+      System.<span class="hljs-keyword">out</span>.println(<span class="hljs-string">"@ClassNameAnnotation of TestChildren.class is: "</span>+classNameAnnotation);
+      System.<span class="hljs-keyword">out</span>.println(<span class="hljs-string">"@ClassNameAnnotation method value: "</span>+AnnotationUtils.getValue(classNameAnnotation, <span class="hljs-string">"className"</span>));
+      System.<span class="hljs-keyword">out</span>.println(<span class="hljs-string">"@ClassNameAnnotation method default value: "</span>+AnnotationUtils.getDefaultValue(classNameAnnotation, <span class="hljs-string">"className"</span>));
+      System.<span class="hljs-keyword">out</span>.println(<span class="hljs-string">"@ClassNameAnnotation value: "</span>+AnnotationUtils.getValue(classNameAnnotation));
+    } <span class="hljs-keyword">catch</span> (Exception e) {
+      e.printStackTrace();
+    }
+  }
+}</code></pre>
+<p><code>Playground</code>的<code>main</code>方法结果如下:</p>
+<pre><code class="hljs coffeescript">@StaticTextAnnotation <span class="hljs-keyword">of</span> method is: @com.migo.annotations.StaticTextAnnotation(text=Test text, value=Custom text value)
+@StaticTextAnnotation method value: Test text
+@StaticTextAnnotation method <span class="hljs-keyword">default</span> value: Default text <span class="hljs-keyword">for</span> static text annotation
+@StaticTextAnnotation value: Custom text value
+@ClassNameAnnotation <span class="hljs-keyword">of</span> TestChildren.class is: @com.migo.annotations.ClassNameAnnotation(className=TestChildren)
+@ClassNameAnnotation method value: TestChildren
+@ClassNameAnnotation method <span class="hljs-keyword">default</span> value: Empty <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">name</span></span>
+@ClassNameAnnotation value: <span class="hljs-literal">null</span></code></pre>
+<p>如上所示，我们可以很轻易的了解很多注解点。我们可以检查<code>value()</code>属性或另一个自定义属性的值。我们还可以检查属性的默认值。除此之外，<code>AnnotationUtils</code>还可以在继承体系结构中进行注解操作。</p>
+</div>
+                        <div class="mt-30"></div>
+                        <!-- /文章内容 -->
+                                        <button class="vote-btn Button Button--blue  mr-5" data-id="48457" data-obj="post" data-type="1" href="javascript:;">
+                        <i class="fz-16 fa fa-thumbs-up mr4" aria-hidden="true"></i>
+                        <span data-vote="12" data-user-vote="0" class="up-count ">
+                            12                        </span>
+                    </button>
+                    <button class="vote-btn Button Button--blue  mr-5" data-id="48457" data-obj="post" data-type="-1" href="javascript:;">
+                        <i class="fz-16 fa fa-thumbs-down mr4" aria-hidden="true"></i>
+                    </button>
+                    &nbsp;
+                    &nbsp;
+                    <i onclick='$(".widget-article .collect-btn").click();' onmouseover='$(".widget-article .collect-btn").mouseover();' onmouseout='$(".widget-article .collect-btn").mouseout();' class="fz-16 Button Button--plain fa fa-star-o mr4" aria-hidden="true"></i>
+                    <button class="collect-btn Button Button--plain mr-5 " data-id="48457" href="javascript:;">
+                                                    收藏                    </button>
+                    <div class="mb-40 hidden-xs"></div>
+                    <div class="mb-30 visible-xs"></div>
+
+                    
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-md-3 side">
+    <div class="alert alert-warning">
+    <form class="js-search-form" id="top-search-form" action="/search" method="GET">
+        <div class="input-group">
+            <input name="q" id="searchBox" class="form-control" placeholder="搜索你感兴趣的" type="text">
+            <span class="input-group-addon btn" onclick=""><span id="search-button" class="glyphicon glyphicon-search" aria-hidden="true"></span></span>
+        </div>
+    </form>
+</div>
+
+<div class="alert alert-warning" role="alert">
+		<a href="https://www.yanshuo.me/login" style="color:#8a6d3b; border-bottom:1px solid #ccc;">登录</a>言说，同步您在多个终端的浏览数据。
+	</div>    <div class="widget-box">
+        <a href="https://www.yanshuo.me/u/15094">
+            <div class="side-avatar mb-15" style="background-image: url(//yanshuo.oss-cn-qingdao.aliyuncs.com/c_imgs/cdn2.jianshu.io/201707/ba7d39a8f9fdd23657f745529cc52669.jpg/w_200)"></div>
+        </a>
+        <h2 class="h4 widget-box-title">
+            <a href="https://www.yanshuo.me/u/15094">
+                一个普普通通简简单单平平凡凡的神            </a>
+        </h2>
+        
+        <div class="clearfix mb-10">
+                                    <a data-unfollow="关注此人" data-type="user" data-id="15094" class="btn btn-primary big follow-btn followTopic">
+                        关注此人
+                    </a>            </div>    </div>
+    <div class="widget-box">
+            <h2 class="h4 widget-box-title">参与的话题 <a href="https://www.yanshuo.me/topics" title="更多">»</a></h2>
+            <ul class="taglist-inline multi">
+                <li class="tagPopup">
+                        <a href="https://www.yanshuo.me/r/programmer" class="tag" data-toggle="popover">
+                            程序员                        </a>
+                    </li><li class="tagPopup">
+                        <a href="https://www.yanshuo.me/r/backend" class="tag" data-toggle="popover">
+                            后端                        </a>
+                    </li><li class="tagPopup">
+                        <a href="https://www.yanshuo.me/r/laravel" class="tag" data-toggle="popover">
+                            Laravel                        </a>
+                    </li><li class="tagPopup">
+                        <a href="https://www.yanshuo.me/r/java" class="tag" data-toggle="popover">
+                            Java                        </a>
+                    </li><li class="tagPopup">
+                        <a href="https://www.yanshuo.me/r/crawler" class="tag" data-toggle="popover">
+                            爬虫                        </a>
+                    </li><li class="tagPopup">
+                        <a href="https://www.yanshuo.me/r/python" class="tag" data-toggle="popover">
+                            Python                        </a>
+                    </li><li class="tagPopup">
+                        <a href="https://www.yanshuo.me/r/git" class="tag" data-toggle="popover">
+                            Git                        </a>
+                    </li><li class="tagPopup">
+                        <a href="https://www.yanshuo.me/r/linux" class="tag" data-toggle="popover">
+                            Linux                        </a>
+                    </li><li class="tagPopup">
+                        <a href="https://www.yanshuo.me/r/mysql" class="tag" data-toggle="popover">
+                            Mysql                        </a>
+                    </li><li class="tagPopup">
+                        <a href="https://www.yanshuo.me/r/php" class="tag" data-toggle="popover">
+                            PHP                        </a>
+                    </li><li class="tagPopup">
+                        <a href="https://www.yanshuo.me/r/ai" class="tag" data-toggle="popover">
+                            人工智能                        </a>
+                    </li><li class="tagPopup">
+                        <a href="https://www.yanshuo.me/r/javascript" class="tag" data-toggle="popover">
+                            Javascript                        </a>
+                    </li>            </ul>
+        </div>        
+</div>
+        </div>
+    </div>
+</div>
+
+
+<footer id="footer">
+    <div class="container">
+        <div class="text-center">
+            <a href="https://www.yanshuo.me/about">关于言说</a>
+            <span class="span-line">|</span>
+            <a href="https://www.yanshuo.me/about">联系我们</a>
+        </div>
+        <div class="text-center mt-15 mb-15">
+            本站CDN／存储服务由 <a href="https://console.upyun.com/register/?invite=HJNeTwdRZ" rel="nofollow" target="_blank"><img style="height:25px; margin-top:-4px;" src="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/w_100.png"></a> 提供
+        </div>
+        <div class="copyright mt-10">
+            <a href="http://www.miitbeian.gov.cn/">豫ICP备17022949号-2</a>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/jquery.js"></script>
+<script src="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/jquery_002.js"></script>
+<script src="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/lazyload.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/bootstrap.js"></script>
+<!-- 侧边栏跟随屏幕滚动插件 -->
+<script type="text/javascript" src="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/ResizeSensor.js"></script>
+<script type="text/javascript" src="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/theia-sticky-sidebar.js"></script>
+<script type="text/javascript">
+    var is_login = 0;
+    $(function() {
+        img_lazyload();
+        // 固定右侧广告（随着屏幕滚动）
+        // jQuery('.main, .sidebar_ads').theiaStickySidebar({
+        //     // Settings
+        //     additionalMarginTop: 50
+        // });
+    });
+    // 图片懒加载
+    function img_lazyload () {
+        $("img.lazy").lazyload({
+            threshold: 200,
+            placeholder_data_img: '/static/yan/images/white.gif',
+            placeholder_real_img: '/static/yan/images/white.gif',
+        });
+    }
+</script>
+<script src="Spring%20AnnotationUtils%E5%A4%84%E7%90%86%E6%B3%A8%E8%A7%A3_files/global.js"></script>
+
+
+
+
+
+<script type="text/javascript">
+    $(function(){
+        // cnbeta内容处理
+        $('.r-cnbeta .article-body p[style="text-align:center"] a').removeAttr('href');
+        $('.r-cnbeta .article-body p[style="text-align:center"] a').removeAttr('target');
+        // 虎嗅内容处理
+        $('.r-huxiu img').removeAttr('style');
+
+        // 微信内容处理
+        $('.weixin-body iframe').attr('src', $('.weixin-body iframe').attr('data-src'));
+        $('.weixin-body p').css('margin-left', 'initial');
+        $('.weixin-body p').css('margin-right', 'initial');
+        $('.weixin-body section').css('margin-left', 'initial');
+        $('.weixin-body section').css('margin-right', 'initial');
+    });
+</script></body></html>

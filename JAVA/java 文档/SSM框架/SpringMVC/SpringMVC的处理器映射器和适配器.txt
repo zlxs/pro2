@@ -1,0 +1,109 @@
+前端控制器从配置文件中加载 映射器，适配器，视图解析器等组件，如果没有在配置文件中配置，会使用默认加载的
+
+
+一、非注解处理器映射器和适配器  现在一般不用了，都用注解方式
+
+非注解的映射器：
+
+注：多个映射器可以并存，前端控制器判断url能让哪个映射器映射，就让正确的映射器处理。
+
+1）org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping  
+     用bean的name来作为url地址
+
+如：<baen name="/itemController1" class="xxx.xx.controller.ItemController1"></bean>
+    则访问该Controller的url为 http://localhost:8080/项目名/itemController1
+
+-------------------------------------------------------------------------------------------
+2）org.springframework.web.servlet.handler.SimpleUrlHandlerMapping
+
+SimpleUrlHandlerMapping是BeanNameUrlHandlerMapping的增强版本，它可以将url和处理器bean的id进行统一映射配置。
+   
+    <baen id="itemController1" name="/itemController1" class="xxx.xx.controller.ItemController1"></bean>
+    <bean class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">  
+        <property name="mappings">  
+            <props>  
+                <!-- 对itemsController1进行url映射，url是/queryItems1.action -->  
+                <prop key="/queryItems1.action">itemController1<prop/>  
+                <prop key="/queryItems2.action">itemController1<prop/>  
+            </props>  
+        </property>  
+    </bean>  
+
+访问该Controller的url可以为 http://localhost:8080/项目名/queryItems1.action
+                   也可以为 http://localhost:8080/项目名/queryItems2.action
+
+-------------------------------------------------------------------------------------------
+3）CommonsHandlerMappingy 使用元数据的方式
+
+
+-------------------------------------------------------------------------------------------
+
+
+非注解的适配器：
+
+1.org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
+要求编写的Handler实现Controller接口
+
+2.org.springframework.web.servlet.mvc.HttprequestHandler
+要求编写的Handler实现HttpRequestHandler接口
+  
+ public class MyController implements HttpRequestHandler{
+  
+  public void handlerRequest(HttpServletRequest request,HttpServletResponse response) throws ServletException{
+   string a="test";
+   request.setAttribute("a",a);
+   request.setRequestDispatcher("/WEB-INF/jsp/test.jsp").forward(request,response);
+  }
+
+ }
+
+<bean class="xxx.xx.controller.MyController"></bean>
+<bean class="org.springframework.web.servlet.mvc.HttprequestHandler"></bean>
+
+
+
+二、注解的处理器映射器和适配器
+
+
+<!--注解映射器-->
+<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" />
+  无需配置，使用<mvc:annotation-driven />代替
+
+<!--注解适配器-->
+<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter" />
+  无需配置，使用<mvc:annotation-driven />代替
+
+
+<!--使用mvc:annotation-driven标签 可以代替前面配置的两个映射器和适配器
+ 而且默认加载很多的参数绑定方法，比如json转换解析器就默认加载了，
+ 实际开发用这种
+-->
+<mvc:annotation-driven />  
+
+
+<!-- 启动注解驱动的Spring MVC功能，注册请求url和注解POJO类方法的映射-->  
+<mvc:annotation-driven />
+  
+<!-- 启动包扫描功能，以便注册带有@Controller、@Service、
+         @repository、@Component等注解的类成为spring的bean -->  
+<context:component-scan base-package="包名" /> 
+
+
+例：
+@Controller    //标识它是一个控制器（处理器）
+@RequestMapping("/testController")   //加在类上，表示访问该Controller内的方法url都要加/testController
+public class TestController {
+                       http://localhost:8080/项目名/testController/add
+	 @RequestMapping(value="/add",method=RequestMethod.GET)  //这样/add前就会加上 /testController
+	 public ModelAndView add(){
+              String result="add";
+	      return new ModelAndView("hello","result",result);
+	 }
+                      http://localhost:8080/项目名/testController/find
+	 @RequestMapping(value="/find")
+	 public ModelAndView find(){
+	    	String result="find";
+		return new ModelAndView("/hello","result",result);
+	 }
+}
+

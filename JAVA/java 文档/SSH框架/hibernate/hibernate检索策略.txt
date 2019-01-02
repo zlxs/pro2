@@ -1,0 +1,55 @@
+
+
+类级别检索
+1.查对象
+2.查表
+
+
+class 中lasy属性设置为true：立即检索  false:延迟检索
+
+类级别立即检索：
+如：   object=session.load()，立即去查表，为立即检索
+
+
+类级别延迟检索：
+如：   object=session.load()，默认不会立即去查表，使用object时才去查表，为延迟检索
+
+
+在延迟检索下，代理对象c在使用时才初始化，如果session关闭前都没使用，则在关闭后就无法使用了，
+    要使session关闭前没有使用，而关闭后还能使用，设置
+Customer c=session.load(Customer.class,1);
+if(!Hibernate.isInitialized(c))  判断代理对象是否初始化
+{
+  Hibernate。initialize(c);没初始化，则直接初始化代理对象
+}
+这样
+ session.close()之后，
+ 还能 调用 c.getName()...
+
+
+
+
+
+迫切左外链接检索：
+
+在多对一关联级别使用迫切左外连接检索策略 
+如果把Order.hbm.xml文件的<many-to-one>元素的fetch属性设为join，则使用迫切左外连接检索策略。
+优点：
+（1）对应用程序完全透明，不管对象处于持久化状态，还是游离状态，应用程序都可以方便的从一个对象导航到与它关联的对象。
+（2）使用了外连接，select语句数目少。
+缺点：
+（1）可能会加载应用程序不需要访问的对象，白白浪费许多内存空间。
+（2）复杂的数据库表连接也会影响检索性能。 
+适用范围：
+（1）多对一或者一对一关联。
+（2）应用程序需要立即访问的对象。
+（3)数据库系统具有良好的表连接性能
+
+
+
+在程序中显式指定迫切左外连接检索策略
+session .createQuery("from Customer as c left join fetch c.orders where c.id=1").list();
+在执行查询方法时，在HQL语句中显式指定迫切左外连接检索关联的Order对象，因此会覆盖映射文件配置的检索策略。
+不管在Customer.hbm.xml文件中<set>元素的lazy属性是true还是false，Hibernate都会执行以下select语句：
+select * from CUSTOMERS left outer join ORDERS on CUSTOMERS.ID =ORDERS.CUSTOMER_ID where CUSTOMERS.ID=1;
+

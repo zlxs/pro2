@@ -1,0 +1,19 @@
+public String getToken()
+	{
+		String token=System.currentTimeMillis()+new Random().nextInt()+"";
+		try {
+			//得到数据指纹
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			byte[] bytearr = md.digest(token.getBytes());
+			//构建字符串返回，由于字节数组中的字节在码表中不一定有对应的，返回的一般是乱码，所以要用bsae64编码变成可见字符
+			byte[] a = BASE64EncoderStream.encode(bytearr);
+			return new String(a);
+			
+			
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+一个servlet把得到的令牌字符串存放在session中再跳转到jsp，jsp$到令牌，form提交时用hidden输入项带到另一个servlet来作比较,如果相同就允许提交
+表单，然后把session中的令牌删除，这时再提交表单由于session中没有了令牌，就无法匹配，提交就被阻止

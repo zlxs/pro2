@@ -1,0 +1,107 @@
+angular2路由是管理angular2应用内部导航的一个重要内容，在angular应用中，很多的组件是通过组合完成一个复杂的应用，
+不可避免的是我们常会在视图间切换，那么这是就需要使用路由来管理视图间的转换。
+
+注：
+ 修改package.json中的"start": "concurrently \"npm run tsc:w\" ",
+ 改为 "start": "concurrently \"npm run tsc:w\" \"npm run lite\"",
+
+ 运行项目方式：
+ cmd进入项目根目录 运行 npm start 来访问
+
+
+1.
+ 在index.html主页面中head标签里添加<base href="/">标签
+
+
+2.
+把页面的有超链接的一部分内容抽出来，然后在对应的
+Component中配置指定的directives和providers
+
+@Component({
+    templateUrl: "./app/root.html",
+    selector: "my-root",
+    directives: [ROUTER_DIRECTIVES], //配置ROUTER_DIRECTIVES
+    providers: [ROUTER_PROVIDERS]  //配置ROUTER_PROVIDERS
+})
+@RouteConfig([    //这个注解很重要,进行路由配置
+    {
+        path: "/menu1",
+        name: "Menu1",//一定要以大写开头
+        component: Menu1Component
+    },
+    {
+        path: "/menu2",
+        name: "Menu2",
+        component: Menu2Component
+    },
+    {
+        path: "/menu3",
+        name: "Menu3",
+        component: Menu3Component
+    }
+])
+export class RootComponent {
+}
+
+@RouterConfig 是一个路由数组，它会决定如何导航。 每个 Route 会把一个 URL 的 path 映射到一个组件。
+
+
+3.
+@RouteConfig中对应的三个MenuComponent如下：
+
+@Component({
+    selector: "content1",
+    template: `<div>这里是内容1...</div>`
+})
+export class Menu1Component {
+
+}
+
+@Component({
+    selector: "content2",
+    template: `<div>这里是内容2...</div>`
+})
+export class Menu2Component {
+
+}
+
+@Component({
+    selector: "content3",
+    template: `<div>这里是内容3...</div>`
+})
+export class Menu3Component {
+
+}
+
+
+4.
+我们把一个 RouterLink 指令添加到a标签上，并把该指令绑定到一个能返回路由链接数组（链接参数数组 ）的模板表达式上。
+路由器最终会把此数组解析成一个 URL 和一个组件视图
+
+在模板中把a标签的href属性去掉，改成[routerLink]="['Menu1/Menu2/Menu3']"
+
+Menu1/Menu2/Menu3是@RouteConfig中配置的name属性的值
+
+<ul>
+    <li>
+        <a [routerLink]="['Menu1']">Menu 1</a>
+    </li>
+    <li>
+        <a [routerLink]="['Menu2']">Menu 2</a>
+    </li>
+    <li>
+        <a [routerLink]="['Menu3']">Menu 3</a>
+    </li>
+</ul>
+<p> </p>
+<hr/>
+<!--模块的内容将显示在这里-->
+<router-outlet></router-outlet> //这个标签不是自定义的，固定写法
+
+
+这时，点击页面超链接 menu1/menu2/menu3 分别显示： 这里是内容1/2/3...
+同时页面无刷新，但是网址会发生变化 从 localhost:3000  变为 localhost:3000/对应的path 如：
+  点击menu1则网址变为localhost:3000/menu1  把页面收藏起来后，
+ 下次访问还会出现点击menu1后的"这里是内容1..."的内容
+
+ 

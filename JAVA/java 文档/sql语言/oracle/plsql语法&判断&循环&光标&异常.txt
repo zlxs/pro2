@@ -1,0 +1,268 @@
+﻿1，PL/SQL程序结构
+
+declare
+      说明部分    （变量说明，光标申明，例外说明 〕
+begin
+      语句序列   （DML语句〕… 
+exception
+      例外处理语句   
+end;
+
+例：打印Hello World
+
+set serveroutput on
+ declare
+    --变量说明
+ begin
+    --程序体
+    dbms_output.put_line('Hello World');
+ end;
+
+--------------------------------------
+2，基本结构 + 使用变量
+	声明：      注：还有一个record，用到时去baidu
+		vsal1 number;
+		vsal2 emp.sal%type;
+		vemp_rec emp%rowtype;
+	赋值：
+		vsal1 number := 100;
+		select sal into vsal2 from emp where empno=7839;   使用into关键字
+		select * into vemp_rec from emp where empno=7839;   使用into关键字
+	使用：
+		dbms_output.put_line(vsal1);
+		dbms_output.put_line(vsal2);
+		dbms_output.put_line(vemp_rec.sal);
+		
+如果没有变量，就可以不写declare段
+PL/SQL对大小写不敏感。
+赋值是使用冒号等号“:=”（中间不能有空格）
+
+例：
+--在窗口里显示服务器输出信息
+set serveroutput on;
+declare
+  --声明一般的变量，可以指定初始值，注意要使用:=
+  vsal numberr:=0;
+  --声明引用型变量，表示与emp表中ename的列的类型一样
+  vname emp.ename%type;
+  --声明记录型变量，表示emp表中的一行这个数据类型
+  vemp_rec emp%rowtype;
+begin
+  --把查询出来的结果赋给变量
+  select ename,sal into vname,vsal from emp where empno=1234;
+  select * into vemp_rec from emp where empno=1234;
+  --显示结果
+  dbms_output.put_line(vanme||'的薪水是'||vsal);
+  dbms_output.put_line(vemp_rec.ename||'的薪水是'vemp_rec.sal);
+end;
+
+---------当然，实际上查询的empno不能写死------------------
+set serveroutput on;
+accept empno prompt '请输入员工编号';
+declare
+  vemp_rec emp%rowtype;
+begin
+  --这里用&empno来代替具体的信息
+  select * into vemp_rec from emp where empno=&empno;
+  dbms_output.put_line(vemp_rec.ename||'的薪水是'vemp_rec.sal);
+end;
+
+--------------------------------------
+3，判断语句
+	语法：
+		IF .. THEN .. END IF;
+		IF .. THEN .. ELSE .. END IF;
+		IF .. THEN .. ELSIF .. THEN .. ELSIF .. THEN .. END IF;  注：这里是elsif 不是elseif
+例：
+set serveroutput on;
+accept num prompt '请输入要判断的数字';
+declare
+  vnum number;
+  vstr varchar2(5);
+begin
+  -- 得到输入的数字
+  vnum := &num;
+  -- 进行判断
+  if vnum > 0 then vstr := '正数';
+    elsif vnum<0 then  vstr := '负数';
+    else vstr := '零';
+  end if;
+  -- 打印结果
+  dbms_output.put_line( vstr );
+end;
+
+--------------------------------------
+4，循环语句
+	语法：
+		LOOP ... EXIT WHEN  ... END LOOP   when条件成立，退出循环
+		FOR i IN [REVERSE] 1..10 LOOP ... END LOOP  for循环(1..10之间的".."是固定写法)  加REVERSE 则i会从高到低
+		WHILE ... LOOP ... END LOOP    while循环
+例：
+set serveroutput on;
+begin
+	FOR i IN 1..10    
+	LOOP
+          --loop里为循环体  输出1到10
+	  dbms_output.put_line( i );		
+	END LOOP; 
+end;
+-----------
+set serveroutput on;
+declare
+  vnum number := 1;
+begin 
+  loop
+    -- 退出条件
+    exit when vnum > 10;
+    -- 循环体
+    dbms_output.put_line( vnum );
+    -- 加1
+    vnum := vnum + 1;
+  end loop;
+end;
+-----------
+set serveroutput on;
+declare
+  vnum number := 1;
+begin
+  -- 当条件成立，就执行循环体
+  while vnum <= 10
+  loop
+    -- 循环体
+    dbms_output.put_line( vnum );
+    -- 加1
+    vnum := vnum + 1;
+  end loop;
+end;
+
+--------------------------------------
+5，使用光标（游标）  从表中检索出结果集，从中每次指向一条记录进行交互的机制。
+	声明：
+		cursor c1 is select ename from emp;
+	使用：
+		打开光标：      open c1;    (打开光标执行查询)
+		取一行光标的值：fetch c1 into pjob; (取一行到变量中)
+		关闭光标：      close  c1;  (关闭游标释放资源)
+	一般代码写法：
+		----------------------
+		declare
+		  --定义光标
+		  cursor cemp is select ename,sal from emp;
+		  --为该光标定义变量
+		  pename emp.ename%type;
+		  psal   emp.sal%type;
+		begin
+		  --打开光标
+		  open cemp;
+		  loop
+			--取每一条记录
+			--fetch:1.取值 2.把指针往后移动一个位置
+			fetch cemp into pename,psal;
+			--如果没有取到，退出循环
+			exit when cemp%notfound;
+			
+			--打印
+			dbms_output.put_line(pename||'的薪水是'||psal);
+		  
+		  end loop;
+		  --关闭
+		  close cemp;
+		end;
+
+----------------
+游标的属性：
+   %FOUND   如果fetch到数据，则返回true,否则返回false 
+   %NOTFOUND   与上面相反   注：需要先fetch，才能用%FOUND/%NOTFOUND,所以如果用while循环时，需要在循环外，先fetch一下
+   %ISOPEN   如果当前游标已打开，返回true
+   %ROWCOUNT   返回当前游标的指针位移量
+----------------
+
+光标可以带参数：
+set serveroutput on
+/*
+ * 显示指定部门中每个员工的姓名和工资信息。
+ */
+declare
+  -- 光标   don为光标的参数，用来动态指定表示部门编号
+  cursor c_emp(dno number) is select ename, sal from emp where deptno=dno;
+  vname emp.ename%type; 
+  vsal  emp.sal%type;
+  vdeptno dept.deptno%type; -- 用于保存接收到的部门编号信息
+begin
+  -- 得到查询的条件
+  vdeptno := &input_deptno;
+  -- 打开光标时把部门编号参数传递给光标
+  open c_emp(vdeptno);
+  loop
+    fetch c_emp into vname, vsal;
+    exit when c_emp%notfound;   
+    dbms_output.put_line( vname || ' 的工资为： ' || vsal );   
+  end loop;
+  close c_emp;
+end;
+
+%%%%%%%%%%%%%%%-------------------------------------
+6，整合PL/SQL的变量，判断，循环，游标
+set serveroutput on;
+/*
+ * 要求：
+ *    按员工的工种涨工资，总裁（PRESIDENT）1000元，经理（MANAGER）涨800元，其他人员涨400元。
+ * 分析：
+ *    取出所有员工，每一个员工都先进行判断，符合什么条件，就涨多少工资。
+ *    select empno, job from emp;
+ *    update emp set sal = sal + ? where empno=?
+ */
+declare
+  -- 定义光标（所有员工的集合）
+  cursor c_emp is select empno, job from emp;
+  -- 定与光标配套的变量
+  vempno emp.empno%type;
+  vjob   emp.job%type;
+begin
+  -- 循环员工集合（光标）
+  open c_emp; -- 打开光标
+  loop
+    fetch c_emp into vempno, vjob; -- 获取数据
+    exit when c_emp%notfound;      -- 指定退出循环的条件
+    
+    -- 判断是什么情况，就涨多少工资
+    if vjob='PRESIDENT' then update emp set sal = sal+1000 where empno=vempno;
+      elsif vjob='MANAGER' then update emp set sal = sal+800 where empno=vempno;
+      else update emp set sal = sal+400 where empno=vempno;
+    end if;
+    
+  end loop;
+  close c_emp; -- 关闭光标
+  commit; -- 提交事务
+  dbms_output.put_line(' 完毕 ');
+end;
+
+--------------------------------------		
+7，例外(异常)：
+	系统定义例外
+	用户定义的例外
+例：
+set serveroutput on
+-- 测试异常处理
+declare
+  vnum number;
+begin
+  vnum := 1 / 0;
+  dbms_output.put_line(' 正常结束 ');
+-- 处理异常
+exception
+  when zero_divide then dbms_output.put_line(' 异常：被0除！ ');
+end;
+-----自定义异常-----
+set serveroutput on
+-- 测试异常处理
+declare
+  -- 声明一个异常的类型
+  my_exception exception;
+begin
+  -- 抛出异常（应是满足某条件时才抛出异常）
+  raise my_exception;
+exception
+  -- 处理指定类型的异常
+  when my_exception then dbms_output.put_line(' 自定义的异常 ');
+end;

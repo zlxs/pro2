@@ -1,0 +1,17 @@
+<script src="js/jquery-1.8.0.min.js"></script>
+<script>
+	
+	$(function(){
+	    $("#validateCode").click(function(){
+		$(this).attr("src","${pageContext.request.contextPath}/ValidateCodeServlet?time="+new Date());
+	    });	
+	})
+	
+</script>
+
+
+<body>
+    <img id="validateCode" title="换一张"  src="${pageContext.request.contextPath}/ValidateCodeServlet" />
+</body>
+
+ValidateCodeServlet用来生成验证码

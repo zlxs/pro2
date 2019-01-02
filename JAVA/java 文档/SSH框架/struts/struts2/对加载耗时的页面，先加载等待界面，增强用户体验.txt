@@ -1,0 +1,32 @@
+
+对于一些加载缓慢的页面，用户加载可能需要一些时间，
+这时我们可以先加载给用户一个很小的页面，页面里有正在加载，请稍等的提醒，
+等真正访问的页面加载好了再给用户看，来增加用户的体验。
+
+使用执行等待拦截器 ExecAndWait,需要放在最后
+
+
+<action name="testAction" class="xxx.xx.Action.TestAction">
+        <result name="success">/success.jsp</result>
+        <!-- 需要配置name为wait的result,表示加载好之前，先给这个页面给用户看 -->
+        <result name="wait">/wait.jsp</result>
+        <interceptor-ref name="defaultStack"></interceptor-ref>
+        <!-- 需要放在最后，配置成最后一个拦截器 -->
+        <interceptor-ref name="execAndWait"></interceptor-ref>
+</action>
+
+
+wait.jsp:
+
+<%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
+<%@ taglib uri="/struts-tags" prefix="s" %>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+   <!--表示每隔1秒，访问一次用户需要的页面，如果加载完毕，就显示-->
+   <meta http-equiv="refresh" content="1;url=<s:url/>">
+  </head>
+  <body>
+                 玩命加载中，请稍等。。。
+  </body>
+</html>

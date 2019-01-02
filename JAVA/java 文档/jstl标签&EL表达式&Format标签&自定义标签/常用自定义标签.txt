@@ -1,0 +1,79 @@
+防盗链标签：
+
+public class RefererTag extends SimpleTagSupport
+{
+ private String site;//针对哪个站点防盗链
+ private String page;//盗链者跳转到哪去
+ 
+ public void setSite(String site)
+{
+ this.site=site;
+ }
+
+ public void setPage(String page)
+{  
+ this.page=page;
+ }
+
+ public void doTag()throws JspException,IoException
+{
+  pageContext pagecontext=(PageContext)this.getJspContext();
+  HttpServletRequest request=(HtteServletRequest)pagecontext.getRequest();
+  HttpServletResponse request=(HtteServletResponse)pagecontext.getResponse();
+
+  String referer=request.getHeader("referer");//得到来访者的页面地址（从哪个页面地址上的一个超链接过来的）
+
+  if(referer==null||！referer.startsWith(site))
+  {
+     response.sendRedirect(request.getContextPath()+"/"+page);
+     throw new SkipPageException();//抛这个异常控制余下的jsp不执行
+   }
+ }
+
+
+转义标签：
+
+ public class extends SimpleTagSupport
+{
+ 
+  doTag()
+ {
+   StringWriter sw=new StringWriter();
+   JspFragment jf=this.getJspBody();
+   jf.invoke(sw);
+   String content=sw.getBuffer().toString();
+   //转义
+   content=filter(content);
+   this.getJspContext().getOut().write(content);
+
+ }
+
+  public String filter(String message) {
+
+        if (message == null)
+            return (null);
+
+        char content[] = new char[message.length()];
+        message.getChars(0, message.length(), content, 0);
+        StringBuilder result = new StringBuilder(content.length + 50);
+        for (int i = 0; i < content.length; i++) {
+            switch (content[i]) {
+            case '<':
+                result.append("&lt;");
+                break;
+            case '>':
+                result.append("&gt;");
+                break;
+            case '&':
+                result.append("&amp;");
+                break;
+            case '"':
+                result.append("&quot;");
+                break;
+            default:
+                result.append(content[i]);
+            }
+        }
+        return (result.toString());
+    }
+}

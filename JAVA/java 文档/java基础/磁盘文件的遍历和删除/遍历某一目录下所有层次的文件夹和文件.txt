@@ -1,0 +1,20 @@
+public static void listFiles(String path,int depth){
+		
+		File f=new File(path);	
+		if(!f.exists()){
+			System.out.println("文件或目录不存在！");
+			return;
+		}
+		
+		for(int j=1;j<depth;j++){
+			System.out.print("  ");
+		}
+		System.out.println("--"+f.getName());
+		
+		if(f.isDirectory()){
+			for(File file:f.listFiles()){	
+				listFiles(path+"/"+file.getName(),depth+1);
+			}
+		}
+		
+	}

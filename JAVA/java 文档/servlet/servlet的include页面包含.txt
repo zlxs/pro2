@@ -1,0 +1,7 @@
+
+request.getRequestDispatcher("/head.jsp").include(request,response);
+response.getWriter().write("aaa");
+request.getRequestDispatcher("/foot.jsp").include(request,response);
+
+注：被包含页面的不要加全局标签,否则输出给浏览器的页面中会有多个<!DOCTYPE...><head><body>等标签
+格式不良好

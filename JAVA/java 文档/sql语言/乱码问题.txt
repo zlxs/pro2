@@ -1,0 +1,17 @@
+
+插入数据的细节3(插入中文)
+	要告诉mysql客户采用gb2312编码,因为客户端命令行是用的gb2312码表
+	show variables like 'chara%';
+	set character_set_client=gb2312;
+	insert into employee(id,username) values('3','张三');
+	
+
+显示数据乱码 数据库内utf8数据，命令行是gb2312
+	要想查看时不乱码,
+	show variables like 'chara%';
+	set character_set_results=gb2312;
+	select * from employee;
+
+
+上述设置只在一个命令行窗口有效，换一个命令行就需要重新设置，但我们都在程序中
+写sql语句，不是在命令行中，所以这个乱码问题可以不考虑，在程序中设置好码表

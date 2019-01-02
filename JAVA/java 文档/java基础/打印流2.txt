@@ -1,0 +1,38 @@
+/**
+ * 把文件打印到控制台中
+ * 
+ */
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+
+public class ss {
+ public static void main(String[] args)
+ {
+   PrintStream a=null;
+   try {
+	BufferedReader b=new BufferedReader(new FileReader("e:/comparable.txt"));
+	a=System.out;
+	String s=null;
+	try {
+		while((s=b.readLine())!=null)
+		{
+		 a.println(s);
+		}
+		b.close();
+		a.close();
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
+	
+} catch (FileNotFoundException e) {
+	e.printStackTrace();
+}
+   
+	 
+ }	
+}

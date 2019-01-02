@@ -1,0 +1,48 @@
+
+传递string：
+public class TestController implements Controller{
+
+	@Override
+	public ModelAndView handleRequest(HttpServletRequest arg0,
+			HttpServletResponse arg1) throws Exception {
+          		
+                String hello="hello springMVC!";
+		return new ModelAndView("/hello","result",hello);
+	}
+
+}
+
+jsp获取数据:  ${result}
+
+----------------------------------------------------------------------------
+
+传递Map:
+public class TestController implements Controller{
+
+	@Override
+	public ModelAndView handleRequest(HttpServletRequest arg0,
+			HttpServletResponse arg1) throws Exception {
+          		
+                Map<String,Object> map=new HashMap<String,Object>();
+                map.put("key1",new User("aaa","123"));
+                map.put("key2","hello springMVC");
+		return new ModelAndView("/hello","map",map);
+	}
+}
+jsp获取数据:  
+<c:forEach var="entry" item="${map}" >
+   ${entry.key} ---> ${entry.value}
+</c:forEach>
+
+----------------------------------------------------------------------------
+
+
+在方法中添加参数Model/ModelMap  model
+
+然后 model.addAttribute("key",value);
+
+Model是一个接口，ModelMap是一个接口实现。
+作用：将model数据填充到request域
+
+
+

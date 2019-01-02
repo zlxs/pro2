@@ -1,0 +1,32 @@
+1.配置mybatis的核心配置文件
+
+2.编写mapper映射文件和mapper接口
+
+3.测试
+public class TestMyBatis {
+
+	public static void main(String[] args) {
+            //加载mybatis配置文件
+            //或用Resources类 InputStream in=Resources.getResourceAsStream("mybatis-cfg.xml");
+	    InputStream in=TestMyBatis.class.getClassLoader().getResourceAsStream("mybatis-cfg.xml");
+	    //创建工厂
+            SqlSessionFactoryBuilder builder=new SqlSessionFactoryBuilder();
+            //通过指定的配置文件信息，使用工厂创建SessionFactory
+	    SqlSessionFactory sessionFactory=builder.build(in);
+            //得到Session, 设置openSession(true)则会操作完自动提交事务
+	    SqlSession session = sessionFactory.openSession();
+	    
+            /*--------------通过session进行CURD操作-----------
+              statement为映射文件的namespace名+"."+select标签的id名
+            */
+	    String statement="com.mybatis.pojo.UserMapper.getUserById";
+	    User user=(User) session.selectOne(statement,1);
+
+            /*-------使用mapper接口方式--------*/
+	    //mybatis会提供接口的实现类
+            UserMapper userMapper = session.getMapper(UserMapper.class);
+            User user=userMapper.getUserById();
+
+            session.close();
+	}
+}

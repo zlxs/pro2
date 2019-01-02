@@ -1,0 +1,27 @@
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class B {
+ public static void main(String[] args)
+ {
+  Date a=new Date(System.currentTimeMillis()+7*1000);
+  long t=a.getTime();
+  DateFormat b=new SimpleDateFormat("mm-ss");
+  while(true)
+  {
+	  a=new Date(a.getTime()-1000);
+	  try {
+		Thread.sleep(1000);
+	} catch (InterruptedException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	  if(t-7000>a.getTime())
+	  {
+		 break; 
+	  }
+	  System.out.println(b.format(a));
+  }
+ }
+}

@@ -1,0 +1,9 @@
+开启/关闭事物
+set autocommit on/off
+
+1.设置保存点 savepoint a     a为自定义保存点的名称
+2.取消部分事务 rollback to a
+3.取消全部事务 rollback
+
+oracle默认是开启事物的，所以DML语句需要commit,
+   但DDL语句是不需要手动提交的

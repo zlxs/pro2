@@ -1,0 +1,48 @@
+
+Action的异常统一抛出，如果遇到异常struts2的拦截器会catch到，并做处理（
+    拦截器会在请求调用Action前拦截下来写上try catch 在try中帮我们调用Action的方法，
+    Action执行完后再返回拦截器，所以Action的异常会被拦截器捕捉到）
+需要在在struts-xml文件中配置
+
+<package name="a" extends="struts-default">
+
+ <global-exception-mapping>
+    <exception-mapping result="error" exception="java.sql.SQLException" />
+ </global-exception-mapping>
+
+</package>
+
+再继承package a就能在所有Action中用全局配置的异常声明
+
+<package name="b" namespace="/" extends="a">
+ <action name="login" class="org.qiujy.web.struts.action.LoginAction">
+       <result name="success">/success.jsp</result>
+       <result name="error">/error.jsp</result>
+ </action>
+</package>
+把异常声明在全局里，当某个Action遇到异常时，去全局中查找，找到对应的异常后，
+跳到该Action配置的与全局中对应的result的地址进行处理
+
+
+
+或者把异常直接在Action中配置
+ <action name="login" class="org.qiujy.web.struts.action.LoginAction">
+   
+       <exception-mapping result="error" exception="java.sql.SQLException" />
+       <result name="success">/success.jsp</result>
+       <result name="error">/error.jsp</result>
+ </action>
+
+
+
+或者配置全局result和全局exception-mapping
+<package name="a" extends="struts-default">
+
+ <global-results>
+   <result name="error">/error.jsp</result>
+ </global-results>
+ <global-exception-mapping>
+    <exception-mapping result="error" exception="java.sql.SQLException" />
+ </global-exception-mapping>
+
+</package>

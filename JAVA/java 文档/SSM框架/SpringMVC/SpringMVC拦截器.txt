@@ -1,0 +1,98 @@
+
+如何定义拦截器：实现接口HandlerInterceptor
+  接口中提供三个方法：
+
+//进入handler方法之前执行
+1.public boolean preHandle(HttpServletRequest request,
+          HttpServletResponse response,Object handler) throws Exception;
+
+return false 表示拦截，不向下执行
+return true  表示放行
+
+
+//进入handler方法之后，返回modelAndView之前执行
+2.public void postHandler(HttpServletRequest request,HttpServletResponse response,
+          Object handler,ModelAndView modelAndView) throws Exception;
+
+将公用的模型数据在这里传到视图，也可以在这里统一指定视图
+
+
+
+//执行handler完成执行此方法
+3.public void afterCompletion(HttpServletRequest request,
+          HttpServletResponse response,Object handler,Exception ex) throws Exception;
+
+统一异常处理，统一日志处理
+日志处理的拦截器要放在第一个，且preHandler方法要放行
+
+
+注：
+多个拦截器preHandler方法按拦截器配置的顺序执行，postHandler和afterCompletion按拦截器配置的逆向顺序执行
+只要有一个拦截器不放行，则所有拦截器的postHandler方法不执行
+前一个拦截器的preHandler方法不放行，则后续拦截器的方法均不执行
+
+
+
+//自定义拦截器  实现登录验证
+public class LoginInterceptor implements HandlerInterceptor{
+
+  public boolean preHandle(HttpServletRequest request,
+          HttpServletResponse response,Object handler) throws Exception{
+       //获取请求的url
+       String url=request.getRequestURI();
+       //判断url是否是公开地址（实际使用时将公开地址（无需登录就能访问的地址）配置在配置文件中）
+       if(url.indexOf("login.action")>=0){     
+          return ture;
+       }
+       
+       HttpSession session=request.getSession();
+       //从session中取出用户身份信息
+       String username=(String)session.getAttribute("username");
+       //判断session中是否有登录标记
+       if(username!=null){
+          return true;
+       }
+       //否则跳转到登录页面
+       request.getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(request,response);
+
+       return false;
+  }
+
+  public void postHandler(HttpServletRequest request,HttpServletResponse response,
+          Object handler,ModelAndView modelAndView) throws Exception{
+
+
+  }
+
+  public void afterCompletion(HttpServletRequest request,
+          HttpServletResponse response,Object handler,Exception ex) throws Exception{
+
+
+  }
+
+}
+ 
+
+SpringMVC拦截器针对HandlerMapping进行拦截设置
+如果在某个HandlerMapping中配置拦截，经过该HandlerMapping映射成功的handler最终使用该拦截器 
+
+SpringMVC.xml中 配置拦截器： 
+
+<mvc:interceptors>  
+  <mvc:interceptor>  
+   <!-- 需拦截的地址 -->  
+                        <!-- 一级目录 -->  
+   <mvc:mapping path="/*.do" />  
+   <mvc:mapping path="/*.ajax" />  
+   <mvc:mapping path="/*.htm" />  
+  
+                        <!-- 二级目录 -->  
+   <mvc:mapping path="/*/*.do" />  
+   <mvc:mapping path="/*/*.ajax" />  
+   <mvc:mapping path="/*/*.htm" />  
+ 
+
+   <!--拦截器--> 
+   <bean class="xxx.xx.interceptor.xxxInterceptor" />  
+  </mvc:interceptor>  
+</mvc:interceptors>  

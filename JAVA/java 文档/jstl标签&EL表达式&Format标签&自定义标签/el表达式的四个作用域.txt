@@ -1,0 +1,10 @@
+pageScope
+
+requestScope
+
+sessionScope
+
+applicationScope
+
+指定从某个域中查询某个属性的值，如：
+${sessionScope.xxx}

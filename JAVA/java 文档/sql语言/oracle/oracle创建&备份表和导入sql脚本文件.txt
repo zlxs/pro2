@@ -1,0 +1,81 @@
+通过子查询创建一个和原有表结构相同的新表：
+-- 建表并插入数据。
+create table t_emp
+as
+select * from emp;
+
+-- 只想要表结构，不要数据
+create table t_emp2
+as
+select * from emp where 1=2
+
+-- 如果子查询中的select中有表达式，则必须要指定别名
+create table t_emp4
+as
+select empno ,sal*12 total from emp where deptno=10
+
+-- 通过指定别名指定新表的列名
+create table t_emp4
+as
+select empno id, ename name,sal*12 totalsal from emp where deptno=10
+
+--------------------------------------------------------------------
+Oracle 使用MERGE INTO 语句更新数据
+
+MERGE INTO 是Oracle 9i以后才出现的新的功能。那这个功能 是什么呢？
+         简单来说，就是：“有则更新，无则插入”
+         从这句话里，应该可以理解到，merge into 操作一个对象'A'的时候，
+         要有另外一个结果集做为源数据 'B'.
+         ‘merge into’  将B中的数据与A中的数据按照一定条件'C'进行对比，如果 A中数据满足C条件，
+         则进行update操作，如果不满足条件 'C'，则进行insert操作。（请注意这种对应关系）
+
+语法：
+ MERGE [INTO] [schema.]table [alias]
+       USING {[schema.]table|views|query} [alias]
+       ON （condition）
+       WHEN MATCHED THEN UPDATE SET （clause）
+       WHEN NOT MATCHED THEN INSERT VALUES （clause)
+
+
+
+如：
+
+merge into  department_copy dc     ----目的表
+using department d        ---原表
+on  (d.id=dc.id)
+when matched then update dc set dc.id=d.id,dc.name=d.name,...
+wnen not matched then insert into dc(dc.id,dc.name...) values(d.id,d.name...)
+
+数据在目的表中存在则更新，数据在目的表中不存在则插入
+
+--------------------------------------------------------------------
+从table2拷贝数据到table1
+insert into table1(id,name) 
+ select id,name from table2
+
+--------------------------------------------------------------------
+执行外部的sql脚本文件：  @脚本文件地址
+	SQL> @d:/sql/testdelete.sql  @脚本文件地址
+
+不显示命令执行的反馈信息
+	set feedback off	不显示
+	set feedback on		显示
+
+统计sql执行所使用时间
+	set timing on	统计
+	set timing off	不统计
+ 
+
+testdelete.sql文件内容
+
+create table testdelete
+( testid number,
+  testname varchar(20));
+
+insert into testdelete values(0,'name0');
+insert into testdelete values(1,'name1');
+insert into testdelete values(2,'name2');
+insert into testdelete values(3,'name3');
+insert into testdelete values(4,'name4');
+insert into testdelete values(5,'name5');
+insert into testdelete values(6,'name6');

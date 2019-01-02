@@ -1,0 +1,7 @@
+
+封装所有请求参数
+
+${param.username}获取第一个username
+
+有多个username时用paramValues
+${paramValues.username[0]}

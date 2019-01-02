@@ -1,0 +1,113 @@
+1. 字符函数：
+    lower(x)   转小写 
+    upper(x)   转大写
+    initcap(x) 单词首字母转大写
+    concat(x,y)   字符连接与||功能类似
+    substr(x,start ，[length])   取子串  注意：oracle的下标是从1开始的
+        格式: substr('asdfasdfasdfasddf',2,3)   -->sdf
+
+    length(x)  取字符串长度
+    lpad/rpad(x,width ,[pad_string]) 字符定长，（不够长度时，左/右填充）
+    
+    trim([trim_charFROM] x)  删除首部、尾部字符
+         格式：trim('h' from 'hello hello')
+        trim 默认删除方式是both
+        leading   只删首部   trim(leading 'h' from 'hhello helloh')  会把最前两个h都去掉
+        trailing  只删尾部   trim(trailing 'h' from 'hello hellohh') 会把最后两个h都去掉
+
+    ltrim(x[,trim_string])  从x左边删除字符  等价于使用trailing
+    rtrim(x[,trim_string])  从x右边删除字符  等价于使用leading     
+    用法
+    rtrim:右截取
+	SQL>select rtrim('abcdeadede','de') from dual;//abcdea
+    ltrim:左截取
+	SQL>select ltrim('dedeadeabc','de') from dual;//adeabc
+
+    instr(string,substring[,position,occurence])   返回子字符串在字符串中的位置
+         格式：instr（'源字符串' , '目标字符串' ,'方向（正数时为从左往右检索，负数时为从右往左检索）','第几次出现'）
+         
+    replace(x,search_string,replace_string)   字符替换
+
+    translate(target,m,n) 模版匹配  没什么用
+
+
+2.  数值函数：
+    round(x ，[y])  y指定保留几位    四舍五入
+    trunc(x,[y])       截断，保留y位小数，剩余部分直接舍去
+    mod(m,n)            求余
+    ceil(x)    返回特定的最小数（大于等于x的最小整数）
+    floor(x)    返回特定的最大数（小于等于x的最大整数）
+
+
+3.  日期函数：
+    sysdate    返回系统当前日期  select sysdate from dual;//dual是虚表，被用于计算临时数据    
+    months_between(x，y） 两个日期之间相差的月数
+    add_months(x,y)      返回x上加上y个月后的结果
+    last_day(x)           返回指定日期所在月最后一天的日期
+    next_day(x，day)    返回指定日期x的下一day(星期几)的时间值，day是一个文本串，比如SATURDAY
+      如 next_day(to_date('1999.11.24','yyyy.mm.dd')，'friday') 返回1999.11.24之后紧接着的星期五的日期
+  
+    extract       提取日期
+       select extract(day from sysdate) from dual
+       select extract(month from sysdate) from dual;
+       select extract(year from sysdate) from dual;
+    
+    得到两个日期间相差的天数
+    -----@-----
+    oracle中日期是可以计算的如 date1-date2 得出 两个日期相差的天数
+    -----------
+
+4.  日期转换函数：
+    TO_DATE(string, 'format_model') 将一个日期字符串转换成日期格式 
+    TO_CHAR(date, 'format_model') 将日期转换为CHAR类型，
+    
+    数字类型转字符串类型，常用于数字货币转字符货币
+    TO_CHAR(number, 'format_model')   9代表任意数字，L代表本地的货币符号，$代表美元，0就代表0
+
+    TO_NUMBER(string[,'format_model']) 将一个字符串转换成一个数字格式
+
+    select to_date('1999-09-23','yyyy-mm-dd') from dual;
+    
+    日期格式元素：
+       YYYY   四位的数字年份
+       rrrr   四位的数字年份 推荐使用
+       YEAR   英文年份  
+       MM  两位数的数字月
+       MONTH  英文月
+       MON 英文月缩写   
+       DD  两位数的数字日
+       DY  大写英文星期几缩写
+       dy  小写英文星期几缩写
+       DAY 星期几
+       HH24  24小时制的小时
+       HH    12小时制的小时
+       mi 分钟
+       ss 代表秒
+       fm 代表去掉前面的0  fm06-->6   fmyyyy-mm-dd 去掉日期中的0 如 2016-07-06 --> 2016-7-6
+          可以用于上面的format_model中
+
+5.  通用函数
+   decode 条件判断
+
+    格式：decode (col|expression,search1,result1 [,search2,result2,...] [,default])
+       判断col|exporession的值，当search1匹配时，则返回，result1,
+       与search2匹配时，返回result2 ... 如果都不匹配，返回default。
+
+    select EMPNO,ENAME,JOB,SAL,
+    decode(job,'CLERK',SAL*1.15,'SALESMAN',SAL*1.1,SAL*1.12) NEW_SAL
+    FROM SCOTT.EMP;
+
+
+    case 表达式
+
+     -- 写法一：   -----类似 switch case  这种只能对一种条件的不同可能结果进行处理
+          case（条件）   
+          when 值1 then 返回值1
+          when 值2 then 返回值2
+          else 缺省值
+          end;
+      -- 写法二：  -----类似 if   这种可以对不同的条件进行处理
+          case when 条件1 then 返回值1
+          when 条件2 then 返回值2
+          else 缺省值
+          end;

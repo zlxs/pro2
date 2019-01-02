@@ -1,0 +1,83 @@
+public class mymap {
+	Array1 arr[]=new Array1[50];
+	int size;
+	
+	public int size()
+	{
+		return size;
+	}
+	
+	public void put(Object key,Object value)
+	{
+     Array1 e=new Array1(key,value);
+     for(int i=0;i<size;i++)
+	 	{
+	 	 if(arr[i].key.equals(key))
+	 	 {
+	 	 //存在已有的key则直接覆盖
+	 	  arr[i].Value=value;
+	 	  return;
+	 	 }
+	 	}
+     arr[size++]=e;
+	}
+	
+	public Object get(Object key)
+	{
+	 	for(int i=0;i<size;i++)
+	 	{
+	 	 if(arr[i].key.equals(key))
+	 		return arr[i].Value;
+	 	}
+	 	return null;
+	}
+	
+	public void remove(Object key)
+	{
+	 for(int i=0;i<size;i++)
+	 {
+	  if(arr[i].key.equals(key))
+	  {
+	   for(int j=i;j<size-1;j++)
+	   {
+	    arr[i]=arr[i+1];
+	    size--;
+	    return ;
+	   }
+	  } 
+	 }
+	 System.out.println("找不到");
+	}
+	
+	public static void main(String[] args)
+	{
+		mymap a=new mymap();
+		a.put("s","tt");
+		a.put(new Integer(7),new A("asdd"));
+		a.remove("s");
+		String b=(String)a.get("s");
+		System.out.println(b);
+		System.out.println(a.size());
+	}
+	
+}
+
+class Array1
+{
+ Object key;
+ Object Value;
+ 
+ Array1(Object key,Object value)
+ {
+  this.key=key;
+  this.Value=value;
+ }
+}
+
+class A
+{
+ public String name;
+ A(String name){
+	 this.name=name;
+ }
+}

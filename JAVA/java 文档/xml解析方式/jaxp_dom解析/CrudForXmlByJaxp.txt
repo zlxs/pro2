@@ -1,0 +1,56 @@
+package dom;
+
+import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+
+import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+public class CrudForXmlByJaxp {
+    @Test
+	public void create() throws ParserConfigurationException, SAXException, IOException, TransformerException
+	{
+	 Document document = JaxpUtils.getDocument("src/dom/book.xml");
+	 Node price = document.getElementsByTagName("售价").item(0);
+	 Node node = price.getParentNode();
+	 Element element = document.createElement("描述");
+	 element.setTextContent("xxxxxx");
+	 node.insertBefore(element,price);
+	 JaxpUtils.change(document,"src/dom/book.xml");
+	}
+    
+    @Test
+	public void read() throws ParserConfigurationException, SAXException, IOException, TransformerException
+	{
+   	 Document document = JaxpUtils.getDocument("src/dom/book.xml");
+   	 NodeList bookname = document.getElementsByTagName("书名");
+     for(int i=0;i<bookname.getLength();i++)
+     {
+    	 System.out.println(bookname.item(i).getTextContent());
+     }
+	}
+	
+    @Test
+	public void update() throws ParserConfigurationException, SAXException, IOException, TransformerException
+	{
+     Document document = JaxpUtils.getDocument("src/dom/book.xml");
+     Element price= (Element) document.getElementsByTagName("售价").item(2);	
+     price.setTextContent("40");
+     JaxpUtils.change(document,"src/dom/book.xml");
+	}
+	
+    @Test
+	public void delete() throws ParserConfigurationException, SAXException, IOException, TransformerException
+	{
+     Document document = JaxpUtils.getDocument("src/dom/book.xml");
+     Node node = document.getElementsByTagName("售价").item(2);
+     node.getParentNode().removeChild(node);
+     JaxpUtils.change(document,"src/dom/book.xml");	
+	}	
+}

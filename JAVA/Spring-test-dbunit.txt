@@ -1,0 +1,61 @@
+要运行spring下的dbunit，必须在测试类中使用 DbUnitTestExecutionListener监听器
+
+要做到这点需使用spring注解 @TestExecutionListeners
+
+eg:
+ @TestExecutionListeners({DependencyInjectionTestExecutionListener.class,
+           DbUnitTestExecutionListener.class })
+
+如下是典型的junit4注解示例：
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration("classpath:applicationContext.xml")
+    @TestExecutionListeners({DependencyInjectionTestExecutionListener.class,
+            DbUnitTestExecutionListener.class })
+    public class TestClass{
+
+      @Test
+      public void test1(){
+        //...
+      }
+
+    }
+
+
+为了连接数据库需要在applicationContext.xml中配置database
+
+
+
+
+@DatabaseSetup(value="/datasets/init.xml",type = DatabaseOperation.CLEAN_INSERT)
+注解用来在测试开始前，使用init.xml中配置的数据来初始化数据库表，该操作会先删除原表中所有记录
+
+
+@DatabaseTearDown(value="/datasets/init.xml",type=DatabaseOperation.DELETE)
+注解用来在测试结束后，重置数据库表，把init.xml中配置的数据删除，没有在ini.xml中配置的记录不会删除
+
+type=DatabaseOperation.DELETE_ALL则会完全删除表中的所以数据
+
+
+
+以上两个注解一般加在需要的@Test方法上，如果加在类上，则对每一个测试方法都会执行初始化和卸载数据库表记录的操作
+
+@ExpectedDatabase(value="/datasets/verify.xml",assertionMode= DatabaseAssertionMode.NON_STRICT_UNORDERED)
+注解用来在测试结束后判断数据库表中数据是否符合期望值
+
+
+assertionMode有两种方式：
+DatabaseAssertionMode.DEFAULT 将会对期望数据集合和实际数据集合进行全方位匹配
+DatabaseAssertionMode.NON_STRICT_UNORDERED 将会无视在实际表中有但期望数据集中不存在的表或者字段，只需关心需要的
+
+
+init.xml配置：
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<dataset>
+    <!--模式:    
+        <表名 字段1="" 字段2="" ... />
+     -->
+    <test_arquillian id="1" select_key="123" />
+    <test_arquillian id="2" select_key="xyz" />
+</dataset>

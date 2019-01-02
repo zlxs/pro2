@@ -1,0 +1,113 @@
+Controller中获取参数方法：
+
+<form action="${pageContext.request.contextPath}/testController/find">
+      name:<input type="text" name="name" />
+      age:<input type="text" name="age"/>
+      <input type="submit" />
+</form>
+
+1 Spring会自动将表单参数注入到方法形参，方法中形参名称要和表单input的name属性保持一致。
+     和Struts2用同名属性接收类似，但springmvc是通过方法的形参来接收，而不是在Controller类中定义成员变量接收
+   连ajax提交的json都能获取
+
+@Controller
+@RequestMapping("/testController")
+public class TestController {
+
+	@RequestMapping(value="/find")
+	public String find(@RequestParam(value="name")String username,String age){
+	   String result=username+"----"+age;
+	   request.setAttribute("result", result);
+	   return "/hello";
+	}
+}
+
+------------
+2 使用HttpServletRequest获取
+
+@RequestMapping("/login.do")  
+public String login(HttpServletRequest request){  
+    String name = request.getParameter("name")  
+    String pass = request.getParameter("pass")
+    return "/hello";
+}  
+
+
+------------
+3 自动注入Bean属性
+       bean的属性和表单input的name属性一致
+
+public class User{        //形参也可以传User的扩展类UserQueryVo
+  private String name;  
+  private String age;  
+}  
+
+@Controller
+@RequestMapping("/testController")
+public class TestController {
+   @RequestMapping("/login.do")  
+    public String login(User user)  
+    {  
+      System.out.println(user.getName());  
+      System.out.println(user.getPass());
+      return "/hello";  
+    } 
+}
+
+注：如果方法形参中也有一个String name，则SpringMVC会同时把值赋给pojo(bean)类和方法形参
+
+
+------------
+4.自定义参数绑定
+如:
+ <input type="text" name="time" value="1999-09-01" />
+ 把request中表示时间类型的字符串参数，封装给Date类型的形参
+
+需要向处理器适配器中注入自定义的参数绑定组件
+
+在SpringMVC.xml配置文件中配置：
+
+<mvc:annotation-driven conversion-service="conversionService"></mvc:annotation-driven>
+
+<!--自定义参数绑定-->
+<bean id="conversionService" 
+      class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+  
+  <!--转换器-->
+  <property name="converters">
+     <list>
+        <!--日期类型转换-->         
+        <bean class="xxx.xx.controller.converter.DateConverter"></bean>
+     </list>
+  </property>
+
+</bean>
+
+//定义日期类型转换器
+public class DateConverter implements Converter<String,Date>{
+
+  public Date convert(String source){
+    DateFormat df=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");    
+    
+    try{
+        Date date=df.parse(source);
+        return date;
+    }catch(Exception e){
+        e.printStackTrace();
+    }
+    return null;
+  }
+
+}
+
+
+@Controller
+@RequestMapping("/testController")
+public class TestController {
+   @RequestMapping("/login.do")  
+    public String login(Date time)  
+    {  
+      System.out.println(time);  ;
+      return "/hello";  
+    } 
+}

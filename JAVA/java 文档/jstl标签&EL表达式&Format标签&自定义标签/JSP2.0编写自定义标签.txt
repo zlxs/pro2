@@ -1,0 +1,87 @@
+步骤：
+
+1.编写自定义标签类  继承 SimpleTagSupport类
+  重写doTag()方法   服务器解析JSP时遇到自定义标签则调用对应标签处理类的doTag()方法，执行标签体
+
+doTag()方法中获取标签体：
+  JspFragment jf=this.getJspBody();
+
+doTag()方法中获取PageContext对象：
+  JspContext context=this.getJspContext();
+
+执行标签体内容：
+  JspFragment jf=this.getJspBody();
+  jf.invoke(null); 或 jf.invoke(this.getJspContext().getOut()); 
+
+
+标签内的4种操作：
+
+ a.不执行标签体   doTag()内没有代码即可
+
+ b.控制标签体重复执行几遍
+
+   JspFragment jf=this.getJspBody();
+   for(int i=0;i<5;i++){
+     jf.invoke(null);
+   }
+
+ c.修改标签体内容
+
+   JspFragment jf=this.getJspBody();
+   StringWriter sw=new StringWriter();
+   jf.invoke(sw);//把标签体写到缓冲，再修改后输出
+   String content=sw.toString();
+   ......//修改标签体内容的代码
+   this.getJspContent().getOut().write(content)//输出新标签体内容
+
+ d.控制标签余下的jsp是否执行
+
+   throw new ShipPageException();//抛这个异常就可以控制余下的jsp不执行
+
+
+2.编写tld描述文件   把该文件放在WEB-INF下
+
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+		version="2.0">
+
+ <!--标签库的版本号描述-->		
+ <tlib-version>1.0</tlib-version>
+ 
+ <!--标签库默认前缀名-->
+ <short-name>mytag</short-name>
+ 
+ <!--标签库的唯一访问标识符-->
+ <uri>http://com.xxx.xx.tag/mytag</uri>
+ 
+ <tag>
+ 	<name>自定义标签名</name>
+ 	<tag-class>自定义标签类全限定名</tag-class>
+
+        <!--标签主体内容形式
+	   empty  --  无标签体内容
+           jsp  --  有标签体内容，接受文本，EL和JSP动作 和 脚本元素<% %>
+           scriptless -- 有标签体内容，接受文本，EL和JSP动作 但不能有脚本元素<% %>
+           Tagdependent  --  表示该标签体内容由自定义标签类进行处理，而不被jsp容器解释  
+        -->
+ 	<body-content>scriptless</body-content>
+	
+	<!-- 标签内的属性定义，可以有多个
+           注：编写带属性的标签，需要在标签处理器类中添加一个同名属性和set方法，
+               这样就可以把属性的值传递给标签处理器类。
+        -->
+	<attribute>
+   		<name>属性名</name>
+   		<required>是否必须输入</required>
+   		<rtexprvalue>是否可以动态赋值</rtexprvalue>
+		<type>属性类型</type>
+ 	</attribute>
+
+ </tag>
+ 
+</taglib>
+
+3.使用  在jsp中通过taglib指令导入标签库
+  <%@ taglib uri="" prefix="" %>

@@ -1,0 +1,117 @@
+使用数据库链接池优化程序性能
+数据库把链接存放在链接池中，用时从池中取，用完返回给链接池，而不是直接问数据库要链接
+
+编写链接池需要实现DataSource接口
+
+
+需要增强close()方法，使调用时，返回给连接池而不是给数据库
+
+增强方法的三种方式：
+1.写一个子类，覆盖原方法
+2.用包装设计模式
+3.用动态代理
+
+
+
+用包装设计模式：
+1.定义一个类，实现与被增强对象相同的接口，一般sun公司都有默认的接口用于包装设计模式
+2.在类中定义一个变量，记住被增强对象
+3.在类中定义一个构造函数，接收被增强对象
+4.覆盖想增强的方法
+5.对于不想增强的方法，直接调用目标对象（被增强对象）的方法
+
+
+
+public class Q implements DataSource{
+
+	private static LinkedList<Connection> list=new LinkedList<Connection>();
+	private static Properties config=new Properties();
+	
+	static{
+	  try{
+		  config.load(Q.class.getClassLoader().getResourceAsStream("db.properties"));
+		  Class.forName(config.getProperty("driver"));
+		  for(int i=0;i<10;i++)
+		  {
+		   Connection conn=DriverManager.getConnection(config.getProperty("url"),config.getProperty("user"),config.getProperty("password"));
+		   list.add(conn);
+		  }
+		  
+	  }catch(Exception e)
+	  {
+		  throw new ExceptionInInitializerError(e);
+	  }
+		
+	}
+	
+	@Override
+	public Connection getConnection() throws SQLException {
+		
+		if(list.size()<=0)
+		{
+		 throw new RuntimeException("数据库忙，请稍后再来!!");
+		}
+		else
+		{
+			Connection conn = list.removeFirst();
+			MyConnection my=new MyConnection(conn);//包装设计模式，用于增强close方法，
+			//上层调用my的方法时，内部会直接调用conn的方法，而调用close方法时，就调用增强的方法
+		    return my;
+		}
+	}
+
+	//下述方法不用管
+	
+	@Override
+	public Connection getConnection(String username, String password)
+			throws SQLException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public PrintWriter getLogWriter() throws SQLException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	.......若干方法
+         ......
+	
+	
+	class MyConnection implements Connection{
+		private Connection conn;
+		
+		public MyConnection(Connection conn)
+		{
+			this.conn=conn;
+		}
+		
+		public void close()
+		{
+			list.add(this.conn);
+		}
+        //下述方法直接调用conn的方法
+
+		@Override
+		public <T> T unwrap(Class<T> iface) throws SQLException {
+			// TODO Auto-generated method stub
+			return conn.unwrap(iface);
+		}
+
+		@Override
+		public boolean isWrapperFor(Class<?> iface) throws SQLException {
+			// TODO Auto-generated method stub
+			return conn.isWrapperFor(iface);
+		}
+
+            ......若干方法
+                ....
+
+		
+	}
+	
+	
+	
+}
+

@@ -1,0 +1,36 @@
+
+CXF已经实现了很多种拦截器，很多已经在发布、访问Web 服务时已经默认添加到拦截器链。
+一般情况下， 我们自己的拦截器只要继承AbstractPhaseInterceptor<T extends org.apache.cxf.message.Message>类
+即可，这个类可以指定继承它的拦截器在什么阶段被启用，阶段属性可以通过org.apache.cxf.phase.Phase 
+中的常量指定值。
+
+
+public class HelloInInterceptor extends AbstractPhaseInterceptor<Message> {  
+  
+    public HelloInInterceptor(String phase) {  
+        super(phase);  
+    }  
+      
+    public HelloInInterceptor() {  
+        super(Phase.RECEIVE);  
+    }  
+  
+
+    public void handleMessage(Message message) throws Fault {  
+        System.out.println("******In****Helloworld******");  
+    }  
+  
+}  
+
+要注意CXF 中的拦截器编写时不要只针对服务端或者客户端，应该是两者均可使用，
+另外名字要见名知意。例如：使用In、Out 标注这是一个输入时起作用还是输出时起作用的拦截器。
+
+
+
+
+
+
+
+
+
+

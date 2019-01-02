@@ -1,0 +1,20 @@
+
+<s:textfield name="对应action的属性" label="用于生成出现在输入框前的提示文字"></s:textfield>
+
+如：
+<s:form action="testAction" namespace="/">
+      <s:textfield name="name" label="用户名"></s:textfield>
+      <s:textfield name="age" label="年龄"></s:textfield>
+      <s:submit value="提交"></s:submit>
+</s:form>
+
+如果action中的属性是类的引用，如private User user;
+则，可写成<s:textfield name="user.username" label="用户名"></s:textfield>
+
+name的值其实是ongl表达式，回显时取出值栈中对应的值回显
+
+
+s:form的namespace很重要,不指定的话可能找不到对应的Action
+
+
+struts2的表单标签不仅可以回显，同时会自动和错误信息绑定，用于表单校验

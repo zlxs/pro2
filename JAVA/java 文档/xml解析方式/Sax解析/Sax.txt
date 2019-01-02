@@ -1,0 +1,174 @@
+package dom;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.junit.Test;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+
+public class Sax {
+
+	public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException
+	{
+	 //1.创建解析工厂
+		SAXParserFactory factory=SAXParserFactory.newInstance();
+	 //2.得到解析器
+		SAXParser saxpaser = factory.newSAXParser();
+	 //3.得到读取器
+		XMLReader reader = saxpaser.getXMLReader();
+	 //4.设置内容处理器
+		reader.setContentHandler(new listHandler());
+	 //5.读取xml文档内容
+		reader.parse("src/dom/book.xml");
+		
+	}	
+	
+	@Test
+	public void test() throws ParserConfigurationException, SAXException, IOException
+	{
+	 //1.创建解析工厂
+		SAXParserFactory factory=SAXParserFactory.newInstance();
+	 //2.得到解析器
+		SAXParser saxpaser = factory.newSAXParser();
+	 //3.得到读取器
+		XMLReader reader = saxpaser.getXMLReader();
+	 //4.设置内容处理器
+		reader.setContentHandler(new Handler());
+	 //5.读取xml文档内容
+		reader.parse("src/dom/book.xml");
+	}
+	
+	@Test
+	public void test1() throws ParserConfigurationException, SAXException, IOException
+	{
+	 //1.创建解析工厂
+		SAXParserFactory factory=SAXParserFactory.newInstance();
+	 //2.得到解析器
+		SAXParser saxpaser = factory.newSAXParser();
+	 //3.得到读取器
+		XMLReader reader = saxpaser.getXMLReader();
+	 //4.设置内容处理器
+		BeanListHandler handler = new BeanListHandler();
+		reader.setContentHandler(handler);
+	 //5.读取xml文档内容
+		reader.parse("src/dom/book.xml");
+		
+		List<Book> list=handler.getBook();
+		
+		for(Book book:list)
+		{
+			System.out.println(book.getName()+" "+book.getAuthor()+" "+book.getPrice());
+		}
+	}
+	
+}
+
+class listHandler extends DefaultHandler
+{
+
+	@Override
+	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		System.out.println("<"+qName+">");
+		for(int i=0;attributes!=null&&i<attributes.getLength();i++)
+		{
+			System.out.println(attributes.getQName(i)+"="+attributes.getValue(i));
+		}
+	}
+
+	@Override
+	public void characters(char[] ch, int start, int length) throws SAXException {
+		System.out.println(new String(ch,start,length));
+	}
+	
+	@Override
+	public void endElement(String uri, String localName, String qName) throws SAXException {
+		// TODO Auto-generated method stub
+		System.out.println("</"+qName+">");
+	}
+}
+
+class Handler extends DefaultHandler
+{
+    private String currentTag;//记住当前解析到的标签
+    private int current;
+    private int need=2;
+	@Override            //qName为当前元素标签名称
+	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+	  currentTag=qName;
+	  if("作者".equals(currentTag))
+		 {
+		  	current++;
+		 }
+	}
+	
+	@Override
+	public void characters(char[] ch, int start, int length) throws SAXException {
+	 if("作者".equals(currentTag)&&need==current)
+	 {
+	  	System.out.println(new String(ch,start,length));
+	 }
+    }
+
+	@Override
+	public void endElement(String uri, String localName, String qName) throws SAXException {
+	  currentTag=null;
+	}
+}
+
+class BeanListHandler extends DefaultHandler
+{
+    private List list=new ArrayList();
+    private String currentTag;//记住当前解析到的标签
+    private Book book;
+	@Override
+	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		currentTag=qName;
+		if("书".equals(currentTag))
+		{
+		  book=new Book();
+		}
+		
+	}
+	
+	@Override
+	public void characters(char[] ch, int start, int length) throws SAXException {
+		if("书名".equals(currentTag))
+		{
+			book.setName(new String(ch,start,length));
+		}
+		
+		if("作者".equals(currentTag))
+		{
+			book.setAuthor(new String(ch,start,length));
+		}
+		
+		if("售价".equals(currentTag))
+		{
+			book.setPrice(new String(ch,start,length));
+		}
+	}
+
+	@Override
+	public void endElement(String uri, String localName, String qName) throws SAXException {
+		if("书".equals(qName))
+		{
+		 list.add(book);
+		 book=null;
+		}
+		currentTag=null;
+	}
+	
+	public List getBook()
+	{
+		return list;
+	}
+	
+}

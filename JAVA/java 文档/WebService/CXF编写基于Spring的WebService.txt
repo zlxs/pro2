@@ -1,0 +1,186 @@
+
+服务器端：
+
+@WebService
+public interface OrderWS{
+  
+  @WebMethod
+  public Order getOrderById(int id);
+
+}
+
+@WebService
+public class OrderWSImpl implements OrderWS{
+
+  public Order getOrderById(int id){
+    //只用于测试，代码逻辑看具体需求
+    System.out.println("server getOrderById()"+id);
+    return new Order(id,"飞机");
+  }
+
+}
+
+发布方式：
+通过添加一个spring的额外的配置文件：beans.xml，或直接写在ApplicationContext.xml中
+
+beans.xml:
+
+<?xml version="1.0" encoding="UTF-8"?>  
+<beans xmlns="http://www.springframework.org/schema/beans"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+    xmlns:jaxws="http://cxf.apache.org/jaxws"  
+    xsi:schemaLocation="http://www.springframework.org/schema/beans  
+                       http://www.springframework.org/schema/beans/spring-beans.xsd  
+                       http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">  
+     
+    <!--引入cxf的一些核心配置-->
+    <import resource="classpath:META-INF/cxf/cxf.xml" />  
+    <import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />  
+    <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />  
+
+    <!--发布-->
+    <jaxws:endpoint id="orderWS"
+                   implementer="xxx.xx.webservice.OrderWSImpl"
+                   address="/orderws" /> 
+ 
+</beans>  
+
+
+web.xml文件配置：
+
+   <context-param>  
+      <param-name>contextConfigLocation</param-name>  
+      <param-value>classpath:applicationContext.xml,classpath:beans.xml</param-value>  
+   </context-param>  
+   
+   <listener>  
+      <listener-class>  
+         org.springframework.web.context.ContextLoaderListener  
+      </listener-class>  
+   </listener>  
+     
+    <!--所有请求都会经过CXF框架-->
+    <servlet>  
+        <servlet-name>CXFServlet</servlet-name>  
+        <servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>  
+        <load-on-startup>1</load-on-startup>  
+    </servlet>  
+  
+    <servlet-mapping>  
+        <servlet-name>CXFServlet</servlet-name>  
+        <url-pattern>/*</url-pattern>  
+    </servlet-mapping>  
+
+
+---------------------------------------------------------------------
+
+客户端：
+
+在src下添加client-beans.xml
+
+client-beans.xml
+
+<?xml version="1.0" encoding="UTF-8"?>  
+<beans xmlns="http://www.springframework.org/schema/beans"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+    xmlns:jaxws="http://cxf.apache.org/jaxws"  
+    xsi:schemaLocation="http://www.springframework.org/schema/beans  
+                       http://www.springframework.org/schema/beans/spring-beans.xsd  
+                       http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">   
+
+    
+    <jaxws:client id="orderClient"
+                   serviceClass="xxx.xx.webservice.OrderWS"
+                   address="http://localhost:8080/服务器项目名/orderws" /> 
+ 
+</beans>  
+
+
+生成代码：
+
+1.cmd进入myEclipse的workspace的客户端项目下：E:\MyEclipse\项目名\src>
+2.wsimport -keep http://localhost:8080/服务器项目名/orders?wsdl
+
+public class ClientTest{
+
+   public static void main(String[] args){
+    //加载client-beans.xml配置文件
+    ClassPathXmlApplicationContext context=new ClassPathXmlApplicationContext(new String[]{"client-beans.xml"});
+    OrderWS orderws=(OrderWS)context.getBean("orderClient");
+    Order order=orderws.getOrderById(1);
+    
+   }
+
+}
+
+
+添加拦截器：
+
+
+客户端拦截器配置：
+
+client-beans.xml
+
+<?xml version="1.0" encoding="UTF-8"?>  
+<beans xmlns="http://www.springframework.org/schema/beans"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+    xmlns:jaxws="http://cxf.apache.org/jaxws"  
+    xsi:schemaLocation="http://www.springframework.org/schema/beans  
+                       http://www.springframework.org/schema/beans/spring-beans.xsd  
+                       http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">   
+
+    
+    <jaxws:client id="orderClient"
+                   serviceClass="xxx.xx.webservice.OrderWS"
+                   address="http://localhost:8080/服务器项目名/orderws"> 
+
+      <jaxws:outInterceptors>
+         <bean class="xxx.xx.cxf_client.interceptor.AddUserInterceptor">
+            <!--构造器参数和值-->
+            <constructor-arg name="name" value="aaa" />
+            <constructor-arg name="password" value="123"/>
+         </bean>
+      </jaxws:outInterceptors>
+
+    </jaxws:client>
+ 
+</beans>  
+
+public class AddUserInterceptor extends AbstractPhaseInterceptor<SoapMessage>{
+   private String name;
+   private String password;
+   
+   public AddUserInterceptor(String name,String password){
+      this.name=name;
+      this.password=password;
+      System.out.println("addUser");
+   }
+
+}
+
+
+服务器端拦截器配置：
+
+beans.xml：
+
+<?xml version="1.0" encoding="UTF-8"?>  
+<beans xmlns="http://www.springframework.org/schema/beans"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+    xmlns:jaxws="http://cxf.apache.org/jaxws"  
+    xsi:schemaLocation="http://www.springframework.org/schema/beans  
+                       http://www.springframework.org/schema/beans/spring-beans.xsd  
+                       http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">  
+     
+    <!--引入cxf的一些核心配置-->
+    <import resource="classpath:META-INF/cxf/cxf.xml" />  
+    <import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />  
+    <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />  
+
+    <!--发布-->
+    <jaxws:endpoint id="orderWS"
+                   implementor="xxx.xx.webservice.OrderWSImpl"
+                   address="/orderws" /> 
+
+ 
+</beans>  
+

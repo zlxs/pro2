@@ -1,0 +1,86 @@
+<%!
+  public void method()
+{
+
+}
+%>这样写方法会被翻译到servlet的service方法外，成为servlet的方法
+
+
+
+<%= %>相当于out.write();
+
+
+
+jsp注释
+<%--
+
+--%>
+
+
+<% 
+  在里面写java代码
+%>
+
+<table>
+   <% 
+   	for(int i=1;i<=9;i++){
+   %>
+   	<tr>
+   <% 	 
+   	for(int j=1;j<=i;j++){
+   %>
+   	<td><%=i %>*<%=j %>=<%=i*j %></td>
+   <% 		
+   	}
+   %>
+   	</tr>
+   <% 
+   	}
+   %>		
+</table>
+
+
+
+<%@ 指令 属性名="值" %>
+
+page指令  告诉服务器一些信息
+taglib指令  导入标签
+
+include指令 包含其他页面 不是声明在jsp最上方的指令
+在jsp页面中
+<body>
+  <%@include  file="/head.jsp" %>
+    aaaaaaaaaaaaaaaaaa<br/>
+  <%@include  file="/foot.jsp" %>
+</body>
+注意：被包含页面不要写全局标签
+该方式是静态包含，只翻译成一个servlet
+
+
+
+在jsp声明中添加 isErrorPage="true" 服务器会传递异常对象到jsp
+
+pageEncoding="UTF-8" eclipse会把jsp以UTF-8码表编码保存， 告诉web服务器，翻译成servlet时字符串查UTF-8码表解码
+避免翻译成servlet后字符出现乱码
+
+
+jsp会自动导入lang servlet.* servlet.jsp servlet.http包
+
+
+errorPage="url" url为出错时处理页面，必须为相对地址，如果用/开头，则代表当前web应用的根目录webroot
+
+
+
+web.xml中可以配置全局出错处理页面
+
+配置各种状态码的处理页面，如404
+<error-page>  
+ <error-code>状态码</error-code> 
+ <location>处理页面</location>
+</error-page>
+
+配置异常的处理页面
+<error-page>
+ <exception-type>exception</exception-type>
+ <location>处理页面</location>
+</error-page>

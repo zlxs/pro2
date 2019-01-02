@@ -1,0 +1,5 @@
+1. systemctl stop docker
+2. vi /lib/systemd/system/docker.service
+3. ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:2375 --insecure-registry 0.0.0.0
+4. systemctl daemon-reload
+5. systemctl start docker

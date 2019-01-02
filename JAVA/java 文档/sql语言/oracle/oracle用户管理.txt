@@ -1,0 +1,78 @@
+管理员用户
+1.用户名sys 密码root as sysdba
+2.用户名system 密码root
+
+普通用户
+3.scott tiger
+
+
+cmd连接数据库
+
+sqlplus
+system
+root
+
+快捷登录：
+sqlplus system/root
+
+或
+sqlplus system/root@服务名
+如:
+sqlplus system/root@orclServer
+sqlplus system/root@orclClient
+
+
+创建用户（指定密码）
+create user 用户名 identified by 密码;
+
+修改密码
+alter user 用户名 identified by 新密码
+
+修改管理员密码
+alter user sys identified by 新密码
+
+删除用户
+drop user 用户名;  需要注意权限（cascade）
+                   drop user 用户名 cascade;级联删除
+
+解锁/解锁用户
+alter user 用户名 account lock
+alter user 用户名 account unlock
+
+切换用户  通过connect关键字或conn也可以 
+connect scott/tiger
+connect / as sysdba 切换为管理员
+
+显示当前用户
+show user
+
+
+
+用户权限：
+	授予权限
+		grant 权限1,权限2,... to 用户;
+
+	收回权限
+		revoke 权限1,权限2,... from 用户;
+
+	设置用户的空间配额
+		alter user itcast quota unlimited on users（表名）;
+
+角色：
+	创建角色
+		create role 角色名;
+
+	给角色授予权限	
+		grant create session, create table, create view to 角色名;
+
+	给角色收回权限
+		revoke create session from 角色名;
+
+	删除角色
+		drop role role1;
+
+        为用户赋予角色
+                grant  角色名 to  用户名;
+                         connect 拥有连接会话的权限(是否有权限与数据库进行连接)
+                         resource 拥有操作数据库的对象的权限
+                grant resource,connect,dba to 用户名 

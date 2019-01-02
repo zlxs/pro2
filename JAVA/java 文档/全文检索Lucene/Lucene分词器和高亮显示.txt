@@ -1,0 +1,43 @@
+分词器：
+1.单字分词器： StandardAnalyzer
+如 我们是中国人
+分词结果：我 们 是 中 国 人
+
+2.二分分词器： CJKanalyzer
+如 我们是中国人
+分词结果： 我们 们是 是中 中国 国人
+
+3.词典分词器： 极易分词MMAnalyzer、庖丁分词PaodingAnalyzer、IKAnalyzer
+如 我们是中国人
+分词结果： 我们  中国人
+一般用第三种，需要自己下载分词器的jar
+
+
+
+
+高亮显示搜索词，并显示一段摘要而不是整个文本
+   
+        String queryString="检索";
+	//是一个解析用户输入的工具，可以通过扫描用户输入的字符串，生成Query对象。
+	QueryParser queryParser=new QueryParser(Version.LUCENE_44,"discription",analyzer);
+	Query query=queryParser.parse(queryString);
+
+        //高亮操作
+	//设置高亮标签
+        QueryScorer queryScorer = new QueryScorer(query);//如果有需要，可以传入评分
+        Formatter formatter = new SimpleHTMLFormatter("<span style='color:red;'>", "</span>");
+	Highlighter highlighter=new Highlighter(formatter,queryScorer);
+	Fragmenter fragmenter = new SimpleSpanFragmenter(queryScorer);
+	highlighter.setTextFragmenter(fragmenter);
+	//获取返回结果		
+        //返回高亮后的一段摘要，如果进行高亮操作的属性值中没有出现搜索关键字，则返回null
+        String text=highlighter.getBestFragment(analyzer,"discription",doc.get("discription"));
+	System.out.println(text);
+
+
+
+
+
+
+
+

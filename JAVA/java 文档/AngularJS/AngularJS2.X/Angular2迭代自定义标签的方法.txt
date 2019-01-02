@@ -1,0 +1,80 @@
+
+最顶层的自定义标签无法写多个，也就是说无法在页面上重复写自定义标签来进行输出多个重复的模块内容
+如：
+<my-app></my-app>
+<my-app></my-app>
+<my-app></my-app>
+这样是不行的，只会执行一次<my-app></my-app>
+所以需要迭代某些重复的html内容，需要写第二层,第三层，或更加底层的标签
+
+1.先写顶层标签
+
+编写一个typescript
+
+import {Component} from "@angular/core";
+import {MyDivComponent} from "./mydiv.component";
+
+@Component({
+    selector:'my-root',
+    templateUrl:'./app/mydiv.html',
+
+    directives:[MyDivComponent] //这个属性非常重要，值是一个数组(所有下层Component的class名)，MyDivComponent是下一层标签对应的class名
+})
+export class RootComponent{
+
+}
+
+templateUrl指向的mydiv.html页面片段中，写迭代的第二层标签<my-div></my-div> <my-div></my-div> <my-div></my-div>
+
+
+2.编写第二层标签my-div
+
+import {Component} from "@angular/core";
+
+@Component({
+    selector:'my-div',
+    template:'hahaha'
+})
+export class MyDivComponent{
+
+}
+
+
+3.写main.js
+
+import {bootstrap} from "@angular/platform-browser-dynamic";
+import {RootComponent} from "./root.component";
+/**
+ * Created by Administrator on 2016/9/14.
+ */
+
+bootstrap(RootComponent)
+
+
+4.在页面上 写<my-root></my-root>就行了
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="node_modules/core-js/client/shim.min.js"></script>
+    <script src="node_modules/zone.js/dist/zone.js"></script>
+    <script src="node_modules/reflect-metadata/Reflect.js"></script>
+    <script src="node_modules/systemjs/dist/system.src.js"></script>
+    <script src="systemjs.config.js"></script>
+    <script>
+        System.import("app").catch(function(err){console.error(err);});
+    </script>
+
+</head>
+<body>
+    <my-root></my-root>
+</body>
+</html>
+
+
+执行效果：
+  hahaha
+  hahaha
+  hahaha

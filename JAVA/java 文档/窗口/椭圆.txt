@@ -1,0 +1,26 @@
+用
+ if(speed>0)//边移动边减速
+		 speed-=0.001;
+	 else
+         speed=0;
+
+	 x=310+300*Math.cos(degree);
+	 y=220+150*Math.sin(degree);
+     degree+=speed;
+
+代替
+
+	 if(speed>0)//边移动边减速
+		 speed-=0.1;
+	 else
+         speed=0;
+
+	 x+=speed*Math.cos(degree);
+	 y+=speed*Math.sin(degree);
+ 
+	 if(y<40||y>600-190)
+		 degree=-degree;
+	 if(x<0||x>800-190)
+		 degree=Math.PI-degree;
+ }
+再修改下speed的速度大小，如0.3

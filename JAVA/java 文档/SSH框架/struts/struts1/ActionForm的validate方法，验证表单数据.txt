@@ -1,0 +1,100 @@
+要使验证方法不执行，则在struts-config.xml的表单提交给的Action的action标签中增加validate="false";
+validate="true"为执行验证方法
+validate="false"为不执行验证方法
+默认为true
+
+执行validate方法，配置验证出错转到一个页面：
+在action中增加一个属性 input="原表单页面地址"
+input属性表示验证出错转向的页面
+
+
+validate()方法返回值是ActionErrors类对象
+ActionErrors作为一个集合，里面包含0个或多个ActionMessage实例
+ActionMessage用于封装一条错误信息
+
+ActionMessage(String key,bollean isresource)
+如果isresource为true,则表示key是资源文件中的key,产生的消息就是与key对应的消息
+如果isresource为false,则表示key为一条普通消息
+
+
+如果validate方法的返回值为null则表示验证通过，转去执行execute()方法
+如果validate方法的返回值不为null，并且ActionErrors里面没有放置任何错误信息，
+也表示验证通过，转去执行execute()方法
+
+
+
+实例：
+验证的要求1.用户名不能为null和""
+          2.密码不能为null和""，且密码长度6-12位之间
+
+
+public ActionErrors validate(ActionMapping mapping,HttpServletRequest request){
+       
+    ActionErrors errors=new ActionErrors();
+    //用户名为""或null,则加入错误信息到errors中
+    if(this.username==null||"".equals(this.username.trim())){
+      //第一个参数表示放置到errors中错误信息的唯一标识
+             errors.add("v_username",new ActionMessage("用户名不能为空"，false));
+        //如果ActionMessage中第二个参数置为true,则去资源文件中找第一个关键字对应的值来作为错误信息
+       //如new ActionMessage("name_not_null",true); property资源文件中写入name_not_null=用户名不能为空
+   //第二个参数还能是一个对象数组，如：在资源文件中写name_not_null={0}不能为｛1｝
+   //Object[] param={"用户名"，"空"}; new ActionMessage("name_not_null",param); 
+ 
+    }
+    if(this.passowrd==null||"".equals(this.password.trim())){
+      //第一个参数表示放置到errors中错误信息的唯一标识
+             errors.add("v_password",new ActionMessage("密码不能为空"，false));
+    }
+   //密码长度6-12 ,利用正则表达式
+    String pattern="^[a_zA-Z0-9]{6,12}$"
+   //将正则表达式编译到模式中
+    Pattern p=Pattern.compile(pattern);
+   //创建匹配器
+    Matcher m=p.matcher(this.password);
+    //匹配
+    boolean b=m.matches();    
+    if(!b){
+     errors.add("v_password",new ActionMessage("密码为6-12位",false));
+    }
+
+    return errors;
+}
+
+在jsp页面中用标签<html:errors/>可以实现错误信息提示
+需要导入标签库<%@ taglib url="http://struts.apache.org/tags-html" prefix="html" %>
+
+<html:errors property="v_username" >
+property属性的值对应ActionMessage的第一个参数
+
+如：
+
+
+
+上述验证只能验证表单的
+如需验证用户名密码是否正确，则要在execute里进行验证
+
+public ActionForward execute(ActionMapping mapping, ActionForm form,
+			HttpServletRequest request, HttpServletResponse response){
+    
+   LoginForm loginform=(LoginForm)form;
+//ActionMessages集合，放置错误信息
+   ActionMessages errors=new ActionMessages();
+   
+  //用户名密码是否正确，假设：用户名为aaa，密码为123才是正确用户
+   if(!"aaa".equals(loginform.getUsername())){
+   //加入错误信息  
+     errors.add("v_username",new ActionMessage("用户名不存在"，false));
+   //放置到request中
+      this.saveErrors(request,errors);
+       return mapping.findForward("login");//<forward name="login" path="原表单页面" ></forward> 
+   }
+
+   if(!"123".equals(loginform.getPassword())){
+   //加入错误信息  
+     errors.add("v_password",new ActionMessage("密码错误"，false));
+   //放置到request中
+      this.saveErrors(request,errors);
+       return mapping.findForward("login");//<forward name="login" path="原表单页面" ></forward> 
+   } 
+
+}

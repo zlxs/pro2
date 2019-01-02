@@ -1,0 +1,111 @@
+前后台交互
+在Action中不能直接访问到requuest session application 这些web域对象，
+所以不能通过setAttribute()方式传值
+这时想把数据带给jsp 方法有4种：
+----------------------------------------------------------
+1.需要在Action中加Map属性对象来存放这些对象
+ private Map request;
+ private Map session;
+ private Map application;
+
+先在Action中取出ActionContext中的对象request,session ,application：
+  request=(Map)ActionContext.getContext().get("request");
+  session=ActionContext.getContext().getSession();
+  application= ActionContext().getApplication();
+
+
+再传值：
+  request.put("key","value");
+  session.put("key","value");
+  application.put("key","value");
+
+---------------------------------------------------------------------------
+
+2.让Action实现RequestAware,SessionAware,ApplicationAware接口
+重写setRequest setSession setApplication方法
+实现了这些接口，struts2就知道了这些对象的存在，从而在拦截Action的filter中先
+拿到HttpServletRequest HttpSession  ServletContext对象，放在Map中，也命名为
+request session application,然后调用setRequest setSession setAppilcation方法
+传给Action,这里面用到了IOC(控制反转)思想
+
+Action中也要加加这些Map属性
+ private Map request;
+ private Map session;
+ private Map application;
+
+重写如：
+public void setRequest(Map request) {
+   this.request=request;//struts会传给你request
+}
+
+结论是只用这种方法
+--------------------------------------------------------------------------
+
+3.
+Action中
+
+ private HttpServletRequest request;
+ private HttpSession session;
+ private ServletContext application;
+
+ request=ServletActionContext.getRequest();
+ session=request.getSession();
+ application=session.getServletContext();
+
+基本不用
+---------------------------------------------------------------------------
+
+4.也用到IOC  Action实现ServletRequestAware接口
+
+  private HttpServletRequest request;
+  private HttpSession session;
+  private ServletContext application;
+ 
+  @Override
+  public void setServletRequest(HttpServletRequest request){
+     this.request=request;  
+     session=request.getSession();
+     application=session.getServletContext(); 
+  }
+
+对应的还有ServletResponseAware,ServletContextAware接口
+
+--------------------------------------------------------------------
+
+jsp中取值：
+可以直接通过域对象的getAttribute("key")得到，通过el表达式
+
+为何使用EL表达式能够访问valueStack中对象的属性
+原因是Struts2对HttpServletRequest作了进一步的封装。简略代码如下：
+
+ public class StrutsRequestWrapper extends HttpServletRequestWrapper {
+       public StrutsRequestWrapper(HttpServletRequest req) {
+           super(req);
+       }
+       public Object getAttribute(String s) {
+        ......
+        ActionContext ctx = ActionContext.getContext();
+        Object attribute = super.getAttribute(s);//先从request范围获取属性值
+        if (ctx != null) {
+            if (attribute == null) {//如果从request范围没有找到属性值,即从ValueStack	中查找对象的属性值
+               ......
+               ValueStack stack = ctx.getValueStack();
+               attribute = stack.findValue(s);
+               ......
+            }
+        }
+        return attribute;
+    }
+}
+
+
+
+也可以通过struts2的标签得到：
+<s:property  value="#request.key" />
+<s:property  value="#session.key" />
+<s:property  value="#application.key" />
+
+
+通过<s:property  value="#attr.key" /> 也能得到key对应的value，它会帮
+你搜索request session和application,取出这些域中以key存放的value,此方法
+不要使用，因为我们不能确定是从哪个域中取的value

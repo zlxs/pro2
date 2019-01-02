@@ -1,0 +1,11 @@
+
+
+go()和back()方法
+
+从当前页面，返回1个或几个页面
+
+window.history.back();返回上一个页面
+window.history.go(-2);返回到上上个页面
+
+如果没有历史纪录，则不会返回
+

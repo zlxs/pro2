@@ -1,0 +1,42 @@
+import java.io.UnsupportedEncodingException;
+import java.util.Properties;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
+public class Send {
+
+	public static void main(String[] args) throws AddressException, UnsupportedEncodingException, MessagingException {
+		
+		Properties prop=new Properties();
+		prop.setProperty("mail.smtp.host", "smtp.qq.com");//表示链接哪个邮件服务器
+		prop.setProperty("mail.transport.protocol", "smtp");//指定采用邮件发送协议
+		prop.setProperty("mail.smtp.auth", "true");//是否需要认证,过时，不需要写了，可以去掉
+		//用prop来生成session,session代表邮件会话信息，封装了链接的邮件服务器，端口等等
+		Session session=Session.getInstance(prop);
+		
+	    Message message = createMessage(session);//Message代表邮件的类
+	    Transport ts = session.getTransport();//得到邮件发送对象
+	    ts.connect("1451875750", "wvsvrilbbcxeggjj");//通过用户名，密码连接邮箱服务器，这里不需要base64编码，内部会自动编码
+	    ts.sendMessage(message,message.getAllRecipients());//发送邮件，第二个参数指定邮件发给谁    getAllRecipients得到所有收件人地址
+	    ts.close();//断开与邮件服务器的连接
+	}
+	
+	//创建邮件
+	private static Message createMessage(Session session) throws AddressException, MessagingException, UnsupportedEncodingException {
+		MimeMessage message = new MimeMessage(session);
+		message.setFrom(new InternetAddress("1451875750@qq.com"));
+		message.setRecipient(Message.RecipientType.TO, new InternetAddress("893384148@qq.com"));
+		message.setSubject("测试");	
+		
+		message.setContent("中文", "text/html;charset=UTF-8");//简单邮件就不需要MimeBodyPart这些了
+		message.saveChanges();
+		
+		return message;
+	}
+}

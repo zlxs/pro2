@@ -1,0 +1,75 @@
+用户 角色 权限 资源(url地址)
+
+用户和角色 多对多
+角色和权限 多对多
+权限和资源 一对多
+
+点击某个资源，用filter拦截下来，再得到用户的所有角色，从
+角色中得到所有权限，再用要访问的资源需要的权限与该用户的权限做比较，
+有则放行，无则提示没有权限
+
+或者页面显示时用户没有权限的资源就不显示连接 （写个自定义标签实现）
+
+
+也可以再设计一个用户资源表，预先把用户能访问的资源存入该表，以免每次
+都去查找角色，再找权限，而用想访问的资源去查用户资源表，找到了则
+代表能访问，从而提高效率
+
+注意：有的资源本身不需要任何权限就能访问，所以在得到用户访问的资源时，
+要先判断该资源是否需要权限
+
+
+create table privilege
+(
+	id varchar(40) primary key,
+	name varchar(100) not null unique,
+	description varchar(255)
+);
+
+create table resource
+(
+	id varchar(40) primary key,
+	uri varchar(255) not null unique,
+	description varchar(255),
+	privilege_id varchar(40),	//一个权限对应多个资源，是一对多的关系，为了不丢失关系，所以一般要在多的一方定义外键列
+	constraint privilege_id_FK foreign key(privilege_id) references privilege(id)
+);
+
+create table role
+(
+	id varchar(40) primary key,
+	name varchar(100) not null unique,
+	description varchar(255)
+);
+
+create table user
+(
+	id varchar(40) primary key,
+	username varchar(40) not null unique,
+	password varchar(40) not null,
+	description varchar(255)
+);
+
+
+create table role_privilege			//多对多表的建立
+(
+	role_id varchar(40),
+	privilege_id varchar(40),
+	primary key(role_id,privilege_id),
+	constraint role_id_FK foreign key(role_id) references role(id),
+	constraint privilege_id_FK1 foreign key(privilege_id) references privilege(id)
+);
+
+
+
+create table user_role
+(
+	user_id varchar(40),
+	role_id varchar(40),
+	primary key(user_id,role_id),
+	constraint user_id_FK foreign key(user_id) references user(id),
+	constraint role_id_FK1 foreign key(role_id) references role(id)
+);
+
+
+

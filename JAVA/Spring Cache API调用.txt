@@ -1,0 +1,107 @@
+Step:
+
+ 1.get a instance of CacheManager by using spring context
+    eg: appliactionContext.getBean("cacheManager");
+    
+
+ 2.通过CacheManager获取一个Cache接口的实例： 
+    方法：
+      Cache cache=cacheManager.getCache("aaa");//if 'aaa' not exist then create a new cache named 'aaa'
+ 
+   CacheManger have two method：
+
+        Cache getCache(String cacheName); //获取指定名称的cache，如果没有则创建一个该名称的cache
+
+        Collection<String> getCacheNames();  //获取所有cache的名称集合
+
+
+ 3.通过Cache接口的方法操作缓存
+
+ Cache接口所有方法如下:
+
+   String getName();  //得到缓存的名字  
+    
+   Object getNativeCache(); //得到底层使用的缓存 如： RedisTemplate redisTemplate=(RedisTemplate) cache.getNativeCache();
+    
+   Cache.ValueWrapper get(Object key); //根据key得到一个ValueWrapper，然后调用其唯一的get方法获取value值 形式：cache.get().get();
+   
+   <T> T get(Object key, Class<T> type);//根据key，和value的类型直接获取value  
+    
+   void put(Object key, Object value);//往缓存放数据  
+    
+   void evict(Object key);//从缓存中移除key对应的缓存  
+    
+   void clear(); //清空缓存  
+
+   Cache.ValueWrapper putIfAbsent(Object key, Object value); //如果key不存在，则以指定key存入对应value
+  
+
+例：
+
+    @RequestMapping("/test/{id}")
+    public void test(@PathVariable Long id){
+
+	Cache cache=cacheManager.getCache("group1");//获取指定缓存，如果没有则创建一个名为group1的cache
+
+        cache.put(id + "cache", "group1::"+id);     //向缓存中存入数据
+
+        String data= cache.get(id + "cache", String.class);   //从group1缓存中获取数据
+        System.out.println(data);
+
+
+	//-------------------演示putIfAbsent方法作用-----------------------
+        cache.put("a","xx");
+        cache.put("b","yy");
+
+        cache.putIfAbsent("a","yy");//如果没有指定的key则缓存
+        cache.putIfAbsent("c","zz");
+
+        System.out.println(cache.get("a").get());//还是原来的xx
+        System.out.println(cache.get("b").get());//yy
+        System.out.println(cache.get("c").get());//zz
+
+	//--------------------演示evict方法作用----------------------------
+
+	cache.evict(id+"cache");//移除指定key对应的缓存数据
+
+        String data1 = cache.get(id + "cache", String.class);
+        System.out.println(data1);//获取不到，应该为null
+
+
+        cache.clear();//清空缓存
+        //-----------------------------------------------------------------
+
+        Cache cache1=cacheManager.getCache("group2"); //获取一个名为group2的缓存
+
+        cache1.put(id + "cache", "group 2 ....."); //向group2中存入数据
+
+        String data3= cache1.get(id + "cache", String.class);
+        System.out.println("从group2中获取的数据："+data3);
+
+        cache.put(id + "cache", "group 1 ....."); //以相同的key向group1中存入数据
+
+        String data4= cache.get(id + "cache", String.class);
+        System.out.println("从group1中获取的数据："+data4);
+
+
+        RedisTemplate redisTemplate=(RedisTemplate) cache.getNativeCache(); //得到底层的缓存类型RedisTemplate
+  
+        redisTemplate.opsForValue().set("xxxx","aaaa"); //通过底层的RedisTemplate操作缓存
+        System.out.println(redisTemplate.opsForValue().get("xxxx"));//获取
+
+
+}
+
+RedisTemplate操作缓存方式：
+
+   //存入或更新缓存
+   redisTemplate.opsForValue().set(key,value);
+        
+   //存入缓存同时设置缓存时间
+   redisTemplate.opsForValue().set(key,value,date);
+
+   //从缓存中获取
+   redisTemplate.opsForValue().get(key);
+
+   //从缓存中删除
+   redisTemplate.delete(key);

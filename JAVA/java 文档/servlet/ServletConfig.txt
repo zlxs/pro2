@@ -1,0 +1,24 @@
+ServletConfig对象用于封装servlet的配置信息，因为有些信息不应该在程序中写死，而应通过配置文件来配置，便于将来修改
+
+在web.xml的某个servlet的<servlet></servlet>中写
+
+<init-param>
+ <param-name>xxx</param-name>
+ <param-value>yyy</param-value>
+</init-param>
+
+<init-param>
+ <param-name>aaa</param-name>
+ <param-value>bbb</param-value>
+</init-param>
+
+...
+
+
+在该servlet程序中调用this.getServletConfig.getInitParameter("xxx")可以得到yyy
+
+也可以在注解@WebServlet中配置
+
+
+
+  

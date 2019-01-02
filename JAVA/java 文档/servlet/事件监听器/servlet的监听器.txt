@@ -1,0 +1,207 @@
+
+---------------------------------------------------------
+servlet的监听器需要在web.xml文件中描述，然后tomcat会自动把监听器注册到事件源上
+
+<listener>
+  <listener-class></listener-class>
+</listener>
+
+-----------------------------------------------------------------
+
+1.ServletContextListener,监听servletContext的创建和销毁
+
+
+public class MyServletContextListener implements ServletContextListener {
+
+	public void contextInitialized(ServletContextEvent sce) {
+		System.out.println("servletContext被创建了！");
+
+	}
+	
+	public void contextDestroyed(ServletContextEvent sce) {
+		System.out.println("servletcontext被销毁了！！");
+
+	}
+
+	
+
+}
+
+该监听器的作用有：在web服务器创建时，初始化一些操作
+
+
+2.HttpSessionListener，监听session的创建和销毁
+
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
+
+public class MyHttpSessionListener implements HttpSessionListener {
+
+	public void sessionCreated(HttpSessionEvent se) {
+		System.out.println("session被创建了！！");
+
+	}
+
+	public void sessionDestroyed(HttpSessionEvent se) {
+		System.out.println("session被销毁了！！");
+
+	}
+
+}
+
+
+用处：统计在线人数
+
+
+3.ServletRequestListener，监听request的创建和销毁
+
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
+
+public class MyServletRequestListener implements ServletRequestListener {
+
+	public void requestInitialized(ServletRequestEvent sre) {
+		System.out.println("request被创建了！！！");
+	}
+	
+	public void requestDestroyed(ServletRequestEvent sre) {
+		System.out.println("request被销毁了！！");
+	}
+
+}
+
+用处：统计网站的点击量
+
+
+
+4.ServletContextAttributeListener，监听servletContext域里属性的变化
+
+import javax.servlet.ServletContextAttributeEvent;
+import javax.servlet.ServletContextAttributeListener;
+
+public class MyServletContextAttributeListener implements
+		ServletContextAttributeListener {
+//增加属性时调用
+	public void attributeAdded(ServletContextAttributeEvent scab) {
+		String name = scab.getName();
+		Object value = scab.getValue();
+		System.out.println("向servletContext中存了:" + name + "=" + value);
+	}
+//删除属性时调用
+	public void attributeRemoved(ServletContextAttributeEvent scab) {
+		System.out.println("从servletcontext中删除了：" + scab.getName());
+
+	}
+
+//属性被替换时调用
+	public void attributeReplaced(ServletContextAttributeEvent scab) {
+		System.out.println("servletcontext中" + scab.getName() + "属性被替换了");
+	}
+
+}
+
+
+
+
+
+5.HttpSessionAttributeListener, ServletRequestAttributeListener，分别监听session域和request域里属性的变化
+
+import javax.servlet.ServletRequestAttributeEvent;
+import javax.servlet.ServletRequestAttributeListener;
+import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionBindingEvent;
+
+public class HttpSessionAndServletRequestAttributeListener implements
+		HttpSessionAttributeListener, ServletRequestAttributeListener {
+
+	public void attributeAdded(HttpSessionBindingEvent se) {
+		System.out.println("向session中加入东西了！！");
+	}
+
+	public void attributeRemoved(HttpSessionBindingEvent se) {
+		System.out.println("从session中删了东西！！");
+
+	}
+
+	public void attributeReplaced(HttpSessionBindingEvent se) {
+		System.out.println("把session中的属性替换了！！");
+
+	}
+
+	public void attributeAdded(ServletRequestAttributeEvent srae) {
+		System.out.println("向request中加入东西了！！");
+	}
+
+	public void attributeRemoved(ServletRequestAttributeEvent srae) {
+		System.out.println("从request中删了东西！！");
+	}
+
+	public void attributeReplaced(ServletRequestAttributeEvent srae) {
+		System.out.println("把request中的属性替换了！！");
+	}
+
+}
+
+
+
+6.HttpSessionBindingListener，监听该类对象自己有没有加入到session中去
+该监听器不需要注册到事件源上
+
+import javax.servlet.http.HttpSessionBindingEvent;
+import javax.servlet.http.HttpSessionBindingListener;
+
+public class User implements HttpSessionBindingListener{
+
+	public void valueBound(HttpSessionBindingEvent event) {
+		System.out.println("user对象存到session中了!!");
+		
+	}
+
+	public void valueUnbound(HttpSessionBindingEvent event) {
+		System.out.println("user对象从session中解除绑定了!!");
+		
+	}
+
+}
+
+测试：
+servlet中写入：
+session.setAttribute("user",new User());
+session.removeAttribute("user");
+
+
+
+
+7.HttpSessionActivationListener，监听session活化和钝化，实现了该接口的javaBean对象可以感知自己被活化
+和钝化的事件
+该监听器不需要注册到事件源上
+
+import java.io.Serializable;
+
+import javax.servlet.http.HttpSessionActivationListener;
+import javax.servlet.http.HttpSessionEvent;
+
+public class MyBean implements HttpSessionActivationListener,Serializable {
+        //活化
+	public void sessionDidActivate(HttpSessionEvent se) {
+		System.out.println("javabean随着session从硬盘回到内存了！！");
+	}
+        //钝化
+	public void sessionWillPassivate(HttpSessionEvent se) {
+		System.out.println("javabean随着session到硬盘中去了！！");
+	}
+
+}
+
+测试：
+配置session 1分钟没人用就到硬盘中
+
+在 /WebRoot/META-INF 目录下创建 context.xml文件
+<Context>
+	<Manager className="org.apache.catalina.session.PersistentManager"
+		maxIdleSwap="1">
+		<Store className="org.apache.catalina.session.FileStore"
+			directory="aaa" />
+	</Manager>
+</Context>
+这样session在一分钟不动的情况下则会被钝化到tomcat工作目录下面的aaa目录下，直到再次访问才被激活

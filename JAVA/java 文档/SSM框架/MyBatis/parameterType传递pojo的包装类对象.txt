@@ -1,0 +1,45 @@
+由于mabatis查询方法和mapper接口方法只能传递一个参数(原因：映射文件中parameterType只能有一个)，
+但是有时候我们的查询条件不止一个，这时需要把参数封装成一个对象，然后传递给查询方法
+
+
+需求：
+完成用户信息的综合查询，需要传入查询条件和复杂(可能包括用户信息，其他信息，比如商品，订单)
+针对上边需求，建议使用自定义的包装类型的pojo
+
+//Vo指视图层
+class UserQueryVo{
+ 
+  private String username;
+
+  //在这里包装所需要的查询条件
+
+  //用户的查询条件
+  private UserCustom userCustom;
+
+  public UserCustom getUserCustom(){
+     return userCustom;
+  }
+
+  public void setUserCustom(UserCustom userCustom){
+     this.userCustom=userCustom;
+  }
+
+}
+
+//用户的扩展类
+public class UserCustom extends User{
+
+
+}
+
+映射文件：
+
+<!---用户信息的综合查询
+   parameterType  传递包装类 UserQueryVo中有private UserCustom userCustom;和
+               它的set get方法  UserCustom是User的扩展类 
+   userCustom.sex：取出包装对象中性别的值  ognl方式 如果UserQueryVo中有private String sex;则可以直接用#{sex}
+   userCustom.name:取出包装对象中姓名的值  同上
+-->
+<select id="findUserList" parameterType="xxx.xx.domain.UserQueryVo">
+   select * from user where user.sex=#{userCustom.sex} and user.username like '%${userCustom.name}%'
+</select>

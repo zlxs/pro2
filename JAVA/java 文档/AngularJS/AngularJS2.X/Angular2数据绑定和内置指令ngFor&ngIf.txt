@@ -1,0 +1,96 @@
+单向绑定
+
+1.在Component中声明和初始化成员变量
+
+calss HelloComponent{
+   //字符串类型
+   name: string="字符串变量name";
+   //数字类型
+   age: number=20;
+   //布尔类型
+   married: boolean=true;
+
+   //数组类型
+   jobs: Array<string>=['IBM','Microsoft','Google'];
+   //或 
+   jobs: string[]=['IBM','Microsoft','Google'];
+   
+   //枚举类型
+   enum Role{Employee=3,Manager,Admin} //这样写 Manager=4,Admin=5，Employee不写值则从0开始
+   role: Role=Role.Employee;   
+
+   //Any 相当于java的Object
+   something: any="as string";
+   something=1;
+   something=[1,2,3];   
+
+}
+
+
+2.在页面中绑定
+{{ 变量名 }}
+
+
+
+双向绑定
+
+写法
+<input type="text" name="name" [(ngModel)]="Component中的声明的变量" />
+<input type="password" name="name" [(ngModel)]="Component中的声明的变量" />
+<textarea [(ngModel)]="Component中的声明的变量"></textarea>
+...
+
+
+将html标签的value 绑定到 Component的name属性,由于是双向绑定,一方的值发生改变;另一方的值同时会发生改变.
+
+
+---------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------
+
+ngFor迭代html标签的指令  格式： *ngFor="let 随便一个名称(记住每次迭代到的对象) of 要迭代的属性(Component中声明的某个数组属性)"
+
+personArray为Component中的一个Person对象数组变量
+
+页面片段：
+
+<ul>
+    <li *ngFor="let p of personArray">{{p.name}}--{{p.age}}</li>  //会迭代personArray来产生多个li标签，类似jstl的c:forEach
+</ul>
+
+root.component.ts的内容：
+
+@Component({
+    templateUrl:'./app/root.html',
+    selector:'my-root'
+})
+export class RootComponent{
+    //Person数组变量personArray 用json格式表示每一个Person对象
+    personArray: Person[]=[{name:"xxx",age:10},{name:"yyy",age:15},{name:"zzz",age:20}];
+}
+
+person.component.ts的内容：
+
+class Person{
+
+    name: string="aaa";
+    age: number=20;
+
+}
+
+使用ngFor 循环,index可以取到索引值(从0开始)
+
+<div>
+    <ul *ngFor="let item of users; let i = index">
+        <li>{{i+1}} Hello {{item.name}}</li>
+    </ul>
+</div>
+
+---------------------------------------------------------------------------------------------
+
+ngIf指令   根据表达式运算的逻辑结果(true/false),来动态决定一个标签元素是否在Dom树上
+
+<div *ngIf="name=='aaa'">
+    <p>xxxxxxxxxxxxxxx</p>
+</div>
+如果Component中name属性的值为aaa则在页面上插入div标签，否则删除该div标签
+

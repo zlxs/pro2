@@ -1,0 +1,60 @@
+
+1.导入Spring的jar
+
+2.web.xml配置中添加：
+
+<servlet>  
+   <servlet-name>springMVC</servlet-name>  
+   <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+   <init-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>/WEB-INF/springMVC-servlet.xml</param-value>
+        <!--如果想把配置文件放在src下，使用下方的  *会把所有的配置都加载
+          <param-value>classpath*:/springMVC-servlet.xml</param-value>
+        -->
+        <!--还可以把配置文件放入指定的包下,如config
+          <param-value>classpath*:config/springMVC-servlet.xml</param-value>
+        -->
+   </init-param>  
+   <load-on-startup>1</load-on-startup>  
+</servlet> 
+<servlet-mapping>
+   <servlet-name>springMVC</servlet-name>
+   <url-pattern>/</url-pattern>    //注：不能用/*,否则DispatcherServlet会解析jsp，但不能根据jsp找到handler,报错	
+</servlet-mapping>  
+
+
+3.SpringMVC的配置文件springMVC-servlet.xml  名称和路径是上面web.xml中配置的
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"  
+ xmlns:context="http://www.springframework.org/schema/context"  
+ xmlns:p="http://www.springframework.org/schema/p"  
+ xmlns:mvc="http://www.springframework.org/schema/mvc"  
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+ xsi:schemaLocation="http://www.springframework.org/schema/beans  
+      http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  
+      http://www.springframework.org/schema/context  
+      http://www.springframework.org/schema/context/spring-context.xsd  
+      http://www.springframework.org/schema/mvc  
+      http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+    
+     <!--在springMVC-servlet.xml中配置所有自己写的的Controller  使用注解不需要配置-->
+     <bean name="/testController" class="my.test.springmvc.controller.TestController">
+  
+     <!-- 启动注解驱动的Spring MVC功能，注册请求url和注解POJO类方法的映射-->  
+     <mvc:annotation-driven />  
+     <!-- 启动包扫描功能，以便注册带有@Controller、@Service、@repository、@Component等注解的类成为spring的bean -->  
+     <context:component-scan base-package="包名" />  
+
+     <!-- 对模型视图名称的解析，在请求时模型视图名称添加前后缀 -->  
+     <bean  id="viewResolver"
+            class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
+            p:prefix="/WEB-INF/jsp/" p:suffix=".jsp" />  
+
+     <!--配置不拦截对静态资源文件的访问-->
+     <resources mapping="/css/**" location="/css/" />
+     <resources mapping="/images/**" location="/images/" />
+     <resources mapping="/js/**" location="/js/" />
+     
+</beans>  

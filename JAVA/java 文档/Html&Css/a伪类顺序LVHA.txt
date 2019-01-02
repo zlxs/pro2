@@ -1,0 +1,8 @@
+a:link{text-decoration:none ; color:#c00 ;}
+a:visited {text-decoration:none ; color:#c30 ;}
+a:hover {text-decoration:underline ; color:#f60 ;}
+a:active {text-decoration:none ; color:#F90 ;}
+以上语句分别定义了"链接、已访问过的链接、鼠标停在上方时、点下鼠标时"的样式。
+注意，必须按以上顺序写，否则显示可能和你预想的不一样。记住它们的顺序是“LVHA”。
+
+a:link 可以 直接写为 a

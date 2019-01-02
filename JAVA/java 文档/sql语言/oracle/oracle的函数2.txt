@@ -1,0 +1,123 @@
+CASE WHEN 表达式有两种形式
+
+-- 写法一：
+case（条件）
+when 值1 then 返回值1
+when 值2 then 返回值2
+else 缺省值
+-- 写法二：
+case when 条件1 then 返回值1
+when 条件2 then 返回值2
+else 缺省值
+end;
+
+--简单Case函数  
+
+CASE sex  
+WHEN '1' THEN '男'  
+WHEN '2' THEN '女'  
+ELSE '其他' END  
+
+--Case搜索函数  
+
+CASE
+WHEN sex = '1' THEN '男'  
+WHEN sex = '2' THEN '女'  
+ELSE '其他' END  
+
+用法：
+
+SELECT   grade, SUM(CASE WHEN sex = 1 THEN 1      /*sex 1为男生，2位女生*/
+                       ELSE NULL
+                       END) 男生数,
+                SUM(CASE WHEN sex = 2 THEN 1
+                       ELSE NULL
+                       END) 女生数
+    FROM students GROUP BY grade;
+
+
+
+DECODE() 函数
+select decode(sex, 'M', 'Male', 'F', 'Female', 'Unknown')//第一个参数指定列，如是是M则返回Male,
+//如果是F则返回Female,其他情况返回Unknown
+from   employees;
+
+
+
+   user: 
+    返回登录的用户名称 
+    select user from dual; //==  show user;
+
+   vsize: 
+    返回表达式所需的字节数
+    select vsize('HELLO') from dual;
+
+   nvl(ex1,ex2): 　
+    ex1值为空则返回ex2,否则返回该值本身ex1（常用） 
+    例：如果雇员没有佣金，将显示0，否则显示佣金 
+    select comm,nvl(comm,0) from emp;
+
+   nvl2(ex1,ex2,ex3) :
+    如果ex1不为空，显示ex2,否则显示ex3
+    如：查看有佣金的雇员姓名以及他们的佣金 
+
+   nullif(ex1,ex2): 
+    两个表达式值相等返空，否则返回第一个表达式的值
+    例：如果工资和佣金相等，则显示空，否则显示工资
+    select nullif(sal,comm),sal,comm from emp;
+
+   coalesce: 　
+    返回列表中第一个非空表达式
+    select comm,sal,coalesce(comm,sal,sal*10) from emp;
+
+
+
+分组函数： 
+---------------------
+注：不能用在where中，需要放在having中  因为where在group by之前执行，这时还不存在各个分组，
+    所以用不了组函数 having在group by之后执行
+---------------------
+max min avg count sum  分组函数中可以加distinct关键字，来先去除重复，再计算数量，平均值，和 等 如：sum(distinct sal)
+1，整个结果集是一个组
+   1) 求部门30 的最高工资，最低工资,平均工资，总人数，有工作的人数，工种数量及工资总和
+复制代码 代码如下:
+
+     select max(ename),max(sal), 
+     min(ename),min(sal),
+     avg(sal),
+     count(*) ,count(job),count(distinct(job)) ,
+     sum(sal) from emp where deptno=30;
+
+2, 带group by 和 having 的分组
+   1)按部门分组求最高工资，最低工资，总人数，有工作的人数，工种数量及工资总和
+复制代码 代码如下:
+    
+    select deptno, max(ename),max(sal),
+    min(ename),min(sal),
+    avg(sal),
+    count(*) ,count(job),count(distinct(job)) ,
+    sum(sal) from emp group by deptno;
+   
+   2)部门30的最高工资，最低工资，总人数，有工作的人数，工种数量及工资总和
+复制代码 代码如下:
+    
+    select deptno, max(ename),max(sal),
+    min(ename),min(sal),
+    avg(sal),
+    count(*) ,count(job),count(distinct(job)) ,
+    sum(sal) from emp group by deptno having deptno=30;
+   
+3, stddev 返回一组值的标准偏差    
+   variance 返回一组值的方差
+
+    select deptno,stddev(sal) from emp group by deptno;
+    variance 返回一组值的方差差
+    select deptno,variance(sal) from emp group by deptno;
+
+4, 带有rollup和cube操作符的Group By
+    rollup 按分组的第一个列进行统计和最后的小计
+    cube 按分组的所有列的进行统计和最后的小计
+    select deptno,job ,sum(sal) from emp group by deptno,job;
+    select deptno,job ,sum(sal) from emp group by rollup(deptno,job); 
+    cube 产生组内所有列的统计和最后的小计
+    select deptno,job ,sum(sal) from emp group by cube(deptno,job);

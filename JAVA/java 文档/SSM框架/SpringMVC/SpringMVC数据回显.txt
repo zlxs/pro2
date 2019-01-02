@@ -1,0 +1,20 @@
+
+SpringMVC默认对pojo数据进行回显
+  pojo传入controller方法后，SpringMVC自动将pojo数据放到request域，key等于pojo类名（首字母小写）
+
+
+@ModelAttribute 指定pojo存放在request中的key
+
+
+@RequestMapping("/register")
+public String register(@ModelAttribute("user") UserCustom userCustom){
+....
+}
+
+以user为key把userCustom存放在request域中
+
+页面中 ${user}可以获取userCustom
+
+
+
+最简单的方法是可以使用Model model将pojo存放到request域

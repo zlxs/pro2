@@ -1,0 +1,115 @@
+result
+Name属性
+SUCCESS：Action正确的执行完成，返回相应的视图，success是 name属性的默认值；
+
+NONE：表示Action正确的执行完成，但并不返回任何视图；
+
+ERROR：表示Action执行失败，返回到 错误处理视图；
+
+INPUT：Action的执行，需要从前端界面获取参数，INPUT就是代表这个参数输入的界面，一般在应用中，
+   会对这些参数进行验证，如果验证没有通过，将自动返回到该视图；
+
+LOGIN：Action因为用户没有登陆的原因没有正确执行，将返回该登陆视图，要求用户进行登陆验证。
+
+
+
+<action name="login" class="xxx.xx.xxx.LoginAction">
+    <!-- 定义处理结果字符串和资源之间的映射关系 -->
+    <result name="success">/success.jsp</result>
+    <result name="error">/error.jsp</result>
+</action>
+
+---------------------------------------
+type属性的值：
+1.dispatcher
+<result type="dispatcher">/a.jsp</result>
+ 转发到新的地址，可以是action
+
+2.redirect
+<result type="redirect">/b.jsp</result>
+ 重定向到新的地址，可以是action
+
+3.chain
+<result type="chain">某个Action标签的name属性的值</result>
+   该方式访问的只能是本web应用中的Action
+ 转发到该Action
+
+如果该Action配置在另一个包下，使用下述方法
+如：
+<result type="chain">
+  <param name="actionName">loginAction!toRegister</param>  //指定跳转的Action,可以指定具体的方法
+  <param name="namespace">/Register</param>  //指定该Action所属的namespace
+</result>
+
+
+4.redirectAction
+<result type="redirectAction">/Register/loginAction</result>
+  和chain不同的是，它是重定向过去
+
+还可以传递参数过去：
+<result type="redirectAction">
+   <param name="actionName">loginAction!toRegister</param>
+   <param name="namespace">/Register</param>
+   <!--传递参数age=20,通过url地址方式传递过去-->
+   <param name="age">20</param>
+</result>
+
+传递中文不需要解决乱码，因为struts2的拦截器已经为我们解决了乱码问题
+
+
+
+5.stream
+ 用于文件下载,详情看文件上传和下载
+
+
+6.plainText
+ 用于原样输出jsp源代码
+
+----------------------------------------
+
+配置全局result
+<global-results>
+  <result name="error">/error.jsp</result>
+  ...可以配置多个
+</global-results>
+
+如果另一个包下的Action也想用该包下配置的<global-reslts>
+可以自己配，也可以让那个包继承这个有全局result配置的包 extends="包名"
+
+-----------------------------------------
+
+动态result:
+在Action中写个String属性r（名字随便） 和set get方法,用来动态的确定要返回的result的路径
+如：
+public String execute(){
+  if(){
+   r="/a.jsp";
+  }else(){
+   r="/b.jsp";
+  }
+  return "success";
+}
+
+struts.xml中配置方式
+<result name="success">$(r)</result>  //从值栈中取值,这个不是el表达式
+
+
+-----------------------------------------
+
+带参数的result
+如Action中有属性type(名称随便) 和get set方法
+
+用重定向到jsp方式才需要通过result传参数，转发不需要，因为一次request用一个值栈，可以
+直接从值栈中取对应的值
+
+只用于重定向方式：
+<result name="success">/a.jsp?type=$(type)</result> 
+可以把参数type带给a.jsp
+
+注解方式 @Result(name="success",location="loginUI",type="redirectAction/redirect",params={"username","${username}"})
+
+
+jsp中不能通过<s:property value="r" />获取参数,因为用的不是同一个值栈
+ 可以通过ActionContext的parameters获取 <s:property  value="#parameters.t"/>
+
+

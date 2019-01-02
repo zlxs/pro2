@@ -1,0 +1,38 @@
+1.添加依赖：
+
+<!-- spring boot 基本环境 -->
+<parent>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-parent</artifactId>
+   <version>1.4.1.RELEASE</version>
+</parent>
+
+然后在dependencies中添加：
+<dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+
+
+2.主配置类继承SpringBootServletInitializer，重写configure方法，具体如下：
+
+@SpringBootApplication
+public class Application extends SpringBootServletInitializer{
+
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(Application.class);
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class,args);
+    }
+}
+
+
+3.application.properties文件中设置：
+
+  spring.mvc.view.prefix=/WEB-INF/
+  spring.mvc.view.suffix=.jsp
+
+
+4.控制器还是用@Controller注解，具体开发同SpringMVC一致

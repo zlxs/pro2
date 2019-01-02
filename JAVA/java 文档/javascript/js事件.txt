@@ -1,0 +1,17 @@
+事件对象 event
+
+获得事件对象需要在function中传入参数--> function(event)
+
+在函数值获取： var ev =event||window.event;
+
+鼠标相关事件
+获取鼠标位置
+  clientX
+  clientY
+
+
+键盘相关事件
+获取刚刚按下的键盘键位的键盘码
+  keyCode
+
+ 

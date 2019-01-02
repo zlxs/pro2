@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 指定Hibernate配置文件的DTD信息 -->
+<!DOCTYPE hibernate-configuration PUBLIC
+"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<!-- hibernate- configuration是连接配置文件的根元素 -->
+<hibernate-configuration>
+<session-factory>
+
+<!-- 指定连接数据库所用的驱动 -->
+<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+<!-- 指定连接数据库的url，hibernate连接的数据库名 -->
+<property name="connection.url">jdbc:mysql://localhost:3306/hibernate</property>
+<!-- 指定连接数据库的用户名 -->
+<property name="connection.username">root</property>
+<!-- 指定连接数据库的密码 -->
+<property name="connection.password">root</property>
+
+<!-- 指定数据库连接池的提供者  -->
+<property name="hibernate.connection.provider_class">org.hibernate.c3p0.internal.C3P0ConnectionProvider</property>
+<!-- 指定连接池里最大连接数 -->
+<property name="hibernate.c3p0.max_size">20</property>
+<!-- 指定连接池里最小连接数 -->
+<property name="hibernate.c3p0.min_size">1</property>
+<!-- 指定等待获取连接的超时时长 -->
+<property name="hibernate.c3p0.timeout">5000</property>
+<!-- 指定连接池里最大缓存多少个Statement对象 -->
+<property name="hibernate.c3p0.max_statements">100</property>
+<!-- 每隔多长时间去测试空闲数据库连接数量 -->
+<property name="hibernate.c3p0.idle_test_period">3000</property>
+<!--  -->
+<property name="hibernate.c3p0.acquire_increment">2</property>
+<!--  -->
+<property name="hibernate.c3p0.validate">true</property>
+
+<!-- 指定数据库方言 -->
+<property name="dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
+
+<!-- 根据需要自动创建数据表   
+create：表示启动的时候先drop，再create
+create-drop:表示在hebarinate初始化时创建表格,程序运行结束的时候会删除相应的表格，在实际项目中不用
+update: 根据映射文件去和数据库中的表对应起来，如果不一致，就更新表的结构
+validate: 校验映射文件和数据库中的表是不是能对应起来，如果不一致就抛出异常，并不做更新，实际中常用
+ -->
+<property name="hbm2ddl.auto">update</property>
+
+<!-- 显示Hibernate持久化操作所生成的SQL -->
+<property name="show_sql">true</property>
+<!-- 将SQL脚本进行格式化后再输出 -->
+<property name="format_sql">true</property>
+
+<!-- 开启二级缓存 -->
+<property name="cache.use_second_level_cache">true</property>
+<!-- 配置二级缓存的提供商 -->
+<property name="hibernate.cache.region.factory_class">
+	org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory
+</property>
+<!-- 二级缓存ehcache的配置文件位置 -->
+<property name="hibernate.cache.provider_configuration_file_resource_path">ehcache.xml</property>
+
+        
+<!-- 开启查询缓存 -->
+<property name="hibernate.cache.use_query_cache">true</property>
+
+
+<!-- 罗列所有的映射文件 -->
+<mapping resource="demo/po/Users.hbm.xml"/>
+<!--用注解代替映射文件时，需要罗列实体类-->
+<mapping class="cn.xxx.xx.User" />
+
+</session-factory>
+</hibernate-configuration>

@@ -1,0 +1,94 @@
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+public class s extends Frame{
+	Image img=util.getImage("images/1.jpg");
+ private double x=100,y=100;//图片位置参数
+ private boolean left;//控制图片移动方向
+ private boolean up;//控制图片移动方向
+ private double degree=Math.PI/3;//角度
+ private double speed=30;//控制图片移动速度
+ 
+ public void LoadWindow()//加载窗口函数
+ {
+	 setSize(800,600);//设置窗口宽（x）和高(y)，第一个参数为宽（横的为宽，竖的为高）
+	 setLocationRelativeTo(null);//使窗口居中显示
+	 //setLocation(100,100)为设置窗口左上角点坐标来控制窗口位置
+	 setVisible(true);//使窗口可见
+	 new PaintThread().start();//启动重画线程
+	 addWindowListener(new WindowAdapter()//创建匿名类，用于使窗口可以自由关闭
+	 {
+		public void windowClosing(WindowEvent e) {
+			System.exit(0);
+		}
+	 }); 
+ }
+ 
+ public void setSpeed(int a)//设置速度成员函数
+ {
+	 speed=a;
+ }
+ 
+ public void paint(Graphics g)//函数会被回调
+ {
+	 /*
+	 Font f=new Font("楷体",Font.BOLD,50);//设置字体
+	 g.setFont(f);
+	 g.drawLine(200,20,200,200);//参数为x1,y1,x2,y2
+	 g.drawRect(100,100,50,50);
+	 g.drawOval(100,100,50,50);
+	 g.drawString("窗口元素",100,200);
+	 g.fillRect(300,300,100,100);
+	 Color c=g.getColor();
+	// Color b=new Color(100,100,75);自己设置三原色的混合
+	// g.setColor(b);
+	 g.setColor(Color.green);
+	 g.fillOval(40,40,70,30);
+	 g.setColor(c);
+	 */
+	 g.drawImage(img,(int)x,(int)y,null);
+	 if(speed>0)//边移动边减速
+		 speed-=0.1;
+	 else
+         speed=0;
+
+	 x+=speed*Math.cos(degree);
+	 y+=speed*Math.sin(degree);
+ 
+	 if(y<40||y>600-190)
+		 degree=-degree;
+	 if(x<0||x>800-190)
+		 degree=Math.PI-degree;
+ }
+ /**
+  * 重画窗口的线程类，是一个内部类
+  *
+  */
+ class PaintThread extends Thread
+ {
+	 public void run()
+	 {
+		 while(true)
+		 {
+			 repaint();
+			 try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		 }
+	 }
+ }
+ 
+ public static void main(String[] args)
+ {
+	 s a=new s();
+	 a.LoadWindow();
+	// a.setSpeed(50);
+ }
+}

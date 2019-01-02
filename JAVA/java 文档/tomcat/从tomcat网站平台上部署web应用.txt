@@ -1,0 +1,6 @@
+在conf 下的tomcat-users.xml文件中添加用户名和密码
+如：
+
+  <role rolename="manager-gui"/> 
+  <user username="cheng" password="redhat" roles="manager-gui"/> 
+

@@ -1,0 +1,71 @@
+Customer类---->customer表
+Order类对应---->orders表
+customer(1)<----->(n)order
+
+public class Customer  
+{  
+    private String id;  
+    private String username;    
+    private Set<Orders> orders = new HashSet<Orders>();  
+    /*setter and getter method*/ 
+} 
+
+public class Orders 
+{  
+    private String id;  
+    private String orderNumber;  
+    private Customer customer;  
+    /*setter and getter method*/ 
+} 
+
+---------------------------------------------------------------------------
+<set name="orders" cascade="all" inverse="true">
+  <key column="cid">   //多的一方的加外键的字段
+  <one-to-many class="cn.xxx.xx.Orders">
+</set>
+
+
+---------------------------------------------------------------------------
+使用list集合：private List<Orders> orders = new ArrayList<Orders>();
+
+Hibernate为集合映射提供了专用的标签元素，List集合映射，就使用<list>标签表示：
+<list name="orders" cascade="all"> 
+    <key column="cid"></key> 
+
+    <!--在多的一方 产生一列用来表示顺序 如果不指明列名默认为idx-->
+    <list-index column="customer_index" type="integer"></list-index> 
+    <one-to-many class="cn.xxx.xx.Orders"/> 
+</list> 
+List集合是有顺序的，"index"标签，是用于记录顺序，List的顺序将表现在"customer_index"列上，
+其余设置，与Set集合类似。注意：List映射中"inverse"中的值不能设置为"true"，
+因为List集合的顺序只有customer方知道，order方不知道List的存在。
+不然，"customer_index"的列值将不会被赋值
+
+注：
+Inverse是hibernate双向关系中的基本概念。inverse的真正作用就是指定由哪一方来维护之间的关联关系。
+当一方中指定了“inverse=false”（默认），那么那一方就有责任负责之间的关联关系。
+一般在一对多双向关联关系中，将一方的inverse属性设置为true，即将主外键的关系交由多方来维护。
+
+---------------------------------------------------------------------------
+使用Map集合：private Map<String,Orders> orders = new HashMap<String,Orders>();
+
+Hibernate为集合映射提供了专用的标签元素，Map集合映射，就使用<map>标签表示：
+<map name="orders" inverse="false" cascade="all"> 
+    <key column="cid"></key> 
+
+    <index column="order_key" type="string"></index> 
+    <one-to-many class="cn.xxx.xx.Orders"/> 
+</map> 
+Map映射中<index>标签，表示Map集合中的key值，记录在"order_key"列中，
+<one-to-many>表示Map集合中的vlaue。其他设置与上面一样。
+注意："inverse"不要设置成"true"因为key值是customer对象维护的，而order不知道key的存在。
+
+
+---------------------------------------------------------------------------
+使用数组 private Orders[] orders;  
+
+<array name="orders" inverse="false" cascade="all"> 
+    <key column="cid"></key> 
+    <list-index column="customer_index" type="integer"></list-index> 
+    <one-to-many class="cn.xxx.xx.Orders"/> 
+</array> 

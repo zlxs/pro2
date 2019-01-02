@@ -1,0 +1,120 @@
+
+一对一单项外键关联   和多对一配置类似
+
+表student                表studentIdCard
+    
+  id int ;                id int;
+  name varchar(20);       student_id int;//来自student的id,且一对一
+  age int;                ...
+  ...                    
+
+
+实体类
+@Entity                         @Entity
+class Student{                  class  StudentIdCard{
+ private int id;                    private int id;
+ private String name;               private Student student;//一对一关系
+ ...                                ... 
+ @ID                                @ID
+ @GeneratedValue                    @GeneratedValue
+ getId()                            getId
+                                    @OneToOne
+                                    @JoinColumn(name="student_id") 
+ ...                                getStudent()
+}                                   ...
+                                 }
+
+@JoinColumn与@Column相区别的是：@JoinColumn注释的是保存表与表之间关系的字段（存在外键的字段），
+ 而@Column标注的是表中不包含表关系的字段（不存在外键的字段）。
+
+
+StudentIdCard映射文件中如何映射一对一关联关系：
+
+<many-to-one  name="student" column="student_id"  unique="true"/>
+注：unique="true" 是关键，加了这个就变成1对1了
+
+
+---------------------------------------------------------------------------
+
+一对一双向外键关联
+
+如：夫妻表
+
+@Entity                          @Entity
+class Wife{                      calss husband
+ private int id;                   private int id;
+ private husband husband;        private Wife wife; //两边都有对方引用
+ ...                               ...
+ @ID                               @ID
+ @GeneratedValue                   @GeneratedValue
+ getId()                           getId()
+ @OneToOne                         @OneToOne(mappedBy="husband") //告诉hibernate外键是在对方，即wife表生成，
+ @JoinColumn(name="husandId")      @JoinColumn(name="wifeId")    //这里会失效，因为这个属性不会生成字段         
+ gethusband()                      getWife()
+ ...                               ...
+}                                  }
+
+
+----------------
+注：
+只要有双向关联，mappedBy 属性必设置
+   不然两边都会生成外键，冗余
+ 告诉hibernate对方是主导
+----------------
+
+@OneToOne(mappedBy="husband") 表示外键是在wife表的husband字段上，在生成husband表时，不用生成与
+  wife表关联的字段和外键，加了mappedBy @JoinColumn(name="wifeId")就失效，因为这个属性根本不会生成字段
+
+
+
+
+映射文件中设置：
+husband:
+ <one-to-one  name="wife" property-ref="husband"  calss="cn.xxx.xx.Wife">    property-ref----mappedBy
+Wife:
+ <many-to-one name="husband" column="husbandId" class="cn.xxx.xx.husband" unique="true" > ----有外键的一方
+
+
+
+---------------------------------------------------------------------------
+
+一对一单项主键关联(不重要)
+
+如husband表和wife表，husband表的主键id参考wife的主键id
+   在主键上加外键
+
+class husband中：
+
+@PrimaryKeyJoinColumn
+getWife()
+
+
+Hushband.hbm.xml设置：
+ 
+<one-to-one name="wife"  constrained="true">
+
+<generator class="foreign"> //foreign表示引用外键
+  <param  name="property">wife</property>//引用wife属性对应的主键
+</generator>
+
+constrained(约束) (可选) 表明该类对应的数据库表，和被关联的对象所对应的数据库表之间，
+通过一个外键引用对主键进行约束。
+
+---------------------------------------------------------------------------
+
+一对一双向主键关联(不重要)
+
+如husband表和wife表，husband表的主键id参考wife的主键id
+
+
+husband.hbm.xml设置：
+
+<one-to-one name="wife"  constrained="true">
+
+<generator class="foreign"> //foreign表示引用外键
+  <param  name="property">wife</property>//引用wife属性对应的主键
+</generator>
+
+
+Wife.hbm.xml设置：
+<one-to-one name="husband" property-ref="wife">

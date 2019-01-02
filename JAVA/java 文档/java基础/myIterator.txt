@@ -1,0 +1,50 @@
+public class diedai {
+
+ private String[] a={"x","y","z"};
+ private int size=a.length;
+ public int size()
+ {
+	 return size;
+ }
+ public Iterator iterator(){
+	return new Iterator() 
+	 {
+	  private int coursor=-1;
+	  public boolean hasNext()
+	  {
+	 	 return (coursor+1)<size;
+	  }
+	  public String next()
+	  { 
+	   coursor++;
+	   return a[coursor];
+	  }
+	  public void remove()
+	  {
+	    System.arraycopy(a, coursor+1, a, coursor, size-(coursor+1));
+	    size--;
+	    coursor--;
+	  }
+	 };
+ }
+
+ public static void main(String[] args)
+ {
+	diedai a=new diedai();
+	Iterator b=a.iterator();
+	while(b.hasNext())
+	{
+	 System.out.println(b.next());
+	}
+	System.out.println(a.size());
+	System.out.println("**********************");
+	b=a.iterator();
+	while(b.hasNext())
+	{
+	 System.out.println(b.next());
+	 b.remove();
+	}
+	System.out.println(a.size());
+
+ }
+}

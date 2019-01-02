@@ -1,0 +1,11 @@
+el表达式的empty运算符：
+
+${empty 一个未定义的变量}  返回 true
+${not empty 一个未定义的变量}  返回false
+
+${empty 不包含任何元素的空集合} 返回true
+
+${empty 长度为0的字符串} 返回true
+
+${empty 为null的值} 返回true
+

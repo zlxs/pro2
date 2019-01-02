@@ -1,0 +1,115 @@
+dbutils测试：
+
+首先new出queryRunner对象，传递一个链接池
+QueryRunner runner = new QueryRunner(JdbcUtils.getDataSource());
+准备sql语句
+sql="";
+用参数数组替换sql中的参数
+Object[] params={....};
+然后调用runner的方法来执行
+runner.update(sql,params);/runner.query(sql,params,new BeanHandler()/BeanListHandler()/...);
+
+runner.batch(sql,Object[][]);//需要二维数组，Object[i]为保存第i+1条sql的参数一维数组,
+
+注意：apache的dbutils不会自动关闭链接，需要手动关闭，使之能执行事务。
+     如果实体类的属性名和数据库中对应的字段名不一致，则需要给列添加与属性相同的别名
+
+
+
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.List;
+
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.junit.Test;
+
+import cn.itcast.domain.User;
+import cn.itcast.utils.JdbcUtils;
+
+public class Demo1 {
+
+	/*
+	 create database day17;
+	 use day17;
+	 create table users(
+		id int primary key,
+		name varchar(40),
+		password varchar(40),
+		email varchar(60),
+		birthday date
+	);
+	 */
+	
+	//使用dbutils完成数据库的crud
+	
+	@Test
+	public void insert() throws SQLException{
+		QueryRunner runner = new QueryRunner(JdbcUtils.getDataSource());
+		String sql = "insert into users(id,name,password,email,birthday) values(?,?,?,?,?)";
+		Object params[] = {2,"bbb","123","aa@sina.com",new Date()};
+		runner.update(sql, params);
+	}
+	
+	@Test
+	public void update() throws SQLException{
+		QueryRunner runner = new QueryRunner(JdbcUtils.getDataSource());
+		String sql = "update users set email=? where id=?";
+		Object params[] = {"aaaaaa@sina.com",1};
+		runner.update(sql, params);
+	}
+	
+	@Test
+	public void delete() throws SQLException{
+		QueryRunner runner = new QueryRunner(JdbcUtils.getDataSource());
+		String sql = "delete from users where id=?";
+		runner.update(sql, 1);
+	}
+	
+	@Test
+	public void find() throws SQLException{
+		QueryRunner runner = new QueryRunner(JdbcUtils.getDataSource());
+		String sql = "select * from users where id=?";
+		User user = (User) runner.query(sql, 1, new BeanHandler(User.class));
+		System.out.println(user.getEmail());
+	}
+	
+	
+	@Test
+	public void getAll() throws Exception{
+		QueryRunner runner = new QueryRunner(JdbcUtils.getDataSource());
+		String sql = "select * from users";
+		List list = (List) runner.query(sql, new BeanListHandler(User.class));
+		System.out.println(list);
+	}
+	
+	@Test
+	public void batch() throws SQLException{
+		QueryRunner runner = new QueryRunner(JdbcUtils.getDataSource());
+		String sql =  "insert into users(id,name,password,email,birthday) values(?,?,?,?,?)";
+		Object params[][] = new Object[3][5];
+		for(int i=0;i<params.length;i++){  //3
+			params[i] = new Object[]{i+1,"aa"+i,"123",i + "@sina.com",new Date()};
+		}
+		runner.batch(sql, params);
+	}
+}
+
+
+dbutils的ResultSetHandler接口的实例:
+
+AbstractKeyedHandler：KeyedHandler的抽象类。
+AbstractListHandler：简化ResultSetHandler类开发的抽象类，把结果集转换成List。
+ArrayHandler：把结果集中的第一行数据转成对象数组。
+ArrayListHandler：把结果集中的每一行数据都转成一个对象数组，再存放到List中。
+BeanHandler：将结果集中的第一行数据封装到一个对应的JavaBean实例中。
+BeanListHandler：将结果集中的每一行数据都封装到一个对应的JavaBean实例中，存放到List里。
+BeanMapHandler：实现了Bean返回Map集合。结果集所有的行都会转换成Bean，并根据指定的Key存储到Map中。
+ColumnListHandler：将结果集中某一列的数据存放到List中。
+KeyedHandler：将结果集中的每一行数据都封装到一个Map里，然后再根据指定的key把每个Map再存放到一个Map里。
+MapHandler：将结果集中的第一行数据封装到一个Map里，key是列名，value就是对应的值。
+MapListHandler：将结果集中的每一行数据都封装到一个Map里，然后再存放到List。
+ScalarHandler：将结果集中某一条记录的其中某一列的数据存成Object。
+
+

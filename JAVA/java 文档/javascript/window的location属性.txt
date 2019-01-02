@@ -1,0 +1,6 @@
+
+window.location="url";
+window.location.href="url";
+window.location.replace(url);
+
+window.location.reload();//重新加载当前的url

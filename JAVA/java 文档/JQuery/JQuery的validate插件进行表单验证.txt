@@ -1,0 +1,421 @@
+默认校验规则
+(1)required:true               必输字段
+(2)remote:"check.jsp"          使用ajax方法调用check.php验证输入值
+    用于校验注册时用户名是否存在，服务器端返回true则表示验证通过，
+    否则表示验证未通过，在messages的提示中写 remote:"用户名已存在"
+    
+    rules:{ 
+       username:{
+          required：true,
+          remote:"url地址"
+       }，
+       messages:{
+          required:"用户名不能为空",
+          remote:"用户名已存在"
+       }
+    }
+
+通过remote验证用户名是否存在：
+    rules:{ 
+       username:{
+          required：true,
+          remote:{
+             url:"地址",
+             type:"post",，
+	     data:{
+		username: function() {
+                   return $("#username").val();//需要有return   只用这种写法的话服务器需要返回true或false，返回false表示用户已存在
+                }
+	     }
+          }
+       }，
+       messages:{
+          required:"用户名不能为空",
+          remote:"用户名已存在"
+       }
+    }	
+
+
+(3)email:true                  必须输入正确格式的电子邮件
+(4)url:true                    必须输入正确格式的网址
+(5)date:true                   必须输入正确格式的日期
+(6)dateISO:true                必须输入正确格式的日期(ISO)，例如：2009-06-23，1998/01/22 只验证格式，不验证有效性
+(7)number:true                 必须输入合法的数字(负数，小数)
+(8)digits:true                 必须输入整数
+(9)creditcard:                 必须输入合法的信用卡号
+(10)equalTo:"#field"           输入值必须和id属性为field的表单输入项的值相同，注意：这里是id，不是name属性的值
+(11)accept:                    输入拥有合法后缀名的字符串（上传文件的后缀）
+(12)maxlength:5                输入长度最多是5的字符串(汉字算一个字符)
+(13)minlength:10               输入长度最小是10的字符串(汉字算一个字符)
+(14)rangelength:[5,10]         输入长度必须介于 5 和 10 之间的字符串")(汉字算一个字符)
+(15)range:[5,10]               输入值必须介于 5 和 10 之间
+(16)max:5                      输入值不能大于5
+(17)min:10                     输入值不能小于10
+
+
+默认的提示
+
+messages: {  
+    required: "This field is required.",  
+    remote: "Please fix this field.",  
+    email: "Please enter a valid email address.",  
+    url: "Please enter a valid URL.",  
+    date: "Please enter a valid date.",  
+    dateISO: "Please enter a valid date (ISO).",  
+    dateDE: "Bitte geben Sie ein g眉ltiges Datum ein.",  
+    number: "Please enter a valid number.",  
+    numberDE: "Bitte geben Sie eine Nummer ein.",  
+    digits: "Please enter only digits",  
+    creditcard: "Please enter a valid credit card number.",  
+    equalTo: "Please enter the same value again.",  
+    accept: "Please enter a value with a valid extension.",  
+    maxlength: $.validator.format("Please enter no more than {0} characters."),  
+    minlength: $.validator.format("Please enter at least {0} characters."),  
+    rangelength: $.validator.format("Please enter a value between {0} and {1} characters long."),  
+    range: $.validator.format("Please enter a value between {0} and {1}."),  
+    max: $.validator.format("Please enter a value less than or equal to {0}."),  
+    min: $.validator.format("Please enter a value greater than or equal to {0}.")  
+},  
+
+
+
+required:true 必须有值
+required:"#aa:checked"表达式的值为真，则需要验证
+required:function(){}返回为真，表时需要验证
+后边两种常用于，表单中需要同时填或不填的元素
+
+
+$().ready(function(){
+  //要校验的表单
+  $("#form1").validate({
+   //校验规则  ,key:value   key为校验表单项的属性name的值--------------------@@@@@@@@@@@@@@@@@@@
+   rules:{
+      username:"required"，
+      password:{
+          required:true,
+          maxlength:12,
+          minlength:6
+      }，
+      password1:{
+          required:true,
+          equalTo:"#password" //比较两次的密码是否相等  这里的password是id属性的值,不是name属性的值
+      }
+
+   },
+   //自定义提示信息  ,key:value   key为校验表单项的属性name的值
+   messages:{ 
+      //JQuery在处理错误信息时，会生成一个隐藏的label，<label for="" style="display:none" class="error"></label>
+      //for属性是该label标签的唯一标识，它的值是表单项的name属性的值，其他属性固定写法
+      //当html页面中没有定义这个label时,处理错误信息时会根据校验的表单项的name属性生成这个label，来输出错误信息
+      //当html页面中已经定义了，就不会生成了，而是在定义的位置输出对应的错误信息
+     
+      username:"用户不能为空",
+      password:{
+	 required:"密码不能为空",
+          maxlength:"密码最小为6位",
+          minlength:"密码最大为12位"
+      }，
+      password1:"密码不一致"
+   }
+
+});
+
+});
+
+--------------------------------------------------------------------------------------------------
+
+自定义校验规则：
+如：自定义输入不能为空的验证规则required
+$.validator.addMethod("checkUserName(自定义验证规则名)",function(value,element,params){
+
+   if(value==""){
+     return false;
+   }
+   return ture;
+
+},'出错信息提示');
+
+
+如：
+//自定义校验规则
+$.validator.addMethod("pswregex",function(value,element,params){
+			
+	if(!/^[a-zA-Z]/.test(value)){
+		return false;
+	}
+				
+	return true;
+				
+},"密码要以字母开头");
+
+使用： $("#某个元素id").rules("add",rules); 向表单元素添加校验规则
+
+$("input[name=password]").rules("add","pswregex");
+
+--------------------------------------------------------------------------------------------------
+
+
+
+$(document).ready(function() {
+  // validate signup form on keyup and submit
+  var validator = $("#signupform").validate({
+    rules: {
+      firstname: "required",
+      username: {
+        required: true,
+        minlength: 2
+      },
+      password: {
+        required: true,
+        minlength: 5
+      },
+      password_confirm: {
+        required: true,
+        minlength: 5,
+        equalTo: "#password"
+      },
+      email: {
+        required: true,
+        email: true,
+      },
+      dateformat: "required",
+      terms: "required"
+    },
+    messages: {
+      firstname: "姓名不能为空",
+      username: {
+        required: "用户名不能为空",
+        minlength: jQuery.format("用户名只少由 {0} 字符组成")
+      },
+      password: {
+        required: "密码不能为空",
+        minlength: jQuery.format("密码只少由 {0} 字符组成")
+      },
+      password_confirm: {
+        required: "确认密码不能为空",
+        minlength: jQuery.format("确认密码只少由 {0} 字符组成"),
+        equalTo: "秘密与确认密码不一致"
+      },
+      email: {
+        required: "邮箱不能为空",
+        email: "邮箱格式不正确"
+      },
+      dateformat: "请选择性别",
+      terms: " "
+    },
+    // the errorPlacement has to take the table layout into account
+    errorPlacement: function(error, element) {
+      if ( element.is(":radio") )
+        error.appendTo( element.parent().next().next());
+      else if ( element.is(":checkbox") )
+        error.appendTo ( element.next());
+      else
+        error.appendTo( element.parent().next());
+    },
+    // specifying a submitHandler prevents the default submit, good for the demo
+    submitHandler: function() {
+      alert("submitted!");
+    },
+    // set this class to error-labels to indicate valid fields
+    success: function(label) {
+      // set   as text for IE
+      label.html(" ").addClass("checked");
+    },
+    highlight: function(element, errorClass) {
+      $(element).parent().next().find("." + errorClass).removeClass("checked");
+    }
+  });
+});
+
+
+--------------------------------------------------------------------------------------------------
+
+jquery的validate插件的高级api
+
+
+1. valid()方法
+
+  $("#form的id").valid(）方法， 返回true或false 只有全部通过验证，才返回true
+
+<button id="check">检查表单</button>
+
+$("#check").click(function(){
+   alert($("#form的id").valid()?"填写正确":"填写错误");
+});
+
+点击'检查表单按钮时' 弹出填写正确或错误 
+只有页面上所有的输入验证都通过，才返回true
+
+
+----------------------
+
+2. rule()方法
+
+   $("#某个元素id").rules() 获取表单元素的校验规则
+   $("#某个元素id").rules("add",rules); 向表单元素添加校验规则
+   $("#某个元素id").rules("remove",rules); 删除表单元素的校验规则
+
+
+----------------------
+
+3. validate()方法
+**************************  插件的核心内容  ******************************
+**************************************************************************
+
+submitHandler 通过验证后运行的函数，可以加上表单提交方法 eg: submitHandler:function(form){...}
+
+invalidHandler 无效表单提交后运行的方法
+
+ignore 对某些元素不进行验证   ignore:选择器   eg:  ignore:"#username"
+
+rules 定义验证规则   rules中有一个depends 用来定义某个规则的触发条件
+
+messages 定义提示信息
+
+groups 对一组元素的验证，用一个错误提示，用errorPlacement控制把出错信息放在哪里
+
+
+$("#form1").validate( 
+
+    rules:{
+	username:{
+          required:{    //depends用于定义验证规则的触发条件
+	    //如：只有密码填写了，才校验用户名是否被填写
+            depends: function(element){  //depends的element参数表示username这个元素
+               return $("#password").is(":filled");  //密码是否被填写
+            }
+          },
+          minlength:{
+            param:5,
+            depends:
+          }
+	}
+     ...
+    },
+    messages:{
+
+    ...
+    },
+    //点击提交表单时，如果全部验证通过，则执行该方法
+    submitHandler:function(form){
+
+    
+    },
+    //点击提交表单时，如果有未验证通过的数据，则会执行该方法
+    invalidHandler:function(){
+
+
+    },
+    ignore:"#password"，
+
+    group:{
+       aaa:"username password confirmpassword"
+
+    },
+    //error是错误信息，element是有错误信息的元素
+    errorPlacement:function(error,element){
+      error.insertBefore("页面某个标签前");//在指定的地方显示username,password,confirmpassword三个标签的错误信息
+    }
+    
+);
+
+---------------------------
+
+validate()方法的其他配置：
+
+onsubmit  是否在提交时验证
+
+onfocusout  是否在获取焦点时验证
+ 
+onkeyup 是否在敲击键盘时验证
+
+onclick 是否在鼠标点击时验证，一般用于checkbox和radio
+
+focusInvalid  提交表单后，未通过验证的表单项(第一个或提交之前获取焦点的未通过验证的表单项)是否会获得焦点
+
+focusCleanup  当未通过验证的元素获得焦点后，是否移除错误提示
+
+
+---------------------------
+指定错误提示所使用的class样式   用于使验证信息变得炫丽***************************
+
+errorClass  指定错误提示的css类名，可以自定义错误提示样式   errorClass:"xxx"
+
+validClass  指定验证通过的css类名                           validClass:"yyy"
+
+errorElement  使用什么标签标记错误 可以把默认的用label来显示错误信息，该成任意的标签   erroeElement:"li"
+
+wrapper  使用什么标签把上面的errorElement包起来   wrapper:"ul"
+
+errorLabelContainer  把错误信息统一放在一个容器中  errorLabelContainer: "#id"  (选择器)
+
+errorContainer  指定显示或隐藏上面的容器，可以自动实现有错误信息出现时把容器属性变为显示，无错误时隐藏
+   eg.   <p id="info" style="display:none;">有错误则显示这个p标签</p>   设置： errorContainer:"#info"
+
+
+--------------------------
+----------------选择器扩展----------------------
+
+:blank  选择所有值为空的元素
+
+:filled 选择所有值不为空的元素
+
+:unchecked  选择所有没有被选中的元素
+
+
+--------------------------------------------------------------------------------------------------
+
+validator对象
+
+获取validator对象：
+   var validator=$("#registerForm").validate(rules:{...},messages:{...});
+
+validator.form() 验证表单内容是否有效，返回true/false   只有全部验证通过才返回true
+
+validator.element("#username") 验证某个元素内容是否有效 返回true/false
+
+validator.resetForm() 把表单恢复到验证之前，即清除错误提示
+
+validator.showErrors(errors) 针对某个元素显示特定的错误信息
+   
+   validator.showErrors({
+      username:"你填错了"，
+      password:"填错了"
+      ...
+   });
+
+validator.numberOfInvalids()  返回无效的元素数量
+
+------------------------
+
+validator对象的静态方法：
+
+1.format() 格式化字符串  用于验证错误提示语言参数的替换
+  var template=$.validator.format("{0}-{1}-{2}");
+
+  template(["你","我","他"])  //"你-我-他"
+    
+2.setDefaults() 修改插件的默认设置
+	
+
+3.addMethod()  自定义校验规则
+
+
+4.addClassRules(name,rules) 为有指定class属性的所有表单项添加组合验证规则
+	参数name为指定的class属性值，
+如：
+	$.validator.addClassRules(
+	   xxx:{
+	      required:true,
+              minlength:5
+	   }
+	);
+为class="xxx"的表单项，加上了必填和大小大于5的规则
+
+------------------------------------------------
+
+
+表单提交
+$.validator.setDefaults({
+   submitHandler:function(form){$(form).ajaxSubmit();}
+});

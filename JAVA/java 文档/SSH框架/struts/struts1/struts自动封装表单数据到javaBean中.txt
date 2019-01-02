@@ -1,0 +1,29 @@
+
+
+ActionServlet根据action中的name属性的值，找到封装表单数据的javaBean,再把表单数据
+封装到该javaBean中
+
+
+封装表单数据的javaBean  需要继承ActionForm,这样struts会自动将request中的
+数据封装到该表单javaBean 中
+
+还要在struts-config.xml文件中描述,如：
+----------------------------------------------------------------------------
+<struts-config>
+ <form-beans>
+  <form-bean name="loginform" type="cn.xxx.xx.LoginForm"></form-bean>
+  <form-bean name="entryform" type="cn.xxx.xx.EntryForm"></form-bean>
+ 
+ </form-beans>
+</struts-config>
+----------------------------------------------------------------------------
+form-bean:用于配置封装表单数据的javabean
+type:javabean的完整路径
+name:封装各个表单数据的javabean的唯一标识
+
+
+然后在描述LoginAction的<action path="/loginaction" value="cn.xxx.xx.LoginAction"></action>
+中加入name属性：
+<action path="/loginaction" name="loginform" value="cn.xxx.xx.LoginAction"></action>
+这样ActionServlet就会在处理LoginAction时，用name属性：loginform对应的javaBean封装数据，
+把数据自动封装到LoginForm这个javaBean中了

@@ -1,0 +1,21 @@
+
+hibernate4.3中：
+
+get/load:
+  get与load的区别：
+      1.get找不到对象时，返回null,load找不到时抛异常
+
+      2.load返回的是代理对象
+
+      3.get立即检索，load延迟检索（用到时才发出sql语句）
+           注：-----在3.X中是延迟检索，但貌似在4.3版本中会立即查询-----
+
+clear/evict:
+  clear与evict的区别：
+     clear清除session缓存中所有对象
+     evict清除session缓存中指定对象
+         session.evict(object);
+
+
+
+

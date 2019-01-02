@@ -1,0 +1,11 @@
+web.xml文件中配置
+<!--通过配置上下文参数，指定spring配置文件的位置，通过它可以把配置文件写到多个xml中，
+  然后再加到param-value里去，多个spring配置的xml文件用，隔开，但每个xml之前都要加classpath:
+-->
+<context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:applicationContext.xml</param-value>
+</context-param>
+
+或者在spring的applicationContext.xml文件中导入其他的xml
+<import resource="xxxx.xml"/>

@@ -1,0 +1,32 @@
+
+ActionMapping：ActionServlet会把标签<action path="" tyoe="" name="" scope=""></action>
+     的信息封装到一个ActionMapping类的javaBean中，通过execut方法里参数对象mapping可以得到
+     该javaBean的信息
+
+
+ActionForm: 封装表单数据的javaBean需要继承该类，struts1会自动把表单中的数据封装到
+     该javaBean中，通过execut方法里参数对象form可以得到
+     该javaBean的信息
+
+
+execute方法的参数 form对象产生在mapping对象之前
+
+
+动态ActionForm：
+
+<struts-config>
+ <form-beans>
+  <!--type="org.apache.struts.action.DynaActionForm"固定写法  
+  -->
+  <form-bean name="loginform" type="org.apache.struts.action.DynaActionForm">
+    <!--initial:属性的初始化参数
+        type:属性类型
+        name:属性名
+    -->
+    <form-property name="username" type="java.lang.String" initial="aaa"></form-property>
+    <form-property name="password" type="java.lang.String" initinal="123"></form-property>
+
+  </form-bean>
+ 
+ </form-beans>
+</struts-config>

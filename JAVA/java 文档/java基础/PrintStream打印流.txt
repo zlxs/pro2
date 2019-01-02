@@ -1,0 +1,33 @@
+/**
+ * 测试处理流：打印流PrintStream
+ * 打印流只有输出没有输入
+ * 打印流不会报异常，会自动刷新缓冲区
+ */
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+
+public class tt {
+ public static void main(String[] args)
+ {	
+	 PrintStream a=null;
+	 PrintStream b=System.out;//记录输出位置，以便于修改回控制台输出
+	 try {
+		OutputStream out=new FileOutputStream("e:/1.txt");
+		a=new PrintStream(out);
+	} catch (FileNotFoundException e) {
+		e.printStackTrace();
+	}
+	System.setOut(a);//把输出到控制台转为输出到PrintStream流的输出端口
+	for(int i=0;i<65536;i++)//把所有的字符输出到1.txt中
+	{
+		if(i%100==0)
+			System.out.println();
+		System.out.print((char)i);
+	}
+	System.setOut(b);//改回输出到控制台
+	System.out.println("重新输出到控制台中");
+	
+ }
+}

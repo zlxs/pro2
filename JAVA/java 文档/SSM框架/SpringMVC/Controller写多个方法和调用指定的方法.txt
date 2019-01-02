@@ -1,0 +1,33 @@
+继承MultiActionController
+
+public class TestController extends MultiActionController{
+
+	 public ModelAndView add(HttpServletRequest request,HttpServletResponse resp){
+		  String result="add";
+	      return new ModelAndView("/hello","result",result);
+	    }
+
+	    public ModelAndView find(HttpServletRequest request,HttpServletResponse resp){
+	    	String result="find";
+		    return new ModelAndView("/hello","result",result);
+	    }
+}
+
+
+springMVC-servlrt.xml配置:   用注解的化就不需要了
+
+<!--配置方法解析器-->
+<bean id="paraMethodResolver" 
+      class="org.springframework.web.servlet.mvc.multiaction.ParameterMethodNameResolver">
+      
+      <property name="paramName">
+          <!--指定?后 表示方法的参数的名称，跟Strut1类似-->
+          <value>method</value>   // xxxCoontroller?method=add
+      </property>
+</bean>
+
+
+<bean name="/aa/testController" class="my.test.springmvc.controller.TestController">
+   <!--引用方法解析器-->
+   <property name="methodNameResolver" ref="paramMethodResolver"></property>
+</bean>

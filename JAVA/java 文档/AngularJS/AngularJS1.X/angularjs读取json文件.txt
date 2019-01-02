@@ -1,0 +1,6 @@
+AngularJS $http是一个用于读取web服务器上数据的服务
+
+$http.get(url)是用于读取服务器数据的函数
+
+
+

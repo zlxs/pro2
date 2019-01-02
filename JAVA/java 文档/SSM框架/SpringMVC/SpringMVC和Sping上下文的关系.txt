@@ -1,0 +1,24 @@
+
+SpringMVC上下文继承于Spring，也就是SpringMVC的上下文可访问Spring上下文，
+在SpringMVC的上下文中可取得Spring bean
+
+
+//取得spring 上下文  
+WebApplicationContext springContext = 
+          WebApplicationContextUtils.getWebApplicationContext(request.getSession().getServletContext());  
+          
+//取得springmvc上下文  
+WebApplicationContext mvcContext = RequestContextUtils.getWebApplicationContext(request); 
+
+//取得spring容器中的bean  
+//在一定的场合下，不能使用注入方式，就可以用这种方法取得bean  
+HelloWorldService helloWorldService = (HelloWorldService)springContext.getBean("helloWorldService");  
+//经测试这两个上下文都能取得bean  
+HelloWorldService helloWorldService = (HelloWorldService)mvcContext.getBean("helloWorldService");
+
+
+
+spring配置小技巧：import标签
+<import resource="classpath*:/spring_annotation-import.xml"/>
+在团队开发时候，每个人都常去改动spring配置文件，不科学，使用这个技巧方便，每个都有各自的配置文件了．
+项目较大，有较多的bean时，可以将其分散到子文件中．

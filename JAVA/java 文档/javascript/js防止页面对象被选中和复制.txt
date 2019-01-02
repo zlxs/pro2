@@ -1,0 +1,18 @@
+IE:
+
+放选中：
+对象.onselectstart=function(){
+    return false;
+}
+
+防复制：
+对象.oncopy =function(){
+    return false;
+}
+
+
+火狐:
+通过css样式：
+-moz-user-select:none  //防选中
+
+

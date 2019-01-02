@@ -1,0 +1,11 @@
+web.xml÷–
+<servlet>
+  <servlet-name>xxx</servlet-name>
+  <jsp-file>/a.jsp</jsp-file>
+</servlet>
+
+<servlet-mapping>
+  <servlet-name>xxx</servlet-name>
+  <url-pattern>1.html</url-pattern>
+</servlet-mapping>
+

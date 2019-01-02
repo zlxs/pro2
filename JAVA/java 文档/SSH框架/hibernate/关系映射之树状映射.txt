@@ -1,0 +1,56 @@
+树状结构的设计(至关重要)
+
+@Entity
+class Person{
+  private int id;
+  private String name;
+  private Set<Person> children;
+  private Person father;
+        @Id
+	@GeneratedValue
+	public int getId() {
+		return id;
+	}
+	@OneToMany(mappedBy="father")
+	public Set<Person> getChildren() {
+		return children;
+	}
+	@ManyToOne
+	public Person getFather() {
+		return father;
+	}
+  .....
+}
+
+hibernate创建的表为： person 
+      id    name   father_id
+   
+其中father_id来自id
+
+
+
+打印树状结构：
+          public void printTree(){		
+		session=conf.buildSessionFactory().openSession();
+		Transaction tx = session.beginTransaction();
+
+		Person a=(Person)session.load(Person.class,1);
+		int d=0;
+		show(a,d);
+		tx.commit();
+		session.close();
+	}
+	
+	public  void show(Person a,int d){
+		String s="";
+		for(int i=0;i<d;i++){
+		 s+="    ";
+		}
+		System.out.println(s+a.getName());
+		Set<Person> set=a.getChildren();
+		if(set.size()!=0){
+		  for(Person b:set){
+	             show(b,d+1);  
+		  }
+		}
+	}

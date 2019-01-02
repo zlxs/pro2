@@ -1,0 +1,37 @@
+
+命令行启动svn服务器:
+d:/visualSVN/bin/svnserve -d
+启动SVN
+svnserve -d
+
+以超级管理员运行
+svnserve -d -r svnrepo(库名)
+
+
+
+建立库
+svnadmin create svnrepo(库名)
+会在bin下建立目录svnrepo
+
+
+设置权限：
+在bin/conf/svnserve.conf中把password-db=passwd打开(去掉#)
+然后在passwd文件中添加user1=123(用户名=密码)
+
+
+
+客户端方：
+建立一个文件夹，右键svncheckout弹出对话框，
+点击确定（URL为svn://服务器地址）
+
+想要添加文件到库：
+把文件夹或文件放在和.svn文件夹同一路径下，再右键tortoiseSVN下的add,再右键SVN commit
+提交需要输入用户名和密码
+就行了
+
+在.svn文件的同级目录下右键SVN update就能获取别人提交的文件
+
+
+
+
+

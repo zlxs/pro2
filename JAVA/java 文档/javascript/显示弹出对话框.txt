@@ -1,0 +1,24 @@
+1.window.showModalDialog("1.html",window,"height=100,width=400,top=0,left=0,toolbar=no,menubar=no,scrollbars=no, resizable=no,location=no, status=no")
+
+第一个参数：必选项，指定要载入和显示的url
+第二个参数：可选项，指定供显示文档时使用的变量，对话框可以通过调用程序从window对象的dialogArguments属性提取这些值
+            通常设置为window
+
+第三个参数：可选项，指定对话框的窗口装饰
+
+
+从1.html的 javascript中调用 window.dialogArguments;可以获取原来页面的内容
+
+该种模式在弹出1.html页面后，原来的页面就无法操作了
+
+
+要改变这种状态可以使用 window.showModallessDialog();
+
+
+2.window.opener  返回的是创建新窗口的那个原窗口的引用，
+如从a.html的一个链接而打开b.html，则在b.html中使用 window.opener可以得到a.html引用
+
+window.open("b.html","_blank","窗口装饰");打开b.html页面
+
+在x.html页面中调用
+window.opener就得到a.html的引用

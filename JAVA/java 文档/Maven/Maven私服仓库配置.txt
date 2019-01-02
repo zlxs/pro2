@@ -1,0 +1,64 @@
+
+私服是架设在局域网的一种特殊的远程仓库，目的是代理远程仓库及部署第三方构件。
+有了私服之后，当 Maven 需要下载构件时，直接请求私服，私服上存在则下载到本地仓库；
+否则，私服请求外部的远程仓库，将构件下载到私服，再提供给本地仓库下载。
+
+
+在settings.xml中配置远程仓库
+
+<settings>  
+  ...  
+  <profiles>  
+    <profile>  
+      <id>dev</id>  
+      <!-- repositories and pluginRepositories here-->  
+       
+      <repositories>  
+        <repository>  
+          <id></id>  
+          <name></name>  
+          <url></url>
+  
+          <releases>  
+            <enabled>true</enabled>  
+          </releases>  
+
+          <snapshots>  
+            <enabled>false</enabled>  
+          </snapshots>  
+
+        </repository>  
+      </repositories>  
+
+
+      <pluginRepositories>  
+        <pluginRepository>  
+          <id></id>  
+          <name></name>  
+          <url></url>  
+
+          <releases>  
+            <enabled>true</enabled>  
+          </releases> 
+ 
+          <snapshots>  
+            <enabled>false</enabled>  
+          </snapshots>   
+   
+        </pluginRepository>  
+      </pluginRepositories>  
+     
+
+    </profile>  
+  </profiles>  
+  
+  <!--激活profile-->
+  <activeProfiles>  
+    <activeProfile>dev</activeProfile>  
+  </activeProfiles>  
+  ...  
+</settings>  
+
+这里我们定义一个id为dev的profile，将所有repositories以及pluginRepositories元素放到这个profile中，
+然后，使用<activeProfiles>元素自动激活该profile。这样，你就不用再为每个POM重复配置仓库。
+使用profile为settings.xml添加仓库提供了一种用户全局范围的仓库配置。

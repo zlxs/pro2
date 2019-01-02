@@ -1,0 +1,29 @@
+把具体配置如dataSource的各个属性值写到资源文件中,然后再用类似el表达式的方式引入，这样便于修改
+
+<configuration>
+
+    <!--指定资源文件地址-->  
+    <properties resource="jdbc.properties" />  
+
+    <environments default="development">
+        <environment id="development"> 
+            <transactionManager type="JDBC" />  
+            <dataSource type="POOLED">  
+                <!--利用分散配置，单独配置数据库操作信息，也可以直接写死-->
+                <property name="driver" value="${driver}" />  
+                <property name="url" value="${url}" />  
+                <property name="username" value="${username}" />  
+                <property name="password" value="${password}" />  
+            </dataSource>  
+        </environment>  
+    </environments>    
+
+
+</configuration>  
+
+
+src目录下创建文件jdbc.properties
+driver=com.mysql.cj.jdbc.Driver
+url=jdbc:mysql://localhost:3306/test?serverTimezone=UTC
+username=root
+password=root

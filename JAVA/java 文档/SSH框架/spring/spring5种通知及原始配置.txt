@@ -1,0 +1,164 @@
+
+1.前置通知
+
+public interface MethodBeforeAdvice{
+ void before(Method m,Object[] os,Object target);
+}
+
+该接口提供了获得目标方法，参数和目标对象的机会。
+不能够改变运行时参数，即不能替换参数和目标对象。
+在方法结束后不返回任何值，原因是该接口返回后，目标方法将被调用，
+应该返回目标对象的返回值。该接口唯一能阻止目标方法被调用的途径是
+抛出异常或System.exit()
+
+
+
+2.后置通知
+
+public interface AfterReturningAdvice{
+  public void afterReturning(Object returnValue,Method method,
+   Object[] args,Object target) thorws Throwable;
+}
+
+
+3.环绕通知
+
+public interface MethodInterceptor extends Interceptor{
+   Object invoke(MethodInvocation invocation);
+}
+
+该接口同前两种通知有两个重要区别：
+1.该通知能够控制目标方法是否真的被调用。通过invocation.proceed()方法来调用目标方法，
+  该方法返回值就是目标方法返回值
+2.该通知可以控制返回的对象。可以返回一个与proceed()方法返回对象完全不同的对象。
+  但要谨慎使用。
+
+注意：环绕通知必须要有返回值，一般为目标对象的返回值，
+Object result= invocation.proceed();
+return result;
+
+
+4.异常通知
+
+public interface ThrowsAdvice{}
+
+该接口为标记性接口，没有任何方法，但实现该接口的类必须要有如下形式的方法：
+void afterThrowing(Throwable throwable);
+void afterThrowing(Method m,Object[] os,Object target,Throwable throwable);
+
+第一个方法只接收一个参数：需要抛出的异常
+第二个方法接收异常，被调用的方法，参数以及目标对象
+
+-------------------------------------------------------------------------------
+
+
+对通知进行包装，让通知作用于指定的方法
+
+//名称匹配方法切入点通知，相当于对advice进行包装，增加定义切入点的功能
+<bean id="mybeforeAdvicer" 
+    class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+  <property name="advice" ref="myProxy" />  //包装指定通知
+  <property name="mappedNames">
+    <list>
+      <value>say*<value>  //表示为目标对象的所有say开头的方法加这个通知，其他方法不加通知
+    </list>
+  </property>
+</bean>
+
+
+<!-- 目标对象   约定id最后加Target -->
+  <bean id="helloServiceImplTarget" class="xxx.xx.xxx.HelloServiceImpl">     
+  </bean>
+  
+  <!-- 前置通知 -->
+  <bean id="myProxy" class="xxx.xx.xxx.MyProxy">
+  </bean>
+  
+  <!-- 代理对象 -->
+  <bean id="helloServiceImpl" class="org.springframework.aop.framework.ProxyFactoryBean">
+    <!-- 代理接口集 -->
+    <property name="proxyInterfaces">
+      <list>
+        <value>xxx.xx.xxx.HelloService</value>       
+      </list>
+    </property>
+    <!-- 拦截器名集 -->
+    <property name="interceptorNames">
+      <list>
+        <value>mybeforeAdvicer</value>  //通知就使用包装后的id，如果直接用通知的id,
+      </list>                           //目标对象实现的接口中的所有方法都会加通知
+    </property>
+    <!-- 指定目标对象 -->
+    <property name="target" ref="helloServiceImplTarget"></property>
+  </bean>
+
+
+
+
+5.引入通知
+
+如：某个类不改变源代码增加新的Date类的属性，和对应的set，get方法
+
+创建一个接口
+public interace AddDate{
+  public void setDate(Date date);
+  public Date getDate();
+}
+
+
+//引入通知(代理引入拦截器)
+public class A extends DelegatingIntroductionInterceptor implements AddDate{
+    private Date date;
+
+    public void setDate(Date date){
+       this.date=date;
+    }
+    public Date getDate(){
+       return date;
+    }
+}
+
+
+<!--默认的引入切入点通知-->
+<bean id="defaultIntroductionAdvisor"
+    class="org.springframework.aop.support.DefaultIntroductionAdvisor"> 
+  <!--通过 构造函数参数注入-->
+  <constructor-arg ref="a" />
+</bean>
+
+<!--引入通知（代理引入拦截器）-->
+<bean id="a" class="xxx.xx.xxx.A">
+</bean>
+
+<!-- 目标对象   约定id最后加Target -->
+  <bean id="helloServiceImplTarget" class="xxx.xx.xxx.HelloServiceImpl">     
+  </bean>
+  
+  <!-- 代理对象 -->
+  <bean id="helloServiceImpl" class="org.springframework.aop.framework.ProxyFactoryBean">
+    <!-- 代理接口集 -->
+    <property name="proxyInterfaces">
+      <list>
+        <value>xxx.xx.xxx.AddDate</value>       
+      </list>
+    </property>
+    <!-- 拦截器名集 -->
+    <property name="interceptorNames">
+      <list>
+        <value>defaultIntroductionAdvisor</value>  
+      </list>                           
+    </property>
+    <!-- 指定目标对象 -->
+    <property name="target" ref="helloServiceImplTarget"></property>
+  </bean>
+
+
+public static void main(String[] args) {
+        
+   ApplicationContext  ac=new ClassPathXmlApplicationContext("applicationContext.xml"); 
+   AddDate a=(AddDate)ac.getBean("helloServiceImpl");
+   a.setDate(new Date());
+   System.out.println(a.getDate());
+}
+
+打印出当前日期

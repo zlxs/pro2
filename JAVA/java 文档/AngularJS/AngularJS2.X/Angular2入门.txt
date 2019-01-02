@@ -1,0 +1,62 @@
+写一个入门的hello world
+
+1.准备Angular2的环境 
+
+
+2.把html中的某个模块抽出来
+ 把页面上的某个部分的一个或多个标签从页面上拿出来，单独定义
+
+
+3.编写typescript
+
+import {Component} from "@angular/core";
+
+@Component({
+    templateUrl:'./app/hello.html',//抽出来的页面片段地址，当页面的标签量比较大时，比template好用  
+                        //   ./为当前路径下（访问的页面的路径，不是这个typescript的路径，是第5步应用my-app的网页的路径）要从浏览器的路径考虑它
+                                   //页面片段中不要有html head body这些标签，只是写具体的标签 
+    /*
+     template:`<h2>Hello Angular2</h2>
+               <h2>Hello World!</h2>`, //模板  html中抽出来的内容  `内容` 可以在字符串内容换行时无需拼接字符串  `是1左边的按键
+                                                 //如果用 '内容' 则换行写需要拼接字符串  
+    */
+    selector:"my-app" //选择器 自定义一个标签(首字母小写，中间用-分开) 在页面上写<my-app></my-app>就能把<h2>Hello Angular2</h2>...运用到html中
+})
+export class HelloComponent{
+
+}
+
+
+4.写main.ts 用于程序主入口
+
+import {bootstrap} from "@angular/platform-browser-dynamic";
+import {HelloComponent} from "./hello.component";
+
+bootstrap(HelloComponent)
+
+
+5.在html中导入js文件，写自定义标签来引入抽出来的模块
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="node_modules/core-js/client/shim.min.js"></script>
+    <script src="node_modules/zone.js/dist/zone.js"></script>
+    <script src="node_modules/reflect-metadata/Reflect.js"></script>
+    <script src="node_modules/systemjs/dist/system.src.js"></script>
+    <script src="systemjs.config.js"></script>
+    <script>
+        System.import("app").catch(function(err){console.error(err);});
+    </script>
+
+</head>
+<body>
+    <my-app></my-app> //用此标签代替抽出来的模块
+</body>
+</html>
+
+
+注意:写多个<my-app></my-app>,页面上只有第一个有效,因为这是最顶层的标签，只能有一个

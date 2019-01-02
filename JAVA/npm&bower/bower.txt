@@ -1,0 +1,14 @@
+
+解决bower install 缓慢的方案：
+
+1.可以修改git的配置，使用 https协议去访问和下载：
+
+git config --global url."https://".insteadOf git://
+
+2.设置代理：
+在项目的.bowerrc文件中添加：
+{
+  "proxy":       "http://proxy.mysite.com:8080",
+  "https-proxy": "http://proxy.mysite.com:8080",
+  "strict-ssl":  false
+}

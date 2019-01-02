@@ -1,0 +1,85 @@
+
+import java.util.LinkedList;
+
+/**
+ *升级版map
+ *提高效率
+ *
+ */
+public class mymap1 {
+	LinkedList arr[]=new LinkedList[500];//存放链表的数组
+	int size;
+	
+	public void put(Object key,Object value)
+	{
+		Array2 e=new Array2(key,value);
+		int a=key.hashCode()%500;
+		if(arr[a]==null)
+		{
+		 LinkedList list=new LinkedList();
+		 arr[a]=list;
+		}
+		else
+		{
+		 LinkedList list=arr[a];
+	     for(int i=0;i<list.size();i++)
+	     {
+          Array2 e1=(Array2)list.get(i);
+	      if(e1.key.equals(key))
+	      {
+		   e1.Value=value;
+		   return;
+	      }
+	     }
+	     list.add(e);
+		}
+	 size++;
+    }
+
+	
+	public Object get(Object key)
+	{
+		int a=key.hashCode()%500;
+		if(arr[a]!=null)
+		{
+		 LinkedList list=arr[a];
+		 for(int i=0;i<list.size();i++)
+		 {
+		  Array2 e=(Array2)list.get(i); 
+		  if(e.key.equals(key))
+		  {
+			 return e.Value; 
+		  }
+		 } 
+		}
+		return null;
+	}
+	
+	public int size()
+	{
+		return size;
+	}
+	
+	public static void main(String[] args)
+	{
+	 mymap1 a=new mymap1();
+	 a.put("a","aaa");
+	 a.put(new Integer(12),100);
+	 a.put(5,"555");
+	 System.out.println(a.size());
+	 int c=(int)a.get(12);
+	 System.out.println(c);
+	}
+}
+
+class Array2
+{
+ Object key;
+ Object Value;
+ 
+ Array2(Object key,Object value)
+ {
+  this.key=key;
+  this.Value=value;
+ }
+}

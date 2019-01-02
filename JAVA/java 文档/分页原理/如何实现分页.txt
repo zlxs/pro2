@@ -1,0 +1,24 @@
+
+需要设计的对象：
+
+封装查询信息的QueryInfo类对象
+  private int currentPage=1; //当前页，需要有默认值
+  private int pageSize=5;  //页面显示数据量大小(每页显示几条数据),需要有默认值
+  private int startindex;  //记住用户想看的页在数据库中的起始位置 
+
+
+保存查询结果的QueryResult类对象
+  private List list; //封装从数据库中查询出来的用户想看的页的数据
+  private int total; //数据库总记录数，用于确定页面条有多大 并告诉用户总共有多少条记录
+  
+  
+封装页面显示信息的PageBean类对象
+  private List list; //显示的数据
+  private int totalRecord; //总记录数
+  private int pageSize; //每页显示几条数据
+  private int totalPage; //总页数
+  private int currentPage; //当前页
+  private int previousPage; //上一页
+  private int nextPage; //下一页
+  private int[] pageBar; //页码条
+ 

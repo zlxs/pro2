@@ -1,0 +1,172 @@
+用户请求---ajax引擎---服务器
+
+原来的javaWeb中是：用户请求---服务器
+
+通过 AJAX，JavaScript 无需等待服务器的响应，而是：
+在等待服务器响应时执行其他脚本
+当响应就绪后对响应进行处理
+
+
+XMLHttpRequest是AJAX的基础，用于在后台与服务器交换数据。这意味着可以在不重新加载整个网页的情况下，
+对网页的某部分进行更新。
+
+javascript中 创建XMLHttpRequest对象的语法：
+
+var variable=new XMLHttpRequest();
+
+老版本的 Internet Explorer（IE5 和 IE6）使用 ActiveX 对象：
+var variable=new ActiveXObject("Microsoft.XMLHTTP");
+
+为了应对所有的现代浏览器，包括 IE5 和 IE6，请检查浏览器是否支持 XMLHttpRequest 对象。
+如果支持，则创建 XMLHttpRequest 对象。如果不支持，则创建 ActiveXObject ：
+var xmlhttp;
+if (window.XMLHttpRequest)
+  {
+  xmlhttp=new XMLHttpRequest();
+  }
+else
+  {// code for IE6, IE5
+  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+
+------------------------------------------------------------------------------------------
+
+
+
+如需将请求发送到服务器，我们使用 XMLHttpRequest 对象的 open() 和 send() 方法：
+
+xmlhttp.open(method,url,async);//与服务器建立链接
+   method：请求的类型；GET 或 POST
+   url：请求文件在服务器上的位置，  一般要在url后加"?time="+new Date().getTime() 防止浏览器拿缓存,阻止了服务器的响应
+   async：true（异步）或 false（同步）
+
+
+xmlhttp.send(string);//发送请求
+   string：仅用于 POST 请求，若为get请求则不会发送任何数据，传递null或不加参数就行了
+   string的写法"key=value&key=value..."
+*******
+   注：如果设置为post,则必须设置setRequestHeader("Content-Type","application/x-www-form-urlencoded");并且写在open()方法之后
+   为了防止乱码：setRequestHeader("Content-Type","application/x-www-form-urlencoded;charset=UTF-8");
+*******
+
+xmlhttp.about()	取消当前响应，如果请求时间过长而没有回应时，可以调用这个方法
+
+
+当使用 async=true 时，请规定在响应处于 onreadystatechange 事件中的就绪状态时执行的函数：
+xmlhttp.onreadystatechange=function()//定义事件处理函数
+  {
+    if (xmlhttp.readyState==4 && xmlhttp.status==200)//表示响应完成，一切ok
+    {
+       //操作
+    }
+  }
+
+
+xmlhttp.open("GET","url",true);
+xmlhttp.send();
+
+************************
+当您使用 async=false 时，请不要编写 onreadystatechange 函数 - 把代码放到 send() 语句后面即可。
+************************
+
+
+XMLHttpRequest 对象的 responseText 或 responseXML 属性
+responseText	获得字符串形式的响应数据。
+responseXML	获得 XML 形式的响应数据。
+
+
+onreadystatechange 事件
+当请求被发送到服务器时，我们需要执行一些基于响应的任务。
+每当 readyState 改变时，就会触发 onreadystatechange 事件。
+
+
+下面是 XMLHttpRequest 对象的三个重要的属性：
+onreadystatechange：存储函数（或函数名），每当 readyState 属性改变时，就会调用该函数。
+
+readyState：	
+存有 XMLHttpRequest 的状态。从 0 到 4 发生变化。
+0: 请求未初始化
+1: 服务器连接已建立
+2: 请求已接收
+3: 请求处理中
+4: 请求已完成，且响应已就绪
+
+status：	
+200: "OK"   
+404: 未找到页面
+304: 源文件没有被修改
+
+------------------------------------------------------------------------------------------
+使用：
+get请求方式：
+    <button id="button1"></button>
+    <script type="text/javascript">
+    
+    	window.onload=function(){
+    	
+    		document.getElementById("button1").onclick=function(){
+		    	//1.获取XMLHttpRequest对象
+		    	var xmlHttpRequest=new XMLHttpRequest();
+		    
+		    	//2.建立连接
+			//在url上加new Date().getTime是为了防止浏览器拿缓存，导致服务器端不响应
+		    	var url="${pageContext.request.contextPath}/AjaxServlet?time="+new Date().getTime()";
+		    	xmlHttpRequest.open("get",url,true);
+		    	
+		    	
+		    	//3.处理响应
+		    	xmlHttpRequest.onreadystatechange=function(){
+		    		if(this.readyState==4){
+		    			if(this.status==200){
+		    				var value=xmlHttpRequest.responseText;
+		    				alert(value);
+		    			}
+		    		
+		    		}
+		    	} 
+
+			//4.发送数据
+		    	xmlHttpRequest.send();
+		    	
+		    	
+		    }
+    	}
+    </script>
+
+
+post方式请求：
+    <script type="text/javascript">
+    
+    	window.onload=function(){
+    	
+    		document.getElementById("button1").onclick=function(){
+		    	//1.获取XMLHttpRequest对象
+		    	var xmlHttpRequest=new XMLHttpRequest();
+		    
+		    	//2.建立连接
+		    	var url="${pageContext.request.contextPath}/AjaxServlet";
+		    	xmlHttpRequest.open("post",url,true);
+			//----------------------------post提交必须加下面这行----------------------------------
+			this.setRequestHeader("Content-Type","application/x-www-form-urlencoded;charset=UTF-8");
+		    	
+			//3.处理响应
+		    	xmlHttpRequest.onreadystatechange=function(){
+		    		if(this.readyState==4){
+		    			if(this.status==200){
+		    				var value=xmlHttpRequest.responseText;
+		    				alert(value);
+		    			}
+		    		
+		    		}
+		    	} 
+		    	//4.发送数据
+		    	xmlHttpRequest.send("请求参数");
+    	
+		    }
+    	}
+    </script>
+
+
+get乱码问题解决：
+  可以通过 encodeURI(encodeURI(str,'UTF-8'),'UTF-8')编码
+  后台通过 URLDecode.decode两次解码

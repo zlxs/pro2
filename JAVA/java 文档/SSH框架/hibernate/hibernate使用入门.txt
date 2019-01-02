@@ -1,0 +1,110 @@
+具体使用方法：
+
+
+hibernate3版本 创建SessionFactory：
+ try{
+      Configuration conf=new Configuration().configure();//寻找hibernate.cfg.xml,配置并启动Hibernate
+     // conf.addClass(Customer.class);//读取Customer类的映射文件，映射文件和Customer类放在同一
+     //目录下,映射文件中配置了<mapping resource="cn/xxx/xx/Customer.hbm.xml"/>就不需要了，用注解也不需要
+      SessionFactory sf =conf.buildSessionFactory();//负责初始化Hibernate
+      Session session = sf.openSession();//打开会话，进行CRUD的操作
+      Transaction tx = session.beginTransaction();//开启事务
+
+         Customer customer = new Customer();//创建封装数据库中customer表数据的Customer类的对象
+         customer.setUsername("aaa");
+         customer.setPassword("123");
+         session.save(customer);//执行insert操作
+
+      tx.commit();//提交事务
+      session.close();//关闭会话
+      }catch(HibernateException e){
+        e.printStackTrace();
+      }
+  }
+
+
+//4.0-4.3之间，创建SessionFactory：
+Configuration cfg=new Configuration().configure();
+ServiceRegistry serviceRegistry=new ServiceRegistryBuilder()
+		                .applySettings(cfg.getProperties()).buildServiceRegistry();        
+SessionFactory sessionFactory = cfg.buildSessionFactory(serviceRegistry);
+
+
+//4.3创建SessionFactory：
+Configuration cfg = new Configuration().configure();
+StandardServiceRegistryBuilder srb = new StandardServiceRegistryBuilder().applySettings(cfg.getProperties());
+StandardServiceRegistry sr = srb.build();
+SessionFactory sf = cfg.buildSessionFactory(sr);
+
+//5之后又用回3的创建方式，用4.3的创建方法无法找到mapping中配置的实体
+
+
+----------------------------------------------------------------------------------------------------
+创建Hibernate映射文件   //可以使用注解来取代映射文件，注解更方便
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="cn.xxx.xx.User" table="user">    --指定Customer类和数据库customer表对应 
+        <id name="id" column="id" type="integer" >    --Customer类的id属性 对应customer表的customer_id字段
+            <generator class="increment" />   //代理主键，插入数据时使主键字段每次+1 ，存在多线程并发问题
+        </id>
+        <property name="name" column="name" type="string" />
+    </class>
+</hibernate-mapping>
+
+
+
+----------------------------------------------------------------------------------------------------
+配置Hibernate描述文件  hibernate.cfg.xml
+
+使用注解方式的话，不需要写映射文件
+需要描述<mapping class="cn.xxx.xx.Customer" />  class 中为实体类Customer的路径，这里包路径使用.而不是/
+就不需要<mapping resource="Customer.hbm.xml" /> <!-- 指定Customer类的映射文件 -->了
+
+<?xml version="1.0" encoding="GBK"?>
+<!-- 指定Hibernate配置文件的DTD信息 -->
+<!DOCTYPE hibernate-configuration PUBLIC
+"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<!-- hibernate- configuration是连接配置文件的根元素 -->
+<hibernate-configuration>
+<session-factory>
+<!-- 指定连接数据库所用的驱动 -->
+<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+<!-- 指定连接数据库的url，hibernate连接的数据库名 -->
+<property name="connection.url">jdbc:mysql://localhost:3306/hibernate</property>
+<!-- 指定连接数据库的用户名 -->
+<property name="connection.username">root</property>
+<!-- 指定连接数据库的密码 -->
+<property name="connection.password">root</property>
+<!-- 指定连接池里最大连接数 -->
+<property name="hibernate.c3p0.max_size">20</property>
+<!-- 指定连接池里最小连接数 -->
+<property name="hibernate.c3p0.min_size">1</property>
+<!-- 指定连接池里连接的超时时长 -->
+<property name="hibernate.c3p0.timeout">5000</property>
+<!-- 指定连接池里最大缓存多少个Statement对象 -->
+<property name="hibernate.c3p0.max_statements">100</property>
+<property name="hibernate.c3p0.idle_test_period">3000</property>
+<property name="hibernate.c3p0.acquire_increment">2</property>
+<property name="hibernate.c3p0.validate">true</property>
+<!-- 指定数据库方言 -->
+<property name="dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
+
+<!-- 根据需要自动创建数据表 -->
+<property name="hbm2ddl.auto">update</property>
+<!-- 显示Hibernate持久化操作所生成的SQL -->
+<property name="show_sql">true</property>
+<!-- 将SQL脚本进行格式化后再输出 -->
+<property name="hibernate.format_sql">true</property>
+
+<!-- 罗列所有的映射文件 -->
+<mapping resource="cn/xxx/xx/Customer.hbm.xml"/>
+<!--用注解代替映射文件时，需要罗列实体类-->
+<mapping class="cn.xxx.xx.Customer" />
+
+</session-factory>
+</hibernate-configuration>

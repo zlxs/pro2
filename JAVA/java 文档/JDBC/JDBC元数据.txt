@@ -1,0 +1,57 @@
+一、元数据－ DataBaseMetaData
+元数据：数据库、表、列的定义信息。我们可以通过相应的方法获取它们的信息。
+
+获取元数据对象
+Connection.getDatabaseMetaData()
+
+相关方法：
+
+getURL()：返回一个String类对象，代表数据库的URL。
+
+getUserName()：返回连接当前数据库管理系统的用户名。
+
+getDatabaseProductName()：返回数据库的产品名称。
+
+getDatabaseProductVersion()：返回数据库的版本号。
+
+getDriverName()：返回驱动程序的名称。
+
+getDriverVersion()：返回驱动程序的版本号。
+
+isReadOnly()：返回一个boolean值，指示数据库是否只允许读操作。
+
+
+
+二、元数据－ParameterMetaData
+该元数据中主要是包含了一些参数的信息：
+
+获取元数据对象：
+ PreparedStatement.getParameterMetaData()
+
+获得代表PreparedStatement元数据的ParameterMetaData对象。
+       Select * from user where name=? and password=?
+
+相关方法：
+getParameterCount()  获得参数的个数  SQL语句中 ? 的个数
+
+getParameterType(int param)  获得指定参数的sql类型
+
+
+
+
+三、元数据－ ResultSetMetaData
+  该元数据中保存了一些关于数据查询结果的相关信息。
+ 
+获取元数据对象：
+ ResultSet.getMetaData()
+       获得代表ResultSet对象元数据的ResultSetMetaData对象。
+
+相关方法：
+
+getColumnCount()  返回resultset对象的列数，即查询结果包含多少个列
+
+getColumnName(int column)  获得指定列在数据库表中的名称
+
+getColumnTypeName(int column)  获得指定列的类型
+
+getColumnLabel(int column)  获取查询语句中指定列的别名

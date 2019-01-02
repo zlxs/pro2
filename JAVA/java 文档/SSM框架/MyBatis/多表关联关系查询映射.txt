@@ -1,0 +1,423 @@
+关联关系查询：1对1
+
+
+表student                表studentIdCard
+    
+  id int ;                id int;
+  name varchar(20);       student_id int;//来自student的id,且一对一
+                          ...
+  ...   
+
+------------------------	
+1.使用resultType方式：通过包装类
+																																																
+<select id="getStudentCustom" parameterType="int" resultType="xxx.xx.domain.StudentCustom">
+  select s.name,s.age,sc.id from student s,studentIdCard sc
+  where s.id=sc.student_id and s.id=#{id}
+<select>
+
+public class Student{
+  private int id;
+  private String name;
+
+  get set
+}
+
+public class StudentIdCard{
+  private int idCard;
+  private int student_id;  
+
+  get set
+}
+
+//学生的扩展类,也可以写StudentIdCard的扩展类    
+//一般继承字段较多的pojo类，这里继承Student但继承StudentIdCard也行
+public class StudentCustom extends Student{
+  //添加StudentIdCard的属性
+  private int idCard;
+
+  get set
+}
+
+//再写Mapper接口
+public interface StudentCustomMapper{
+   //查询学生和他关联的学生证
+   public StudentCustom getStudentCustom(int id);
+   ...其他方法
+}
+
+------------------------
+
+2.使用resultMap方式：
+
+public class Student{
+  private int id;
+  private String name;
+  private StudentIdCard sc;
+
+  get set
+}
+
+public class StudentIdCard{
+  private int id;
+  privatr Student student;
+
+  get set
+}
+
+<select id="getStudentIdCard" parameterType="int" resultMap="aaa">
+  select s.name,s.age,sc.id sc_id from student s,studentIdCard sc
+  where s.id=sc.student_id and sc_id=#{id}
+<select>
+
+<resultMap id="aaa " type="xxx.xx.domain.StudentIdCard">
+
+  <!--如果多个列组成唯一标识，则需要写多个id-->
+
+  <id property="id" column="sc_id"/>
+
+  <!--用于映射关联查询，单个对象的关系-->
+  <association property="student" javaType="xxx.xx.domain.Student">
+     
+     <id property="id" column="id"/>
+     <result property="name" column="name"/>
+  </association>
+</resultMap>
+
+
+
+-------------------------------------------------------------------------------------
+
+
+关联关系查询：多对1
+create table department(
+  id int primary key auto_increment,
+  name varchar(10)
+)
+create table employee(																														
+  id int primary key auto_increment,
+  name varchar(10),
+  department_id int,
+  constraint fk_department_id foreign key(department_id) references department(id)
+)
+
+1.-----------------查询员工，员工(多的一方)有部门(一的一方)的引用----------------
+public class Employee {
+    private int id;
+    private String employeeName;
+     
+    private Department department;//部门引用
+    public Department getDepartment() {
+    	return department;
+    }
+    public void setDepartment(Department department) {
+    	this.department = department;
+    }
+        public int getId() {
+	  return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getEmployeeName() {
+		return employeeName;
+	}
+	public void setEmployeeName(String employeeName) {
+		this.employeeName = employeeName;
+	}   	
+}
+
+public class Department {
+	private int id;
+	private String departmentName;
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getDepartmentName() {
+		return departmentName;
+	}
+	public void setDepartmentName(String departmentName) {
+		this.departmentName = departmentName;
+	}
+}
+
+
+要求查询指定员工和他所在部门的信息，如员工id为1
+方法一：联表查询
+   select * from employee e,department d where d.id=e.department_id and e.id=1;
+方法二：两次查询
+   select * from employee where id=1;
+   select * from department where id=上面的结果中的department_id ;
+   
+如何把查询到的结果封装成一个对象：
+
+映射文件配置
+方法一：
+<select id="getEmployee" parameterType="int" resultMap="getEmployeeMap">
+  select e.id,e.name,d.id d_id,d.name departmentName 
+     from employee e,department d where e.department_id=d.id and e.id=#{id}
+<select>
+
+<resultMap id="getEmployeeMap" type="xxx.xx.domain.Employee">
+  <id property="id" column="id"/>
+  <result property="employeeName" column="name"/>
+
+  <association property="department" javaType="xxx.xx.domain.Department">
+     <!--配置实体类Department属性与表字段的映射关系，使用查询语句中的别名-->
+     <id property="id" column="d_id"/>
+     <result property="departmentName" column="departmentName"/>
+  </association>
+</resultMap>
+
+方法二：
+<select id="getEmployee" parameterType="int" resultMap="getEmployeeMap">
+   select id,name,department_id from employee where id=#{id}
+</select>
+<resultMap id="getEmployeeMap" type="xxx.xx.domain.Employee">
+   <id property="id" column="id"/>
+   <result property="employeeName" column="name"/>
+   <!--以查询出的department_id字段值，再去查部门表-->
+   <association property="department" column="department_id" select="getDepartment" ></association>
+</resultMap>
+<select id="getDepartment" parameterType="int" resultType="xxx.xx.domain.Department">
+   select id,name departmentName from department where id=#{id}
+</select>
+
+
+-----------------------------------------------------------------------------------
+
+关联关系查询：1对多
+
+
+2.-----------------查询部门，部门(一的一方)有所有员工(多的一方)的引用----------------
+public class Department {
+	private int id;
+	private String departmentName;	
+	private List<Employee> employees;
+	public List<Employee> getEmployees() {
+		return employees;
+	}
+	public void setEmployees(List<Employee> employees) {
+		this.employees = employees;
+	}	
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getDepartmentName() {
+		return departmentName;
+	}
+	public void setDepartmentName(String departmentName) {
+		this.departmentName = departmentName;
+	}
+}
+public class Employee {
+    private int id;
+    private String employeeName;
+    public int getId() {
+	return id;
+    }
+    public void setId(int id) {
+	this.id = id;
+    }
+    public String getEmployeeName() {
+	return employeeName;
+    }
+    public void setEmployeeName(String employeeName) {
+	this.employeeName = employeeName;
+    }
+}
+
+
+要求：查询部门和它的所有员工
+
+方法一：
+ <select id="getDepartment" parameterType="int" resultMap="getDepartmentMap">
+    select d.id,d.name,e.id e_id,e.name employeeName 
+      from department d,employee e where d.id=e.department_id and d.id=#{id}
+  </select>
+  <resultMap id="getDepartmentMap" type="xxx.xx.domain.Department">
+    <id property="id" column="id"/>
+    <result property="departmentName" column="name"/>
+    <!--List集合属性用collection ,ofType是集合里的元素类型-->
+    <collection property="employees" ofType="xxx.xx.domain.Employee">
+       <!--对应上面查询语句中的别名-->
+       <id property="id" column="e_id"/>
+       <result property="employeeName" column="employeeName"/>
+    </collection>
+  </resultMap>
+
+方法二：
+  <select id="getDepartment" parameterType="int" resultMap="getDepartmentMap">
+    select * from department where id=#{id}
+  </select>
+  <resultMap id="getDepartmentMap" type="xxx.xx.domain.Department">
+     <id property="id" column="id"/>
+     <result property="departmentName" column="name"/>
+     <!--根据查询结果中的id字段值去查getEmployee对应的select-->
+     <collection property="employees" column="id" select="getEmployee">
+     </collection>
+  </resultMap>
+  <select id="getEmployee" parameterType="int" resultType="xxx.xx.domain.Employee">
+    select id,name employeeName from employee where department_id=#{id}
+  </select>
+
+3.-----------------查询部门，部门(一的一方)有所有员工(多的一方)的引用,
+                                       员工一方也有部门的引用----------------
+
+public class Employee {
+    	private int id;
+    	private String employeeName;
+    	private Department department;
+    	public Department getDepartment() {
+         	return department;
+    	}
+        public void setDepartment(Department department) {
+    	        this.department = department;
+        } 
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getEmployeeName() {
+		return employeeName;
+	}
+	public void setEmployeeName(String employeeName) {
+		this.employeeName = employeeName;
+	}
+}
+
+public class Department {
+	private int id;
+	private String departmentName;	
+	private List<Employee> employees;
+	public List<Employee> getEmployees() {
+		return employees;
+	}
+	public void setEmployees(List<Employee> employees) {
+		this.employees = employees;
+	}	
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getDepartmentName() {
+		return departmentName;
+	}
+	public void setDepartmentName(String departmentName) {
+		this.departmentName = departmentName;
+	}
+}
+
+方法一：
+  <select id="getDepartment" parameterType="int" resultMap="getDepartmentMap">
+    select d.id,d.name,e.id e_id,e.name employeeName 
+      from department d,employee e where d.id=e.department_id and d.id=#{id}
+  </select>
+  <resultMap id="getDepartmentMap" type="xxx.xx.domain.Department">
+    <id property="id" column="id"/>
+    <result property="departmentName" column="name"/>
+    <collection property="employees" ofType="xxx.xx.domain.Employee">
+       <id property="id" column="e_id"/>
+       <result property="employeeName" column="employeeName"/>
+       
+       <association property="department" javaType="xxx.xx.domain.Department">
+        <id property="id" column="id"/>
+        <result property="departmentName" column="name"/>
+       </association>
+    </collection>
+  </resultMap>
+
+方法二：
+
+
+----------------------------------------------------------------------------------
+
+关联关系查询：多对多
+
+查询用户以及用户购买的商品信息
+
+<!-- 查询用户即购买的商品信息的ResultMap -->
+  <resultMap type="com.mybatis.entity.User" id="userAndItemsResultMap">
+    <!-- 用户信息 -->
+    <id column="user_id" property="id"/>
+    <result column="username" property="username"/>
+    <result column="sex" property="sex"/>
+    <result column="address" property="address"/>
+  <!-- 订单信息
+    一个用户对应多个订单，使用collection映射 -->
+    <collection property="ordersList" ofType="com.mybatis.entity.Orders">
+       <id column="id" property="id"/>
+       <result column="user_id" property="userid"/>
+      <result column="number" property="number"/>
+      <result column="createtime" property="createTime"/>
+      <result column="note" property="note"/>
+     <!-- 订单明细
+         一个订单包括 多个明细
+        -->
+        <collection property="orderdetails" ofType="com.mybatis.entity.OrderDetail">
+            <id column="orderdetail_id" property="id"/>
+           <result column="items_id"   property="itemsId"/>
+           <result column="items_num"  property="itemsNum"/>
+           <result column="orders_id"  property="ordersId"/>
+           <!-- 商品信息
+              一个订单明细对应一个商品
+             -->
+           <association property="items" javaType="com.mybatis.entity.Items">
+             <id column="items_id" property="id"/>
+             <result column="items_name" property="itemsName"/>
+             <result column="items_detail" property="detail"/>
+             <result column="items_price" property="price"/>
+           </association>
+        </collection>
+      </collection>
+  </resultMap>
+<!-- 查询用户及用户购买的商品信息，使用resulaMap-->
+<select id="findUserAndItemsResultMap" resultMap="userAndItemsResultMap">
+    SELECT 
+         t1.*,
+         t2.username,
+         t2.sex,
+         t2.address,
+         t3.id orderdetail_id,
+         t3.items_id,
+         t3.items_num,
+         t3.orders_id,
+         t4.itemsname items_name,
+         t4.detail items_detail,
+         t4.price items_price
+    FROM
+        orders t1,
+        t_user t2,
+        orderdetail t3,
+        items t4
+    WHERE t1.user_id =  t2.id AND  t3.orders_id=t1.id AND t3.items_id = t4.id
+</select>
+
+ 在OrderCustomMapper.java添加如下方法
+
+/** 查询用户及用户所购买的商品信息 */
+    public List<User> findUserAndItemsResultMap();
+
+在Junit测试类中添加测试方法
+
+// 查询用户及用户购买的商品的信息
+  @Test
+  public void TestFindUserAndItemsResultMap() {
+    SqlSession sqlSession = sqlSessionFactory.openSession();
+    // 创建代理对象
+    OrdersCustomMapper oc = sqlSession.getMapper(OrdersCustomMapper.class);
+    // 调用mapper的方法
+    List<User> list = oc.findUserAndItemsResultMap();
+    System.out.println(list);
+    sqlSession.close();
+  }

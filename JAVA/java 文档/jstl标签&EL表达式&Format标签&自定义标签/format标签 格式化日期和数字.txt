@@ -1,0 +1,82 @@
+导入标签库
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+
+<fmt: formatDate> 日期格式化   重要 常用
+使用给定的样式及模式将日期转换为字符串
+
+
+属性：
+name		type	required	description
+type		String	false	指定要格式化的部分，可以取值为date、time或both。
+dateStyle	String 	false	指定日期的样式，当type为date和both时有效，取值要符合java.text.DateFormat关于日期样式的规定。
+timeStyle	String 	false	指定时间的样式，当type为time和both时有效。取值要符合java.text.DateFormat关于时间样式的规定。 
+
+value		Date	true	被格式化的日期或时间对象
+pattern 	String 	false	指定日期和时间的样式，取值要符合java.text.DateFormat关于日期和时间的规定。
+var 		String 	false	如果指定了var属性，格式化的结果会保存在变量中存入指定的域，而不是输出到页面中。
+scope 		String 	false	变量的范围，必须为page、request、session或application，如果不指定该属性， 默认为page。
+
+
+通过标签 formatDate可以完成按指定格式把日期类型的数据转化为字符串在页面上显示
+<fmt:formatDate value="${user.birthday}" pattern="yyyy-MM-dd" />
+
+
+------------------------------------------------------------------------
+
+<fmt:formatNumber>  数字格式化
+
+
+<fmt:formatNumber value="{ money}" pattern="输出格式"></fmt:formatNumber>
+输出格式 在 java.test包下的NumberFormat有， 用到时也可以去百度
+
+
+------------------------------------------------------------------------
+<fmt: setLocale>
+
+
+覆盖客户端发送过来的区域信息。一旦调用<fmt:setLocale>，后续的区域相关的标签， 
+比如<fmt:message>将使用新的区域信息。
+
+属性：
+name	type	required	description
+value	String	true	区域的字符表示，格式为：语言+”_” + 国家，其中语言部分不可缺少。
+scope	String Constant	false	区域的有效范围，值为page、request、session或application，如果不设置该属性，默认为page。
+
+
+<fmt:setLocale value=“zh” />
+<fmt:setLocale value=“en_US” scope=“session” />
+
+------------------------------------------------------------------------
+<fmt: bundle>
+装载一个只能在标签体内访问的资源集。
+
+属性：
+name	type	required	description
+basename	String	true	资源集的基本名，及不包括区域信息部分。
+
+<fmt:bundle basename=“com.yourcompany.Labels">
+     <fmt:message key="labels.firstName"/>
+     <fmt:message key="labels.lastName"/>
+</fmt:bundle> 
+
+------------------------------------------------------------------------
+<fmt: setBundle>
+装载一个资源集并将其保存在某个EL变量中供以后使用
+
+属性：
+name	type	required	description
+basename	String	true	资源集的基本名，及不包括区域信息部分。
+var	String	false	保存装载的资源集的EL变量名
+scope	String Constant	false	EL变量的范围，必须为page、request、session或application，如果不指定该属性， 默认为page。
+
+------------------------------------------------------------------------
+<fmt: message>
+读取资源集中的某个消息并保存到EL变量中或显示到页面的当前位置上
+
+属性：
+name	type	required	description
+key	String	true	要读取的消息的key。
+bundle	ResourceBundle 	false	消息所在的资源集
+var 	String 	false	如果指定了var属性，消息会保存在EL变量中，而不是输出到页面中。
+scope 	String 	false	变量的范围，必须为page、request、session或application，如果不指定该属性， 默认为page。
+

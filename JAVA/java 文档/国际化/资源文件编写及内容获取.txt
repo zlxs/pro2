@@ -1,0 +1,14 @@
+message_zh_cn.properties
+message_en.properties
+......
+
+资源文件中的中文要用native2ascii编码才行，myeclipse可以自动做到编码。并且可以查看编码
+
+
+
+ResourceBundle bundle=ResourceBundle.getBundle("包名.资源文件名（默认资源名且不含后缀)",request.getLocal());
+
+String username=bundle.getString("username");
+
+
+

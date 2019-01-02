@@ -1,0 +1,27 @@
+1对多的表
+删除1的一方的某行记录：
+要先把外键列置空，
+建表时也可以在外键列上设置级联，即在外键列上最后加on delete set null，这样在删除时就会把多的一方的外键列置空
+如果设置为on delete cascade,则会把多的一方对应的外键列的记录全部删除
+
+employee表中
+constraint department_id_FK foreign key(student_id) reference department(id) on delete set null
+把部门删除，员工的department_id置空
+
+
+多对多表
+查询:
+如表1代表老师，表2代表学生，找出老师和他的所有学生信息
+
+先查表1
+sql="select * from table1 where table1.id=?"
+
+再通过中间表查询表2数据
+sql="select table2.* from table1_2,table2 where table1_2.id_1=? and table2.id=table1_2.id_2 "
+
+
+或用子查询
+select * from student where id=
+ (select student_id from s_t where s_t.teacher_id=?)
+
+

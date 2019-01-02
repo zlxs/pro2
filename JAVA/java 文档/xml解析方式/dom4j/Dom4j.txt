@@ -1,0 +1,65 @@
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
+import org.junit.Test;
+
+public class Dom4j {
+    @Test
+	public void test() throws DocumentException{
+	SAXReader reader=new SAXReader();
+	Document document = reader.read(new File("src/dom/book.xml"));
+	Element root=document.getRootElement();
+	Element a1 = root.element("书");
+	Element a = a1.element("书名");
+	System.out.println(a.getText());
+	}
+    
+    @Test
+	public void test1() throws DocumentException{
+	SAXReader reader=new SAXReader();
+	Document document = reader.read(new File("src/dom/book.xml"));
+	Element root=document.getRootElement();
+	Element a = (Element) root.elements().get(0);
+	System.out.println(a.elementText("售价"));
+	System.out.println(a.element("书名").getText());
+	System.out.println(a.element("书名").attributeValue("id"));
+ 
+	}
+    
+    @Test
+   	public void test2() throws DocumentException, IOException{
+   	SAXReader reader=new SAXReader();
+   	Document document = reader.read(new File("src/dom/book.xml"));
+   	Element root=document.getRootElement();
+   	Element a = (Element) root.elements().get(0);
+	a.addAttribute("idx", "sd");
+        //dom4j会把字符以本地平台的字符编码(gb2312)后写入原文档，如果是utf-8的xml文档，读取时就会出现乱码，所以需要指定写入文档时查的码表
+	XMLWriter writer=new XMLWriter(new OutputStreamWriter(new FileOutputStream("src/dom/book.xml"),"UTF-8"));
+        //dom4j会默认把文档保存为utf-8,如果想要保存为其他格式，则需要使用格式化输出器OutPutFormat,指定保存格式，setEncoding("gb2312")，
+        //同时需要指定写入文档时查的码表为gb2312(当然，默认的就是gb2312)
+	writer.write(document);
+	writer.close();
+	
+   	}
+      @Test
+    //用xpath快速定位
+	public void test4() throws DocumentException{
+	SAXReader reader=new SAXReader();
+	Document document = reader.read(new File("src/dom/book.xml"));
+	List a = document.selectNodes("//书/书名");
+	Element s=(Element) a.get(1);
+	System.out.println(s.getName());
+	System.out.println(s.getText());
+	System.out.println(s.attributeValue("id"));
+	
+	}
+    
+}

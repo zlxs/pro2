@@ -1,0 +1,82 @@
+ public class =Test{
+   private String ns = "http://www.example.org/MyService/"; 
+    private String wsdlUrl = "http://localhost:8088/ms?WSDL"; 
+      
+    @Test  //测试创建SOAP消息
+    public void testMessage(){ 
+        //1，创建消息工厂 
+        try { 
+            MessageFactory factory=MessageFactory.newInstance(); 
+            //2，根据消息工厂创建SOAPMessage 
+              
+            SOAPMessage messge=factory.createMessage(); 
+            //3,创建SOAPPart 
+            SOAPPart part=messge.getSOAPPart() ; 
+            //4，获取信封 
+            SOAPEnvelope envelop=part.getEnvelope() ; 
+            //5，获取消息主题部分 
+            SOAPBody body=envelop.getBody(); 
+              
+            //6，创建信息     命名空间 part(节点名称) 前缀
+            QName qname=new QName(ns,"add","ns"); //生成节点<ns:add xmlns="http://www.example.org/MyService/" />
+            //通过qname生成body节点信息
+            SOAPElement ele=body.addBodyElement(qname); 
+            ele.addChildElement("number1").setValue("1"); 
+            ele.addChildElement("number2").setValue("2"); 
+              
+            messge.writeTo(System.out); 
+        } catch (SOAPException e) { 
+            // TODO Auto-generated catch block 
+            e.printStackTrace(); 
+        } catch (IOException e) { 
+            // TODO Auto-generated catch block 
+            e.printStackTrace(); 
+        } 
+    }
+
+    //测试创建SOAP请求消息并将消息发送到服务器端 
+    @Test
+    public void testSendMessge(){ 
+        //1,创建服务           
+        try { 
+            URL url=new URL(wsdlUrl); 
+            QName qname=new QName(ns,"MyServiceImplService"); 
+            Service service=Service.create(url,qname); 
+              
+            //2，创建Dispicathc              
+            Dispatch<SOAPMessage> dispatch=service.createDispatch(new QName(ns,"MyServiceImplPort"), 
+                    SOAPMessage.class, Service.Mode.MESSAGE); 
+
+            //3，创建消息 
+            SOAPMessage message=MessageFactory.newInstance().createMessage(); 
+            SOAPBody body =message.getSOAPPart().getEnvelope().getBody(); 
+            SOAPElement ele=body.addBodyElement(new QName(ns,"add","ns")); 
+            ele.addChildElement("arg0").setValue("12"); 
+            ele.addChildElement("arg1").setValue("13"); 
+              
+            //通过dispatch.invoke方法传递消息  返回结果是SOAPMessage  是响应消息
+            SOAPMessage response=dispatch.invoke(message); 
+            //response.writeTo(System.out); 
+
+            //解析出服务器返回的值                                      //包含返回结果的节点
+            NodeList nodeList=response.getSOAPBody().getElementsByTagName("result"); 
+            Node node=nodeList.item(0); 
+            System.out.println(node.getTextContent()); 
+            //使用此种方式也能够使用想要的值。 
+              
+                        
+              
+        } catch (MalformedURLException e) { 
+            // TODO Auto-generated catch block 
+            e.printStackTrace(); 
+        } catch (SOAPException e) { 
+            // TODO Auto-generated catch block 
+            e.printStackTrace(); 
+        } catch (IOException e) { 
+            // TODO Auto-generated catch block 
+            e.printStackTrace(); 
+        } 
+    } 
+
+}
+ 

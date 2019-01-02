@@ -1,0 +1,53 @@
+
+bean标签的autowire属性：
+autowire="default" Spring会帮我们自动装配属性
+
+以前在类A的bean中维护B的bean的引用需要这么来写：
+<bean id="a" class="xxx.xx.xxx.A">
+  <property name="child" ref="b">
+</bean>
+
+<bean id="b" class="xxx.xx.xxx.B">
+  <property name="name" value="tom">
+</bean>
+
+现在只需要配置autowire="default"
+<bean id="a" class="xxx.xx.xxx.A" autowire="default">
+</bean>
+
+<bean id="b" class="xxx.xx.xxx.B">
+  <property name="name" value="tom">
+</bean>
+
+
+autowire="byName"时：
+Spring会去上下文中找相同属性名的bean（bean配置的id和要装配的属性名相同）
+装配到对应属性上
+如果找不到，就装不上，不可能找到多个（id唯一）
+
+autowire="byType"时：
+Spring会去上下文中找和要装配的属性类型相同的bean装配，可能找到多个，
+如果找不到，就装不上，找到多个就会报异常
+
+
+autowire="byName"和autowire="byType"都是通过set方法来装配的，
+要求bean有空的构造函数
+
+
+autowire="constructor"
+如果构造函数带参数，用构造函数参数类型自动装配：
+找不到和找到多个都抛异常
+
+
+autowire="autoDetect" 自动检测，试图在byType和constructor中动态选择
+有空的构造函数就用byType，没有就用constructor
+
+
+autowire="default"
+在beans标签中可以通过default-autowire属性来指定自动装配的默认值，
+autowire="default"的具体属性由default-autowire来决定
+
+
+也可以使用注解来自动装配
+@Autowired
+加在set或字段上

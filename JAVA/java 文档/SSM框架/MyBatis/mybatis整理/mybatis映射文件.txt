@@ -1,0 +1,139 @@
+映射文件配置   
+注：
+   文件名称随意，如user-mapper.xml
+   如果使用mapper代理开发dao,不用注解的话，文件名需要和mapper接口保持一致，且在同一目录
+
+如果要配合mapper代理开发dao的话，不用注解，需要注意以下开发规范：
+  1.映射文件的namespace要等于mapper接口的地址
+
+  2.mapper接口的方法名和映射文件中 select/insert/delete/update标签的id一致
+
+  3.mapper接口中方法输入参数类型和映射文件中各标签的parameterType指定类型一致
+
+  4.mapper接口中方法返回值类型和映射文件中各标签的resultType指定类型一致,
+        返回list时，泛型类型要和resultType指定类型一致
+
+  5.mapper接口方法参数只能有一个
+    即使mapper接口只有一个参数，可以使用包装类型的pojo满足不同的业务方法需求
+  
+  6.mapper接口和映射文件在同一目录下
+
+元素：
+    cache         配置给定命名空间的缓存
+    cache-ref     从其他命名空间引用缓存配置。 
+    resultMap     用来描述如何从数据库结果集中来加载你的对象。
+    sql           可以重用的SQL块，也可以被其他语句引用。
+    insert        映射插入语句 
+    update        映射更新语句 
+    delete        映射删除语句
+    select        映射查询语句
+
+-------------------------------
+select标签的属性：  insert/delete/update标签也具有以下的部分属性
+
+   1.id 命名空间中的唯一标识符，可被用来代表这条语句。id应该与dao或mapper接口在方法名一致 
+
+   2.parameterType
+        传入语句的参数的完全限定类名或别名， 如果不配置，mybatis会通过ParameterHandler 根据参数类型默认选择合适的typeHandler进行处理
+        parameterType 主要指定参数类型，可以是int, short, long, string等类型，也可以是复杂类型（如对象）
+
+      
+   3.flushCache
+        将其设置为 true，任何时候只要语句被调用，都会导致本地缓存和二级缓存都会被清空，
+        默认值：true（对应插入、更新和删除语句）
+      
+      
+   4.statementType
+        STATEMENT，PREPARED 或 CALLABLE 的一个。这会让 MyBatis 分别使用Statement，PreparedStatement或CallableStatement
+        默认值：PREPARED
+      
+   5.keyProperty
+       （仅对 insert 和 update 有用）唯一标记一个属性，MyBatis 会通过 getGeneratedKeys 的返回值
+        或者通过 insert 语句的 selectKey 子元素设置它的键值
+        默认：unset。如果希望得到多个生成的列，也可以是逗号分隔的属性名称列表。
+      
+   6.keyColumn
+       （仅对 insert 和 update 有用）通过生成的键值设置表中的列名，这个设置仅在某些数据库（像 PostgreSQL）是必须的,
+        当主键列不是表中的第一列的时候需要设置。如果希望得到多个生成的列，也可以是逗号分隔的属性名称列表。
+ 
+   7.useGeneratedKeys
+        （仅对 insert 和 update 有用）这会令 MyBatis 使用 JDBC 的 getGeneratedKeys 方法来取出由数据库内部生
+         成的主键（比如：像 MySQL 和 SQL Server 这样的关系数据库管理系统的自动递增字段）
+         默认值：false。
+
+   8.timeout
+        这个设置是在抛出异常之前，驱动程序等待数据库返回请求结果的秒数。默认值为 unset（依赖驱动）。
+
+   9.resultType属性: 查询返回结果集类型，如果返回的是集合，则该属性值为集合里存放的具体类型
+
+--------------------------------------------------------------------------------------
+
+<?xml version="1.0" encoding="UTF-8"?>
+ <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--为这个mapper指定一个唯一的namespace，
+  如果使用mapper代理接口开发dao,则namespace设置为mapper接口的全限定名
+-->
+<mapper namespace="com.mybatis.mapper.UserMapper">
+
+  <!--
+    id属性值必须是唯一的，不能够重复，也称为statement的id,一般设置成dao或mapper接口的对应方法名
+    #{}表示占位符，与 ?占位符和 :xx 占位符类似，占位符里的参数名一般与dao或mapper接口对应方法内的参数名一致
+  -->
+  <select id="getUserById" parameterType="int" resultType="com.mybatis.pojo.User">
+     select * from user where id=#{id}
+  </select>
+  
+  <!--这里resultType指定返回List集合里保存的是User-->
+  <select id="getAllUser" resultType="com.mybatis.pojo.User">
+     select * from user
+  </select>
+
+  <!--
+   按名称，模糊查询  ${}表示拼接sql串,将接收到的参数不加任何修饰拼接在sql中   ---   like '%小明%'
+   使用${}拼接sql,可能引起sql注入
+   ${value}：接收输入参数的内容，如果parameterType传入类型是简单类型，${}中只能用value，不能自己随便写  
+   如果parameterType传入类型是一个对象，就和OGNL写法一致了
+  -->
+  <select id="findUsersByName" parameterType="java.lang.String"  resultType="com.mybatis.pojo.User">
+     select * from user where name like '%${value}%'
+  </select>
+
+  <insert id="addUser" parameterType="com.mybatis.pojo.User">
+   
+     <!--
+       将插入数据的主键返回，返回到user对象的id属性中
+       select last_insert_id()得到刚insert进去记录的主键值，只适用于自增主键
+       keyProperty:将查询到主键值设置到parameterType指定的对象的指定属性
+       order:select last_insert_id()执行顺序，相对于insert语句来说它的执行顺序，之前还是之后
+     -->
+     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+        select last_insert_id()
+     </selectKey>
+ 
+     <!--#{}里写对应实体类的属性名 -->
+     insert into user(name,password) values(#{username},#{password})
+  </insert>
+
+  <delete id="deleteUser" parameterType="int">
+     delete from user where id=#{id}
+  </delete>
+
+  <!--注：更新的user中 id必须存在-->
+  <update id="updateUser" parameterType="com.mybatis.pojo.User">
+     update user set name=#{username},password=#{password} where id=#{id}
+  </update>
+  
+
+  <!---用户信息的综合查询
+   parameterType  传递包装类 UserQueryVo中有private UserCustom userCustom;和
+               它的set get方法  UserCustom是User的扩展类 
+   userCustom.sex：取出包装对象中性别的值  ognl方式 如果UserQueryVo中有private String sex;则可以直接用#{sex}
+   userCustom.username:取出包装对象中姓名的值  同上
+  -->
+  <select id="findUserList" parameterType="com.mybatis.pojo.UserQueryVo">
+     select * from user where sex=#{userCustom.sex} and name like '%${userCustom.username}%'
+  </select>
+
+</mapper>

@@ -1,0 +1,48 @@
+mabatis注解：
+
+需要写一个接口，形式如下：
+
+public interface UserMapper {
+
+  @Insert("insert into user(name,password) values(#{name},#{password})")
+  public void add(User user);
+	
+  @Delete("delete from user where id=#{id}")
+  public void deleteById(int id);
+	
+  @Update("update user set name=#{name},password=#{password} where id=#{id}")
+  public void update(User user);
+	
+  @Select("select * from user where id=#{id}")
+  public User find(int id);
+	
+  @Select("select * from user")
+  public List<User> findAll();
+}
+
+在mybatis-cfg.xml文件中mapper配置
+<mappers>
+   <!--配置接口文件位置-->
+   <mapper class="xxx.xx.mapper.UserMapper" /> 
+</mappers> 
+
+
+/*
+  测试添加
+*/
+@Test
+public void addUser(){
+    InputStream in=Test.class.getClassLoader().getResourceAsStream("mybatis-cfg.xml");
+    //或用Resources类 InputStream in=Resources.getResourceAsStream("mybatis-cfg.xml");
+
+    SqlSessionFactoryBuilder builder=new SqlSessionFactoryBuilder();
+    SqlSessionFactory sessionFactory=builder.build(in);
+    SqlSession session = sessionFactory.openSession(true);
+    //mybatis会提供接口的实现类
+    UserMapper userMapper = session.getMapper(UserMapper.class);
+    User user=new User();
+    user.setName("eee");
+    user.setPassword("111");
+    userMapper.add(user);
+    session.close();
+}

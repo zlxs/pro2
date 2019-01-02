@@ -1,0 +1,51 @@
+
+编写一个类实现Controller，这个类和Struts的Action类似
+
+public class TestController implements Controller{
+
+	@Override
+	public ModelAndView handleRequest(HttpServletRequest arg0,
+			HttpServletResponse arg1) throws Exception {
+		System.out.println("hello springmvc");
+		return new ModelAndView("/hello");//可以通过ModelAndView传递参数，一般用于重定向传参数
+	}
+
+}
+
+ModelAndView 是指定返回的视图
+    类似Struts1的ActionForward或Struts2的execute的返回字符串
+
+也可以返回String，或无返回值（通过参数添加request,response来实现转发和重定向到具体页面）
+
+配置了视图解析器后  /hello 指  /WEB-INF/jsp/hello.jsp
+<bean  id="viewResolver"
+            class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
+            p:prefix="/WEB-INF/jsp/" p:suffix=".jsp" /> 
+
+
+
+然后在springMVC-servlet.xml中配置
+<bean name="/testController" class="my.test.springmvc.controller.TestController"/>
+
+-----------------------------------
+或直接用注解方式，简单一些
+
+@Controller
+@RequestMapping("/testController")   //加在类上，表示访问该Controller内的方法都要加/testController
+public class TestController {
+                       http://localhost:8080/项目名/testController/add
+	 @RequestMapping(value="/add",method=RequestMethod.GET)  //这样/add前就会加上 /testController
+	 public ModelAndView add(){
+              String result="add";
+	      return new ModelAndView("hello","result",result);//返回视图还可以传递参数，
+                                                       //相当于加上了request.setAttributre("request,request")
+	 }
+                      http://localhost:8080/项目名/testController/find
+	 @RequestMapping(value="/find") //不加metod表示post和get都允许访问该方法
+	 public String find(){
+	    	String result="find";
+		return "/hello";
+	 }
+}
+
+方法上可以自行添加request,response,session和用于接收前台参数的属性或Bean

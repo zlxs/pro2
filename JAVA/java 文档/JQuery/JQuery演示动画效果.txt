@@ -1,0 +1,123 @@
+1、show()显示效果   将要显示的元素慢慢显示出来    不加参数直接显示
+    语法：show(speed,callback)　　Number/String, Function　speend为动画执行时间，
+         单位为毫秒。也可以为slow","normal","fast"　callback可选,为当动画完成时执行的函数。
+　　　　   show(speed,[easing],callback)　　Number/String　　easing默认是swing,可选linear;
+
+　　　　　$("#div1").show(3000,function(){ alert("动画显示完成!"); });　　
+
+　　　　
+2、hide()隐藏效果   将要隐藏的元素慢慢隐藏期来   不加参数直接隐藏
+　　语法:hide(speed,callback)　　Number/String, Function
+　　　　 hide(speed,easing,callback)　　Number/String
+
+　　　　 $("#div1").hide(3000,function(){ alert("动画隐藏完成") });
+
+ 
+3、toggle()隐藏显示自动切换，当目前为显示则隐藏，当目前为隐藏则显示
+　　语法：toggle(speed,callback)　　Number/String,Function
+          toggle(speed,callback,switch)    Number/String,Function,Bool
+　　　　   $("#div1").toggle(3000,function(){ alert("动画效果切换完成") });
+
+　　　　　
+4、slideDown()向下显示，slow()是水平与垂直方向同时展开，而slideDown是仅仅在垂直方向向下展开
+　  语法:slideDown(speed,callback)　　Number/String,Function
+　　　　 slideDown(speed,[easing],callback)　　Number/String,String,Function
+
+　　　　 $("#div1").slideDown(3000,function(){ alert("向下展开显示成功!"); });
+
+
+5、slideUp()向上隐藏,　　hide()是水平与垂直两个方向的，而slideUp()仅仅是垂直方向向上收起隐藏
+　　语法:slideUp(speed,callback)　　Number/String,Function
+　　　　 slideUp(speed,[easing],callback)　　Number/String,String,Function
+
+　　　　 $("#div1").slideUp(3000,function(){ alert("向上收起隐藏成功!"); })
+
+6、slideToggle垂直方向上切换显示和隐藏状态,toggle是水平与垂直两个方向上，而slideToggle是仅仅垂直方向。
+　　语法:slideToggle(speed,callback)　　Number/String,Function
+　　　　 slideToggle(speed,[easing],callback)　　Number/String,String,Function
+
+　　　　 $("#div1").slideToggle(3000,function(){ alert("水平方向上切换成功"); });
+
+　　　　
+7、fadeIn() 以改变透明度来显示
+　　语法：fadeIn(speed,callback)　　　　Number/String,Function
+　　　　  fadeIn(speed,[easing],callback)　　Number/String,Function
+
+　　　　　$("#div1").fadeIn(3000,function(){ alert("淡入显示成功!"); });
+
+ 
+8、fadeOut() 以改变透明度来隐藏
+　　语法：fadeOut(speed,callback)　　   Number/String,Function
+　　　　  fadeOut(speed,[easing],callcack)　　   Number/String,String,Function
+
+　　　　   $("#div1").fadeOut(3000,function(){ alert("淡出隐藏成功!"); });
+
+ 
+9、fadeToggle() 以改变透明度来切换显示隐藏状态
+　　语法: fadeToggle(speed,callback)　　Number/String,Function
+　　　　  fadeToggle(speed,[easing],callback)　　　　Number/String,Function
+
+　　　　  $("#div1").fadeToggle(3000,function(){ alert("淡入淡出切换成功!"); });
+
+
+10、fadeTo() 在指定的时间内将透明度改变到指定的透明度
+
+　　语法：fadeTo(speed,callback)　　　　Number/String,Function
+　　　　　fadeTo([speed],opacity,[easing],[fn])　　Number/String,Float,String,Function
+
+　　　　　$("#div1").fadeTo(3000,0.22,function(){ alert("透明度改变成功!"); });
+
+
+11、animate() 自定义动画，一般来说数字变动都可以用于动画。*********************很好用，w3c上有具体例子
+　　语法：animate(params,speed,easing,callback);　　样式参数，时间，可选择，函数
+　　　　　$("#div1").animate({ width:300,height:300 },3000);
+
+　　　　　其中params要用中括号括起来，可以使用的css样式参数。注意要采用骆驼法则，如font-size要写成fontSize。颜色渐变不支持。
+
+
+12、stop() 停止正在执行动
+　　 stop([clearQueue],[gotoEnd]);　　两个参数均为布尔值，第一个表示，是否停止动画执行、第二个表示，如果停止，是否立即变为执行完成的状态，如果设置为否，则停留在执行一半的状态。
+
+　　$("#div1").hide(5000)　　//此动画正在执行
+
+　　$("#div1").stop();　　　　//上一行代码指定的动画停止在一半状态
+
+　　$("#div1").stop(true,true);　　//停止当前动画，同时动画切换到完成执行状态。
+
+ 
+
+13、delay() 延迟执行动画　　当一个动画stop()了之后还能够用delay()来延迟执行。从停止位置继续执行。当然用原来的方法继续执行也不可，不过没有延时效果。
+　　delay(duration,[queueName])　　设置一个延迟值来执行动画　　Integer,String
+
+　　$("#div1").delay(3000).hide(3000);　　//表示在3000毫秒后执行hide(3000);
+
+ 
+
+14、jQuery.fx.off　　//该属性只是是否关闭当前页面上的动画,关闭动画之后，没有动画效果，所有设置了执行时间的动画会瞬间完成。注意此属性出现的位置。出现的位置不同影响的范围也不同。
+　　$(function(){
+
+　　　　jQuery.fx.off = true;　　//属性在事件外面，对页面加载后执行的所有动画有效
+
+　　　　$("#div1").click(function(){　　//属性如果写在这里，仅仅对当前点击事件无效，不影响其他事件的动画
+
+　　　　　　$("#div1").hide(3000);　　//注意由于jQuery.fx.off设置为了true,因此3000毫秒失效，相当于hide();
+
+　　　　 });
+
+　　})
+
+ 
+
+15、jQuery.fx.interval　　//该属性设置动画的帧速，单位是毫秒，如果设置的时间越小，就越平滑。，属性出现的位置同样有影响范围
+
+　　 $(function(){
+
+　　　　jQuery.fx.interval = 1000;
+
+　　　　$("#div1").click(function(){　　
+
+　　　　　　$("#div1").hide(3000);　　　//jQuery.fx.interval设置为1000，也就是1秒钟，改变一次效果。　
+
+　　　　 });
+
+　　 })

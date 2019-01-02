@@ -1,0 +1,127 @@
+bean的继承：
+
+如果几个bean只有某些属性不一样，
+<bean id="p1" class="xxx.xx.xxx.A">
+   <property name="name" value="tom" />
+   <property name="age" value="24" />
+</bean>
+
+<bean id="p2" class="xxx.xx.xxx.A">
+   <property name="name" value="jerry" />
+   <property name="age" value="24" />
+</bean>
+
+可以写成：
+<bean id="p1" class="xxx.xx.xxx.A">
+   <property name="name" value="tom" />
+   <property name="age" value="24" />
+</bean>
+
+<bean id="p2" parent="p1">
+   <property name="name" value="jerry" />
+</bean>
+这就是bean的继承，继承的是配置，同时可以在继承时覆盖原来的属性
+----------------------------------------------
+p2也可以和p1的类型不一样
+<bean id="p1" class="xxx.xx.xxx.A">
+   <property name="name" value="tom" />
+   <property name="age" value="24" />
+</bean>
+
+<bean id="p2" class="xxx.xx.xxx.B">
+   <property name="name" value="jerry" />
+   <property name="age" value="24" />
+   <property name="password" value="123" />
+</bean>
+
+可以写成：
+<bean id="p1" class="xxx.xx.xxx.A">
+   <property name="name" value="tom" />
+   <property name="age" value="24" />
+</bean>
+
+<bean id="p2" parent="p1" class="xxx.xx.xxx.B">
+   <property name="name" value="jerry" />
+   <property name="password" value="123" />
+</bean>
+
+注意：bean的继承不需要类一致，继承的是配置
+
+------------------------------------------------------------------
+
+bean的属性是集合：(装配集合)
+
+如：集合是list
+<bean id="p2" class="xxx.xx.xxx.B">
+   <property name="collection0">
+     <list> 
+       <value>aaa</value>   //String类型
+       <ref bean="p1"> //对象类型，引用p1 bean
+               
+       <bean class="xxx.xx.xxx.C"> //内部bean,即类B中有个内部类C
+         <property name="name" value="lucy" />
+       </bean>
+     </list>
+   </property>
+</bean>
+
+集合是set  用的是LinkedHashSet
+<bean id="p2" class="xxx.xx.xxx.B">
+   <property name="collection1">
+     <set> 
+       <value>aaa</value>   //String类型
+       <ref bean="p1"> //对象类型，引用p1 bean
+               
+       <bean class="xxx.xx.xxx.C"> //内部bean
+         <property name="name" value="lucy" />
+       </bean>
+     </set>
+   </property>
+</bean>
+
+集合是map 用的是LinkedHashMap
+<bean id="p2" class="xxx.xx.xxx.B">
+ <property name="collection2">
+  <map>
+    <entry key="key01" value="tom">
+    </entry>
+
+    <entry key="key02" value-ref="p1">
+    </entry>
+
+    <entry key="key03"> //内部bean
+      <bean class="xxx.xx.xxx.C">
+        <property name="name" value="lucy" />
+      </bean>
+    </entry>
+    
+  </map>
+ </property>
+</bean>
+
+Properties集合：key和value都必须是字符串
+<bean id="p2" class="xxx.xx.xxx.B">
+   <property name="collection3">
+     <prop key="key01" value="aaa"></prop>
+     <prop key="key02" value="bbb"></prop>
+   </property>
+</bean>
+
+也可以使用名词空间(需要引入util的schema名词空间)，util:list/map/..来封装具体的配置
+再通过引用就行了
+如：
+<bean id="p2" class="xxx.xx.xxx.B">
+   <property name="collection0" ref="myList" />
+</bean>
+
+<util:list id="myList">
+     <value>aaa</value>   //String类型
+     <ref bean="p1"> //对象类型，引用p1 bean
+               
+     <bean class="xxx.xx.xxx.C"> //内部bean,即类B中有个内部类C
+       <property name="name" value="lucy" />
+     </bean>
+</util:list>
+
+-------------------------------------------------------------------
+

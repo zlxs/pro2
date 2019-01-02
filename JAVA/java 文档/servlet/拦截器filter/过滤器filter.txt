@@ -1,0 +1,74 @@
+对访问和响应进行拦截
+实现Filter接口
+
+重写doFilter()方法执行具体操作
+
+然后调用chain.doFilter(request,response);放行
+chain为filter链对象，执行该方法会检查是否有下一个filter，如果有，则下一个filter执行，否则目标资源执行
+目标资源执行完会回到拦截器中来（如果有多个拦截器拦截，则后拦截的先返回）
+
+使用filter拦截需要在web.xml文件中描述
+
+<filter>
+  <filter-name></filter-name>
+  <filter-calss></filter-class>
+</filter>
+
+<filter-mapping>
+  <filter-name></filter-name>
+  <url-pattern></url-pattern>
+</filter-mapping>
+--------------------------------------------------
+也可以在<filter></filter>中配置filter的初始化参数
+如：
+<filter>
+  <filter-name></filter-name>
+  <filter-calss></filter-class>
+  <init-param>
+    <param-name>xxx</param-name>
+    <param-value>yyy</param-value>
+  </init-param>
+</filter>
+
+---------------------------------------------------
+filter的映射细节：
+通过<dispatcher></dispatcher>来配置filter的映射细节，可以配置多个
+dispatcher内可以有四种值:
+1.forward:资源以forward方式调用时，filter才生效
+
+2.include:以include方式调用时，filter才生效
+
+3.request:以请求方式调用时，filter生效
+
+4.error:以错误方式调用时，该filter才生效
+
+默认request 
+注意：配置时要大写
+
+<filter-mapping>
+  <filter-name></filter-name>
+  <url-pattern></url-pattern>
+  <dispatcher></dispatcher>
+</filter-mapping>
+
+---------------------------------------------------
+
+filter在开发中的常见应用：
+ 1.filter可以目标资源执行之前，进行权限检查，检查用户有无权限，如有权限则放行，如没有，则拒绝访问
+ 2.filter可以放行之前，对request和response进行预处理，从而实现一些全局性的设置，如解决全站乱码。
+ 3.filter在放行之后，可以捕获到目标资源的输出，从而对输出作出类似于压缩这样的设置
+
+
+filter生命周期：
+服务器在开启时创建，访问时都是使用的同一个拦截器，在服务器停止前摧毁
+
+
+使用注解方式配置filter:
+在filter上加WebFilter注解
+
+如：
+@WebFilter(filterName = "CharacterEncodingFilter", urlPatterns = "/*", 
+           //初始参数配置
+           initParams = {@WebInitParam(name = "req", value = "utf-8"),
+        		         @WebInitParam(name = "resp", value = "utf-8")},
+           dispatcherTypes={DispatcherType.REQUEST,DispatcherType.FORWARD})

@@ -1,0 +1,55 @@
+1.实现点击按钮链接到另一页面
+<form>
+  <input type="button" value="链接到另一页面" onclick="a()">
+</form>
+
+functiom a(){
+document.form[0].action="页面";
+document.form[0].submit();
+}
+
+
+2.构造函数方式定义javascript函数：Function F大写
+var add=new Function('a','b','return a+b');
+
+var sum=add(4,5);
+alert(sum);
+
+
+3.函数直接量定义函数,函数直接量创建的是未命名的函数
+var add=function(a,b){return a+b;}
+var sum=add(4,5);
+alert(sum);
+
+
+4.输出某个项的value和type
+用户名：<input type="text" name="xxx" id="ss" value="小明"> 
+
+ var input=document.getElementById("ss");
+ var value=input.value;
+ var type=input.type;
+ alert(value);
+ alert(type);
+
+
+5.getElementsByName("xxx") 返回所有给定name属性的节点的集合
+
+<input type="text" name="a" value="q"/>
+<input type="text" name="a" value="w"/>
+<input type="text" name="a" value="e"/>
+
+var list=document.getElementById("a");
+//得到所有value
+   for(var i=0;i<list.length;i++){
+     var value=list[i].value; 
+     alert(value);
+   }
+
+
+6.为文本框添加change事件，当文本框内容发生改变时,输出文本框的值
+<input type="text" id="x" name="qqq" value="sss"/>
+
+  var input=document.getElementById("x");
+  input.onchange=function(){
+    alert(this.value);
+  }

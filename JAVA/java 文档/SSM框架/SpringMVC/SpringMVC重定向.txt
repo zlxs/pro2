@@ -1,0 +1,8 @@
+
+在Controller中使用redirect方式处理请求
+
+@RequestMapping("/redirect")
+public String testRedirect(){
+    return "redirect:hello"; 
+}
+

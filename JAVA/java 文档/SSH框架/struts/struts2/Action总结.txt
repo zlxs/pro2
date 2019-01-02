@@ -1,0 +1,20 @@
+
+1.实现一个Action的最常用方式：从ActionSupport继承
+2.Action的DMI动态方法调用 ！
+3.通配符配置 *{1}{2}
+ a)*_*
+
+4.接收参数得到方法（一般用属性或者DomainModel来接收）
+5.简单参数验证 addFieldError
+ a)一般不使用struts2的UI标签
+
+6.访问web元素
+ a) Map类型
+  i ioc
+  ii 依赖struts2
+ b) 原始类型
+  i ioc
+  ii 依赖struts2
+
+7.包含文件配置
+8.默认action处理

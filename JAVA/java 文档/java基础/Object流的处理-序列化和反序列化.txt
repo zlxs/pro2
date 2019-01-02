@@ -1,0 +1,89 @@
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+public class ss {
+ public static void main(String[] args)
+ {
+	m a=new m(1,2.0,false);
+	m n=new m(3,7.654,true);
+	a.setI(2);	
+  try {
+	ObjectOutputStream out=new ObjectOutputStream(new FileOutputStream("e:/2.txt"));
+	out.writeObject(a);
+	out.writeObject(n);
+	out.flush();
+	out.close();
+	
+} catch (FileNotFoundException e) {
+	// TODO Auto-generated catch block
+	e.printStackTrace();
+} catch (IOException e) {
+	// TODO Auto-generated catch block
+	e.printStackTrace();
+}
+  try {
+	ObjectInputStream in=new ObjectInputStream(new FileInputStream("e:/2.txt"));
+	try {
+		m s=(m)in.readObject();
+		//m b=(m)in.readObject();
+		System.out.println(s);
+		//System.out.println(b);
+		System.out.println(in.readObject());
+		
+	} catch (ClassNotFoundException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	
+} catch (FileNotFoundException e) {
+	// TODO Auto-generated catch block
+	e.printStackTrace();
+} catch (IOException e) {
+	// TODO Auto-generated catch block
+	e.printStackTrace();
+}
+  
+	 
+ }	
+}
+
+class m implements Serializable
+{
+ private transient int i;//transient修饰的变量不参与序列化，反序列化后为成员变量的默认值
+ private double j;
+ private  boolean m;
+ public m(int i,double j,boolean m)
+ {
+	 this.i=i;
+	 this.j=j;
+	 this.m=m;
+ }
+public int getI() {
+	return i;
+}
+public void setI(int i) {
+	this.i = i;
+}
+public double getJ() {
+	return j;
+}
+public void setJ(double j) {
+	this.j = j;
+}
+public boolean isM() {
+	return m;
+}
+public void setM(boolean m) {
+	this.m = m;
+}
+public String toString()
+{
+	return "i="+this.i+"j="+this.j+"m="+this.m;
+}
+ 
+}

@@ -1,0 +1,209 @@
+
+启用注解：在springMVC-servlet.xml文件中配置
+
+<!-- 启动注解驱动的Spring MVC功能，注册请求url和注解POJO类方法的映射-->  
+<mvc:annotation-driven />
+  
+<!-- 启动包扫描功能，以便注册带有@Controller、@Service、
+         @repository、@Component等注解的类成为spring的bean -->  
+<context:component-scan base-package="包名" /> 
+
+
+
+@Controller注解 加在自己写的Controller上  Spring的bean标签之一
+
+@RequestMapping(value="/url地址",method=RequestMethod.GET)  加在Controller类和方法上，作用不一样
+  注解开发的控制器映射器
+
+value  指定访问该方法的请求地址  /表示web应用根目录    需要唯一
+method 指定响应哪种请求方式    不写时post和get都可以，一般不写
+
+例：
+@Controller
+public class TestController {
+                       http://localhost:8080/项目名/testController/add
+	 @RequestMapping(value="/testController/add",method=RequestMethod.GET)
+	 public ModelAndView add(HttpServletRequest request,HttpServletResponse resp){
+              String result="add";
+	      return new ModelAndView("hello","result",result);
+	 }
+                      http://localhost:8080/项目名/testController/find
+	 @RequestMapping(value="/testController/find")
+	 public ModelAndView find(HttpServletRequest request,HttpServletResponse resp){
+	    	String result="find";
+		return new ModelAndView("/hello","result",result);
+	 }
+}
+
+----------注：也可以 用@RequestMapping指定某个Controller的访问根目录   一般用这种 ----------
+@Controller
+@RequestMapping("/testController")   //加在类上，表示访问该Controller内的方法都要加/testController
+public class TestController {
+                       http://localhost:8080/项目名/testController/add
+	 @RequestMapping(value="/add",method=RequestMethod.GET)  //这样/add前就会加上 /testController
+	 public ModelAndView add(){
+              String result="add";
+	      return new ModelAndView("hello","result",result);
+	 }
+                      http://localhost:8080/项目名/testController/find
+	 @RequestMapping(value="/find")
+	 public ModelAndView find(){
+	    	String result="find";
+		return new ModelAndView("/hello","result",result);
+	 }
+}
+
+
+----------------------------------------------
+类可以不继承和实现任何类和接口，同时可以传入HttpServletRequest、HttpServletResponse、
+  HttpSession，值得注意的是，如果第一次访问页面，HttpSession没被创建，可能会出错； 
+----------------------------------------------
+
+
+还可以像Struts2那样，用String来代替ModelAndView
+     @RequestMapping(value="/find")
+     public String find(HttpServletRequest request){
+	   String result="xxxx";
+	   request.setAttribute("result", result);
+           return "/hello";
+     }
+
+
+--------------------------------------------------------------------------------------------
+
+@RequestParam　 加在方法参数前
+
+ 通过该注解对简单类型的参数进行绑定
+如果不使用@RequestParam,要求request传入参数的名称和Controller方法的形参名称一致
+ 使用这个注解就无需上述限制
+
+用法： 加在要绑定的参数前
+ public String login(@RequestParam(value="username")String name,String password){
+  ...... 
+ }
+表示 request中的username参数，与方法形参name对应
+
+value属性：指定与方法形参对应的 request传入参数名称
+required属性：指定参数是否必须要传入
+defaultValue属性：设置默认值，如果request没有传递该参数，则使用默认值封装方法对应形参
+
+--------------------------------------------------------------------------------------------
+
+@ModelAttribute 　　　
+
+1.在方法的形参前使用 @ModelAttribute 注解：指定pojo存放在request中的key
+ 
+@RequestMapping("/register")
+public String register(@ModelAttribute("user") UserCustom userCustom){
+....
+}
+
+会把userCustom以user为key存入request中
+ UserCustom是User的扩展类
+
+
+2.在方法定义上使用 @ModelAttribute 注解：将方法返回值以指定key存放在request域中
+
+@ModelAttribute("hb")  
+public List<String> hobbiesList(){  
+    List<String> hobbise = new LinkedList<String>();  
+    hobbise.add("basketball");  
+    hobbise.add("football");  
+    hobbise.add("tennis");  
+    return hobbise;  
+}
+
+将hobbise集合以hb为关键字存放在request域中
+
+
+3.在方法定义上使用 @ModelAttribute 注解：Spring MVC 在调用目标处理方法前，
+会先逐个调用在方法级上标注了@ModelAttribute 的方法
+
+public class HelloWorldController {  
+  
+        @ModelAttribute  
+        public void populateModel(@RequestParam String abc, Model model) {  
+           model.addAttribute("attributeName", abc);  
+        }  
+  
+        @RequestMapping(value = "/helloWorld")  
+        public String helloWorld() {  
+           return "helloWorld";  
+        }  
+    }
+
+这个例子，在获得请求/helloWorld 后，populateModel方法在helloWorld方法之前先被调用，
+它把请求参数（/helloWorld?abc=text）加入到一个名为attributeName的model属性中，
+在它执行后helloWorld被调用，返回视图名helloWorld和model已由@ModelAttribute方法生产好了。
+
+--------------------------------------------------------------------------------------------
+
+@RequestBody
+
+　　该注解用于读取Request请求的body部分数据，使用系统默认配置的HttpMessageConverter进行解析，
+然后把相应的数据绑定到要返回的对象上 ,再把HttpMessageConverter返回的
+对象数据绑定到 controller中方法的参数上
+
+
+@ResponseBody
+
+　　该注解用于将Controller的方法返回的对象，通过适当的HttpMessageConverter转换为指定格式后，
+写入到Response对象的body数据区
+
+
+一般用于json的转换：
+@RequestBody  加在形参前  将json数据转换成key/value
+@ResponseBody 加在返回值前  将key/value转换成json
+
+@RequestMapping("/requestJson")
+public @ResponseBody User requestJson(@RequestBody User user){
+  ...
+  return user;  //将user转成Json输出
+}
+
+
+--------------------------------------------------------------------------------------------
+
+@XmlRootElement 
+    该注解用于将Controller的方法返回的对象转换成xml
+
+--------------------------------------------------------------------------------------------
+
+@PathVariable
+
+　　绑定 URL 占位符到形参  用于RESTful风格url
+
+@Controller
+@RequestMapping("/rest")
+public class RestController {
+    @RequestMapping(value="/user/{id}/{name}",method=RequestMethod.GET)
+    public String get(@PathVariable("id") Integer id,@PathVariable("name") String name){
+        System.out.println("get"+id);
+        System.out.println("get"+name);
+        return "/hello";
+    }
+     
+    @RequestMapping(value="/user/{id}",method=RequestMethod.POST)
+    public String post(@PathVariable("id") Integer id){
+        System.out.println("post"+id);
+        return "/hello";
+    }
+       
+}
+
+RESTful的url:  http://.../user/001/yyy
+
+--------------------------------------------------------------------------------------------
+
+@ExceptionHandler
+
+　　注解到方法上，出现异常时会执行该方法
+
+
+@ControllerAdvice
+
+　　使一个Contoller成为全局的异常处理类，类中用@ExceptionHandler方法注解的方法可以
+处理所有Controller发生的异常
+
+
+还有一些表单验证的annotation

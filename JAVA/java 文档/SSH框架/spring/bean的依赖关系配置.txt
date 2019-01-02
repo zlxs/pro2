@@ -1,0 +1,59 @@
+
+depend-on用来表示一个Bean的实例化依靠另一个Bean先实例化。
+如果在一个bean A上定义了depend-on B那么就表示：A 实例化前先实例化 B。
+这种情况下，A可能根本不需要持有一个B对象。
+比如说，你的DAO Bean实例化之前你必须要先实例化Database Bean，
+DAO Bean并不需要持有一个Database Bean的实例。因为DAO的使用是依赖Database启动的，
+如果Database Bean不启动，那么DAO即使实例化也是不可用的。这种情况DAO对Database的依赖是不直接的。
+
+
+ <bean id="user" class="xxx.xx.Beans.User" p:name="li" 
+        p:password="123" depends-on="car"></bean>
+  
+  <bean id="car" class="xxx.xx.Beans.Car" p:name="aoudi"></bean>
+
+代表bean user实例化前，先实例化car这个bean
+
+public class User {
+	private String name;
+	private String password;
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+}
+
+public class Car {
+	private String name;
+        private Car(){
+          System.out.println("car create!");
+        }
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}	
+}
+
+测试：
+public class Tset {
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+       ApplicationContext context=new ClassPathXmlApplicationContext("applicationContext.xml");
+       User u=(User) context.getBean("user");
+       System.out.println(u);
+	}
+}
+输出：
+create car!
+xxx.xx.Beans.User@7fc4e32b
+证明user在创建前先创建了car

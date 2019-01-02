@@ -1,0 +1,50 @@
+/*
+ * InputStreamReader和OutputStreamWriter用来把字节流转换为
+ * 字符流，System类的in静态变量是一个实现了InputStream抽象类的流类的对象，其作用
+ * 是从控制台读取数据到内存缓冲区
+ * 
+ * 该程序实现了从键盘输入数据到文件中
+ */
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class tt {
+ public static void main(String[] args)
+ {
+  BufferedReader a=null;
+  BufferedWriter b=null;
+  String s=null;
+  a=new BufferedReader(new InputStreamReader(System.in));
+  try {
+	b=new BufferedWriter(new FileWriter("e:/2.txt",true));
+	while((s=a.readLine())!=null)
+	{
+		if(s.equals("exit"))
+			break;
+		b.write(s);
+		b.newLine();
+		b.flush();
+	}
+	b.write("上上下下左右上下");
+	a.close();
+	b.close();
+} catch (IOException e) {
+	// TODO Auto-generated catch block
+	e.printStackTrace();
+}
+  finally
+  {
+	  try {
+		a.close();
+		b.close();
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} 
+  }
+  
+ }
+}

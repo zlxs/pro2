@@ -1,0 +1,160 @@
+@Entity   该注解加在实体类上  javax.persistence.Entity
+  表示修饰的是实体类，与表中某张表对应
+
+@Id    该注解加在get方法上，也可以加在属性上   javax.persistence.Id
+  设置该属性与表中主键对应
+
+
+@GeneratedValue  配置主键生成策略    该注解加在get方法上，也可以加在属性上
+   默认auto 相当于native    其他还有identity/table/seqence
+   指定identity主键生成策略   @GeneratedValue(strategy=GeneratedValue.IDENTITY)
+   
+
+   指定sequence主键生成策略 @GeneratedValue(strategy=GeneratedValue.SEQUENCE,generator="payablemoney_seq") 
+   //加在类上，name属性表示该表主键生成策略的名称，它被引用在@GeneratedValue中设置的“generator”值中。 
+   @SequenceGenerator(name="payablemoney_seq", sequenceName="seq_payment",allocationSize=1,initialValue=1)    
+  
+   table用的很少，不用考虑
+
+-------
+Oracle一般用这种：
+@Id
+@GeneratedValue(strategy=GenerationType.SEQUENCE,generator="seq")
+@SequenceGenerator(name="seq",sequenceName="seq_xxx",initialValue=1,allocationSize=1)
+-------
+
+
+native
+@GeneratedValue(generator = "paymentableGenerator")
+@GenericGenerator(name = "paymentableGenerator", strategy = "native")
+
+uuid
+@GeneratedValue(generator = "paymentableGenerator")  
+@GenericGenerator(name = "paymentableGenerator", strategy = "uuid")
+
+hilo
+@GeneratedValue(generator = "paymentableGenerator") 
+@GenericGenerator(name = "paymentableGenerator", strategy = "hilo")
+
+assigned
+@GeneratedValue(generator = "paymentableGenerator") 
+@GenericGenerator(name = "paymentableGenerator", strategy = "assigned")
+
+identity
+@GeneratedValue(generator = "paymentableGenerator") 
+@GenericGenerator(name = "paymentableGenerator", strategy = "identity")
+
+increment
+@GeneratedValue(generator = "paymentableGenerator") 
+@GenericGenerator(name = "paymentableGenerator", strategy = "increment")
+
+
+联合主键用Hibernate注解映射方式主要有三种： 
+第一、将联合主键的字段单独放在一个类中，该类需要实现java.io.Serializable接口并重写equals和hascode，
+      再将该类注解为@Embeddable,最后在主类中(该类不包含联合主键类中的字段)保存该联合主键类的一个引用，
+      并生成set和get方法，并将该引用注解为@Id 
+
+第二、将联合主键的字段单独放在一个类中，该类需要实现java.io.Serializable接口并重写equals和hascode，
+      最后在主类中(该类不包含联合主键类中的字段)保存该联合主键类的一个引用，
+      并生成set和get方法，并将该引用注解为@EmbeddedId 
+
+第三、将联合主键的字段单独放在一个类中，该类需要实现java.io.Serializable接口并要重写equals和hashcode.
+      最后在主类中(该类包含联合主键类中的字段)将联合主键字段都注解为@Id,并在该类上方加上这样的注解：
+      @IdClass(联合主键类.class)
+
+
+
+@Embedded //嵌入的 用于联合主键和组成关系映射
+
+
+@Table    该注解加在实体类上   javax.persistence
+  如果实体类名和数据库表名不一致时，可以指定实体类对应的表  @Table(name="user") ,数据库中没有会自动生成该表
+如没有加这个注解，就找和类同名的表
+
+
+@Basic    该注解加在get方法上，也可以加在属性上  （一般不用去了解）
+  实体类get方法上没有加注解，相当于加了这个注解
+
+
+@Column    javax.persistence.Column
+  当字段名和属性名不一致时
+ 在对应属性的get方法上加@Column(name="字段名") 指定对应的字段名
+columnDefinition属性可以指定具体的类型和默认值 
+如： columnDefinition="char(4)" columnDefinition("number(5,2) default 0")  
+
+
+@JoinColumn与@Column相区别的是：@JoinColumn注释的是保存表与表之间关系的字段（存在外键的字段），
+ 而@Column标注的是表中不包含表关系的字段（不存在外键的字段）。
+
+
+@Transient    该注解加在get方法上，也可以加在属性上    javax.persistence.Transient
+ 指定hibernate自动生成表时，某个属性不需要作为字段存入数据库的对应表中
+
+
+@Temporal(...)   该注解加在get方法上，也可以加在属性上 （不常用）
+   指定插入时间数据时，存人的时间的精度
+     不指定时，既记录日期又记录时间    
+
+
+@Enumerated(value=EnumType.STRING)   该注解加在get方法上，也可以加在属性上
+    使枚举类型属性映射为数据库中表的字段
+EnumType.ORDINAL   映射的数据库中字段为数值类型
+EnumType.STRING    映射的数据库中字段为字符串类型
+
+
+
+如果想要修改生成的中间表的名字，和字段名，可以使用@JoinTable
+注：该注解在映射多对多中间表时，不能加在@ManyToMany(mappedby="")的一方
+    需要加在不含mappedby的一方
+@JoinTable(
+   name="t_s"，  //中间表的名字
+         //joinColumns指定中间表中和当前实体类对应的表有的关联关系的字段名，防止中间表字段外键错乱
+   joinColumns={@JoinColumn(name="teacher_id")},
+         //inverseJoinColumns指定中间表中不和当前实体类对应的表有关联关系的字段名，防止中间表字段外键错乱
+   inverseJoinColumns={@JoinColumn(name="student_id")}		
+)
+
+
+二级缓存的注解配置，加在实体类上，表示该类的操作会启用二级缓存，
+注：在使用二级缓存前，需要在hibernate-cfg.xml中开启二级缓存
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region="ecache.xml中cache的name属性值，不写使用默认的")
+
+
+
+基本案例：
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
+public class User {
+
+	private Integer id;
+	private String username;
+        private int  age; 
+      
+	@Id    设置主键
+        @GeneratedValue(strategy="GeneratedValue.IDENTITY")
+	public Integer getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+        @Column(name="name")  设置该username属性对应表中的name字段
+	public String getUserame() {
+		return name;
+	}
+	public void setUsername(String name) {
+		this.name = name;
+	}
+        @Transient   age属性在hibernate自动生成表时不作为字段
+        public int getAge(){
+                return age;
+        }
+        public void setAge(int age){
+                this.age=age;
+        }		
+}
+直接在实体类上加注解
+还要在hibernate.cfg.xml中描述
+ <mapping class="cn.xxx.xx.User" />  class 中为User类的路径，这里包路径使用.而不是/

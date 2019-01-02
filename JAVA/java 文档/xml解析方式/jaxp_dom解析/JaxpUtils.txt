@@ -1,0 +1,44 @@
+package dom;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+public class JaxpUtils {
+
+ public static Document getDocument(String url) throws ParserConfigurationException, SAXException, IOException
+ {
+  //1.创建工厂
+	 DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
+  //2.得到解析器
+	 DocumentBuilder documentbuilder = factory.newDocumentBuilder();
+  //3.得到对应xml文件的document对象
+     Document document = documentbuilder.parse(url);
+	 return document; 	 
+ }
+ 
+ //xml文件对应的document对象修改后不会改变原来xml文件，想要改变原xml文件，需要把内存中修改后的document写入原xml中，通过transformer可以实现
+ public static void change(Document document,String url) throws FileNotFoundException, TransformerException
+ {
+  //1.创建工厂
+	 TransformerFactory factory=TransformerFactory.newInstance();
+  //2.得到transformer对象，用于把更新后document的内存写入xml
+	 Transformer transformer = factory.newTransformer();
+  //3.把更新后的document写入xml文件中
+	 transformer.transform(new DOMSource(document),new StreamResult(new FileOutputStream(url)));
+ }
+ 
+	
+}

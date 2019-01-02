@@ -1,0 +1,123 @@
+
+通过注解配置bean
+
+@Component:标识一个受Spring管理的组件
+@Repository:标识持久层组件
+@Service:标识服务层
+@Controller:标识表现层
+
+@Scope("prototype")  告诉Spring bean是原型的，不是单例的
+
+spring会帮我们把组件类的第一个字母小写作为bean的id
+  也可以通过注解的value属性来手动配置bean的id   
+
+需要在Spring配置文件中配置<context:component-scan base-package="xx.xxx"></context:component-scan>
+spring可以自动去扫描base-package下面或者子包下面的java文件，
+如果扫描到有@Component @Controller @Service等这些注解的类，则把这些类注册为bean
+
+还有一个属性resource-pattern标识指定扫描哪些 
+如：resource-pattern="Domain/*"用来指定扫描xxx.xx.Domain包下的所有java类
+
+还可以通过一种方式配置Spring扫描哪些，忽略哪些
+<context:component-scan base-package="xxx.xx" use-default-filters="false">
+   <context:exclude-filter type="" expression=""/> 忽略哪些目标
+   <context:include-filter type="" expression=""/> 包含哪些目标
+</context:component-scan>
+
+context:include-filter和context:exclude-filter可以配多个节点
+expression有5种方式指定 
+如: 注解 type="annotation"  expression="org.springframework.stereotype.Repository"  
+         注解方式需要把use-default-filters设置为false,
+         默认为true,表示是否自动扫描带有@Component、@Repository、@Service和@Controller的类
+    接口 type="assignable"  expression="xxx.xx.Dao.BaseDao"  
+    正则表达式 type="regex" expression=""
+
+
+基础配置方式：
+@Component  可以指定id @Component(value="u")或@Component("u")
+public class User{
+  private String name;  
+  get set
+}
+
+@Repository
+public class userDao extends BaseDaoImpl<User>{
+...
+}
+
+@Service
+public class userService extends BaseServiceImpl<User>{
+...
+}
+
+@Controller
+@Scope("prototype")  //告诉Spring action是原型的，不是单例的
+public class userAction extends ActionSupport{
+...
+}
+
+------------------------------------------------------
+bean有关联关系的配置方式
+
+@Autowired    默认按类型装配
+自动装配(bean中有另一个bean引用时，不用自己配置引用属性，Spring自动找兼容的bean装配)
+   加在字段，构造器或一切具有引用参数的方法上，如set方法
+ 默认情况下，所有使用@Autowired的属性都需要在Spring中配置出来，当Spring找不到
+   匹配的Bean装配属性时，会抛异常，若某一属性允许不被配置，可以设置@Autowired
+ 的required属性为false，这样实例化bean时，找不到它的某一引用属性，就设置为null
+
+@Resource
+   这个注解属于J2EE的，默认安照名称进行装配，名称可以通过name属性进行指定， 
+如果没有指定name属性，当注解写在字段上时，默认取字段名进行按照名称查找，
+如果注解写在setter方法上默认取属性名进行装配。 当找不到与名称匹配的bean时才按照类型进行装配。
+但是需要注意的是，如果name属性一旦指定，就只会按照名称进行装配。
+
+@Inject
+
+####重点：在Action中注入xxxService接口的指定实现类时需要，如果不指定，Spring不知道注入哪个实现类，会报错  
+@Qualifier 注解指定具体的实现类来装配接口，因为用接口的话会有很多实现类，
+默认会去找set方法对应的属性名的实现类来装配 setService ---> Service类，没有对应的
+的话,Sping不知道用哪个，会抛异常
+ 该注解一般加在属性，set方法上
+
+如:
+-----使用@Autowired-----
+@Controller
+public class userAction extends ActionSupport{
+   @Autowired 
+   @Qualifier("userService")   
+   private BaseService service;
+
+   public void execute(){
+     return SUCCESS;
+   }
+}
+
+-----使用@Resource-----
+@Controller
+public class userAction extends ActionSupport{
+
+   private BaseService service;
+   @Resource(name="userService")
+   public void setService(BaseService service){
+    this.service=service;
+   }
+   public void execute(){
+     return SUCCESS;
+   }
+}
+
+
+spring 根据类型无法选择到底注入哪一个。这个时候@Primay 可以闪亮登场了。
+@Primary  
+用@Primary 告诉spring 在犹豫的时候优先选择哪一个具体的实现。
+
+
+------------------------------------------------------
+
+@PostConstruct
+  加在类的某一方法前，该方法会在该类bean初始化时调用
+@PreDestroy
+  加在类的某一方法前，该方法会在该类bean销毁时调用
+
+用来代替bean标签的init-method和destroy-method属性

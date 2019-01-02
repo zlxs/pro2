@@ -1,0 +1,24 @@
+在表单中:
+
+<html:text property="edu.name">
+
+
+在formBean中
+
+private Edu edu=new Edu();
+
+
+其中类Edu定义：
+
+class Edu{
+  private String name;
+
+  public String getName(){
+    return name;
+  }
+
+  public void setName(String name){
+   this.name=name;
+  }
+
+}

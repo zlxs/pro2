@@ -1,0 +1,945 @@
+环境搭建：
+1.在maven脚本项目中添加maven依赖
+<dependency>
+    <groupId>org.seleniumhq.selenium</groupId>
+    <artifactId>selenium-java</artifactId>
+    <version>3.0.0</version>
+</dependency>
+   <dependency>
+   <groupId>org.seleniumhq.selenium</groupId>
+   <artifactId>selenium-server</artifactId>
+    <version>3.0.0</version>
+</dependency>
+
+2.自WebDriver 3.0 之后,Selenium不再提供默认的浏览器支持. 也就是说如果你要使用Firefox, 
+就需要用到Mozilla自己的驱动实现: geckodriver
+
+下载各种浏览器的驱动，并在脚本中配置驱动的位置才能正常运行脚本
+如firefox:
+ 去github下载geckodriver-v0.12.0-win64.zip 地址：https://github.com/mozilla/geckodriver/releases
+ 然后把路径配置在path变量中，否则需要在脚本中指定 
+ 在脚本中的指定方式：System.setProperty("webdriver.gecko.driver", "G:\\火狐浏览器\\geckodriver\\geckodriver.exe");
+ 
+其他浏览器也需要下载各自的驱动，selenium3把safaridriver集成在selenium-server里了，无需去添加该驱动
+
+注：使用selenium3需要java 8
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+如何获取各种浏览器的webdriver驱动实例：
+
+启动firefox浏览器：
+
+//设置FireFox的安装路径
+System.setProperty("webdriver.firefox.bin", "G:\\火狐浏览器\\firefox.exe");
+//设置geckodriver驱动路径
+System.setProperty("webdriver.gecko.driver", "G:\\火狐浏览器\\geckodriver\\geckodriver.exe");
+webDriver=new FirefoxDriver();
+
+
+启动chriome浏览器：
+System.setProperty("webdriver.chrome.bin","C:\\Users\\PC20161014\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe");·
+System.setProperty("webdriver.chrome.driver","D:\\新建文件夹\\webdriver\\chromedriver.exe");
+webDriver=new ChromeDriver();
+
+
+启动IE浏览器需要先关闭保护模式
+
+手动关闭保护模式后：
+System.setProperty("webdriver.ie.driver","D:\\新建文件夹\\IEDriverServer\\IEDriverServer.exe");
+webDriver=new InternetExplorerDriver();
+
+通过代码自动关闭保护模式：
+     
+System.setProperty("webdriver.ie.driver","D:\\新建文件夹\\IEDriverServer\\IEDriverServer.exe");
+
+DesiredCapabilities dc = DesiredCapabilities.internetExplorer();
+dc.setCapability(InternetExplorerDriver.INTRODUCE_FLAKINESS_BY_IGNORING_SECURITY_DOMAINS, true);
+//IE默认启动保护模式，要么手动在浏览器的设置中关闭保护模式，要么在代码中加上这一句，即可
+dc.setCapability("ignoreProtectedModeSettings", true);
+WebDriver driver = new InternetExplorerDriver(dc);
+driver.get("http://www.baidu.com/");      
+
+
+其他浏览器driver类似
+
+
+使用HtmlUnitDriver，HtmlUnitDriver只会在内存中执行这段代码，不会弹出一个真实的页面。
+需要额外添加maven依赖：
+
+<dependency>
+ <groupId>org.eclipse.jetty.websocket</groupId>
+ <artifactId>websocket-api</artifactId>
+  <version>9.4.0.v20161208</version>
+</dependency>	
+		
+<dependency>
+ <groupId>org.eclipse.jetty.websocket</groupId>
+ <artifactId>websocket-server</artifactId>
+ <version>9.4.0.v20161208</version>
+</dependency>	
+		
+<dependency>
+ <groupId>org.eclipse.jetty.websocket</groupId>
+ <artifactId>websocket-client</artifactId>
+  <version>9.4.0.v20161208</version>
+</dependency>
+
+webDriver=new HtmlUnitDriver();
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+设置浏览器大小：
+
+设置浏览器宽350，高600
+Dimension browserSize=new Dimension(350,600);
+driver.manage().window().setSize(browserSize);
+//获取当前浏览器大小
+dimensio=driver.manage().window().getSize();
+//输出
+System.out.print("浏览器当前高度为"+dimensio.getHeight()+";浏览器当前宽度为"+dimensio.getWidth());
+
+//浏览器最大化
+driver.manage().window().maximize();
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+导航
+
+导航 (Navigationand History)打开一个新的页面：
+driver.navigate().to(“https://www.baidu.com”);或用driver.get(“https://www.baidu.com”)
+
+浏览器前进：
+driver.navigate().forward();
+浏览器后退：
+driver.navigate().back();
+
+
+注意get()和navigate().to方法用的是HTTP GET请求，输入的连接中必须加上http://或https://前缀
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+关闭浏览器
+
+driver.quit()
+或
+driver.close()
+
+区别：close方法关闭后并不会清除临时文件中的webdriver临时文件，quit关闭浏览器后，会自动删除临时文件夹。
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+Selenium元素选择操作：
+
+Method	                 Syntax	                                               描述 
+By ID	                 driver.findElement(By.id(<element ID>))	       定位使用ID属性的元素
+By name	                 driver.findElement(By.name(<element name>))	       定位使用Name属性的元素
+By class name	         driver.findElement(By.className(<element class>))     定位使用类属性的元素
+By tag name	         driver.findElement(By.tagName(<htmltagname>))	       定位使用HTML标记元素
+By link text	         driver.findElement(By.linkText(<linktext>))	       定位使用的链接文字链接
+By partial link text	 driver.findElement(By.partialLinkText(<linktext>))    定位链接使用链接的文字部分
+By CSS	                 driver.findElement(By.cssSelector(<css selector>))    定位使用CSS选择器的元素
+By XPath	         driver.findElement(By.xpath(<xpath>))	               定位使用XPath查询元素	
+	
+findElement()方法返回一个基于指定搜索条件的WebElement对象
+findElements()方法返回WebElements符合搜索条件的列表。如果没有发现的元素，则返回空列表
+
+By.linkText和By.partialLinkText的区别是By.partialLinkText可以使用链接文字的一部分，比如<a >去付款</a>
+则By.partialLinkText只需要写By.partialLinkText("付款")就可以了，而By.linkText需要写全
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+selenium对各种页面元素的操作：
+
+	
+输入框操作：
+
+找到输入框元素：
+WebElement element = driver.findElement(By.id("xxx"));
+在输入框中输入内容：
+element.sendKeys("test");
+将输入框清空：
+element.clear();
+获取输入框的文本内容：
+element.getText();
+
+-------------------------------------------------------------------
+
+下拉菜单操作：
+
+找到下拉选择框的元素：
+Select select = new Select(driver.findElement(By.id("xxx")));
+
+选择对应的选择项： 通过某个option的text
+select.selectByVisibleText("testName");
+或通过某个option的value
+select.selectByValue("name");
+
+获取所有下拉列表option:
+select.getOptions();
+
+取消任意选择：
+select.deselectAll();
+或取消指定选择：
+select.deselectByValue("name");
+或取消text值为testName的选择：
+select.deselectByVisibleText("testName");
+
+获取被选择的项：
+select.getAllSelectedOptions();
+或：
+select.getFirstSelectedOption();
+
+-------------------------------------------------------------------
+
+单选框操作：
+
+找到单选框元素：
+WebElement sex=driver.findElement(By.id(“sex”));
+
+选择某个单选项：
+sex.click();
+清空某个单选项：
+sex.clear();
+
+判断某个单选项是否已经被选择：
+sex.isSelected();
+
+-------------------------------------------------------------------
+
+复选框操作：
+
+和单选的差不多：
+
+找到某个复选框元素：
+WebElement area =driver.findElement(By.id("xxx"));
+选择选项：
+area.click();
+
+area.clear();
+area.isSelected();
+area.isEnabled();
+
+-------------------------------------------------------------------
+
+按钮操作：
+
+找到按钮元素：
+WebElement button = driver.findElement(By.id("xxx"));
+
+点击按钮：
+button.click();
+
+判断按钮是否enable:
+button.isEnabled();
+
+-------------------------------------------------------------------
+
+左右选择框：
+
+也就是左边是可供选择项，选择后移动到右边的框中，反之亦然。例如：
+
+选择某个要移动到另一边的项：
+Select name= new Select(driver.findElement(By.id(“name”)));
+name.selectByVisibleText(“hellen”);
+
+点击按钮实现移动：
+WebElement addName=driver.findElement(By.id(“addButton”));
+addName.click();
+
+-------------------------------------------------------------------
+
+弹出框操作：alert confirm prompt
+
+弹出对话框：
+Alert alert = driver.switchTo().alert();
+
+相当于点击conform的确定按钮，或alert和prompt的确定按钮
+alert.accept();
+相当于点击confirm的取消按钮或叉掉对话框：
+alert.dismiss();
+
+获取弹出框中的文本：
+alert.getText();
+
+prompt输入框操作：
+Alert prompt= driver.switchTo().alert();
+获得提示信息：
+String text=prompt.getText();
+System.out.println(text);  
+设置值：
+prompt.sendKeys("jarvi");  
+确定：
+prompt.accept();  
+
+-------------------------------------------------------------------
+
+表单提交
+
+表单(Form)Form中的元素的操作和其它的元素操作一样，对元素操作完成后对表单的提交可以：
+WebElement sub= driver.findElement(By.id(“sub”));
+sub.click();
+或
+sub.submit();//只适合于表单的提交
+
+-------------------------------------------------------------------
+
+上传附件
+
+上传文件 (Upload File)上传文件的元素操作：
+WebElement picFile = driver.findElement(By.id(“picFile ”));
+
+String filePath = “d:\\report\\600x600x0.jpg”;
+输入文件地址：
+picFile .sendKeys(filePath);
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+多窗口和frame切换
+
+Windows 或 Frames之间的切换
+
+切换到顶层的frame：
+driver.switchTo().defaultContent();
+
+切换到某个frame：driver.switchTo().frame("id/name")
+driver.switchTo().frame(“leftFrame”);
+
+从一个frame切换到另一个frame：
+driver.switchTo().frame(“mainFrame”);
+
+//切换到父frame
+driver.switchTo().parentFrame();
+
+
+//前面都是通过frame的name或id来切换，还可以利用定位元素来切换 如xpath css等
+driver.switchTo().frame(driver.findElement(By.xpath("//iframe[@id='left']")));
+
+
+切换到某个window：
+driver.switchTo().window(“windowNameOrHandler”); 浏览器窗口切换看下面案例
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+浏览器窗口之间的切换：
+
+
+        // 设置FireFox的安装路径
+    	System.setProperty("webdriver.firefox.bin", "G:\\火狐浏览器\\firefox.exe");
+    	//设置geckodriver驱动路径
+    	System.setProperty("webdriver.gecko.driver", "G:\\火狐浏览器\\geckodriver\\geckodriver.exe");
+
+    	// 创建一个 FireFox的浏览器实例
+        WebDriver driver = new FirefoxDriver();
+        
+        // 让浏览器访问 Baidu
+        driver.get("https://www.baidu.com");
+
+        // 获取 网页的 title
+        System.out.println("Page title is: " + driver.getTitle());
+
+        //最大化浏览器窗口
+    	driver.manage().window().maximize();
+    	//
+    	driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+    	
+        //------------通过百度搜索关键字'自动化测试'-------------      
+        // 通过 id 找到 input 的 DOM
+        WebElement element = driver.findElement(By.id("kw"));
+        
+        //通过 xpath 找到input 的DOM
+        //WebElement driver.findElement(By.xpath(".//*[@id='kw']"));
+
+        // 输入关键字
+        element.sendKeys("自动化测试");
+
+        // 提交 input 所在的  form
+        element.submit();
+        //---------------------------------------------
+
+        //获取第一个搜索结果
+        WebElement a=driver.findElement(By.xpath("//div[@id='1']/h3/a"));
+        a.click();
+        try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+
+
+        //****************浏览器窗口切换操作*******************
+        //获取当前浏览器窗口标识(句柄)
+        String currentHandle=driver.getWindowHandle();
+        //获取所有窗口的标识，并循环判断不是当前的标识，就做选取switchTo()  
+        Set<String> handles=driver.getWindowHandles();
+        for(String handle:handles){
+            if(handle.equals(currentHandle))
+                continue;
+            else
+                driver.switchTo().window(handle);
+        }    
+        
+        //driver.switchTo().defaultContent();
+        // 显示搜索结果页面的 title
+        System.out.println("Page title is: " + driver.getTitle());
+        
+        try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+        
+        //再回到原来的窗口
+        driver.switchTo().window(currentHandle);  
+        
+        try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+        //*****************************************************
+
+        //关闭浏览器
+        driver.quit();
+
+
+通过页面标题来识别弹出窗口
+
+
+ //获取当前浏览器窗口标识(句柄)
+ String currentHandle=driver.getWindowHandle();
+ //得到当前打开的所有窗口
+ Set allHandle=driver.getWindowHandles();
+ Iterator iter = allHandle.iterator();
+ while(iter.hasNext()){
+    String temp=iter.next();
+    if(driver.switchTo().window(temp).getTitle().equals("helloworld")){
+       break;
+    }
+ }
+
+
+通过页面内容来识别弹出窗口
+
+String parentWindow=driver.getWindowHandle();
+Set allHandle=driver.getWindowHandles();
+ Iterator iter = allHandle.iterator();
+ while(iter.hasNext()){
+    String temp=iter.next();
+
+    driver.switchTo().window(temp);
+    //driver.getPageSource()获取页面全部源代码
+    if(driver.getPageSource().contains("helloworld")){
+       break;
+    }
+ }
+
+
+关闭除主窗口之外的全部窗口
+
+String parentWindowHandle = driver.getWindowHandle();
+Iterator  windowIterator = driver.getWindowHandles().iterator();
+while (windowIterator.hasNext()) {
+
+         String windowHandle = windowIterator.next();
+         if (!windowHandle.equals(parentWindowHandle)) {
+     	        driver.switchTo().window(windowHandle);
+                driver.close();
+
+         }
+}
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+显式等待与隐式等待：
+
+显式等待：一个显式等待是你定义的一段代码，用于等待某个条件发生然后再继续执行后续代码。
+
+显式等待,就是明确的要等到某个元素的出现或者是某个元素的可点击等条件,
+等不到,就一直等,除非在规定的时间之内都没找到,就会抛出异常。
+
+例：
+	WebDriver driver = new FirefoxDriver();
+        driver.get("https://www.baidu.com");
+
+        //标题是不是“百度一下，你就知道”,如果不是则最多等待5秒，之后还等不到title为指定值，则抛出异常，是则返回true
+        Boolean b=new WebDriverWait(driver,5).until(ExpectedConditions.titleIs("百度一下，你就知道"));
+        //标题是不是包含“百度一下”
+        new WebDriverWait(driver,5).until(ExpectedConditions.titleContains("百度一下"));
+        //判断该元素是否被加载在DOM中，并不代表该元素一定可见        
+        new WebDriverWait(driver,5).until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id='kw']")));
+        //判断元素(定位后)是否可见
+        new WebDriverWait(driver,5).until(ExpectedConditions.visibilityOf(driver.findElement(By.xpath("//*[@id='kw']"))));
+        //判断元素是否可见（非隐藏，并且元素的宽和高都不等以0）
+        new WebDriverWait(driver,5).until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id='kw']")));
+        //只要存在一个就是true
+        ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath("//*[@id='kw']"));
+        //元素中的text是否包含预期的字符串
+        ExpectedConditions.textToBePresentInElementLocated(By.xpath("//*[@id='kw']"), "百度一下");
+        //元素的value属性中是否包含语气的字符串
+        ExpectedConditions.textToBePresentInElementValue(By.xpath("//*[@id='kw']"), "***");
+        //判断该表单是否可以切过去，可以就切过去并返回true，否则放回false
+        ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.id("**"));
+        //判断某个元素是否不存在于DOM或不可见
+        ExpectedConditions.invisibilityOfElementLocated(By.xpath("//*[@id='kw']"));
+        //判断元素是否可以点击
+        ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='kw']"));
+        //等到一个元素从DOM中移除
+        ExpectedConditions.stalenessOf(driver.findElement(By.xpath("//*[@id='kw']")));
+        //判断某个元素是否被选中，一般用在下拉列表
+        ExpectedConditions.elementToBeSelected(By.xpath("//*[@id='kw']"));
+        //判断某个元素的选中状态是否符合预期
+        ExpectedConditions.elementSelectionStateToBe(By.xpath("//*[@id='kw']"), true);
+        //判断某个元素(已定位)的选中状态是否符合预期
+        ExpectedConditions.elementSelectionStateToBe(driver.findElement(By.xpath("//*[@id='kw']")), false);
+        //判断页面中是否存在alert
+        new WebDriverWait(driver,5).until(ExpectedConditions.alertIsPresent());
+       
+        //--------------------自定义判断条件-----------------------------
+        WebDriverWait wait = new WebDriverWait(driver, 3);
+        wait.until(new ExpectedCondition<Boolean>() {
+             public Boolean apply(WebDriver driver) {
+                 return !driver.findElement(By.xpath("//*[@id='kw']")).getAttribute("class").contains("x-form-invalid-field");
+             }
+        });
+        
+    }
+
+
+隐式等待：设置全局的等待，在定位元素时，对所有元素设置超时时间。
+
+隐式等待使得WebDriver在查找一个Element或者Element数组时，如果Element或数组没有马上被发现的话，每隔一段特定的时间就会轮询一次DOM，
+一旦指定的时间限制被超越，webdriver将尝试去找该元素最后一次，如果成功，将继续进行执行，但如果失败，它会抛出异常
+
+WebDriver driver = new FirefoxDriver();
+//设置全局等待时间为10秒
+driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+
+driver.get("Enter an URL");
+WebElement DynamicElement = driver.findElement(By.id("DynamicElement"));
+
+
+也可以让程序在页面完全加载好后才执行操作
+设置等待页面加载完毕时间，使页面加载完毕后才能执行操作，避免程序执行过快而找不到元素，如果超过时间页面还没加载好则抛出异常
+driver.manage().timeouts().pageLoadTimeout(10,TimeUnit.SECONDS);
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+键盘和鼠标事件：
+
+
+鼠标事件有以下几种类型：
+清单 1. 鼠标左键点击
+
+Actions action = new Actions(driver); action.click();// 鼠标左键在当前停留的位置做单击操作 
+action.click(driver.findElement(By.name(element)))// 鼠标左键点击指定的元素
+
+清单 2. 鼠标右键点击
+
+Actions action = new Actions(driver); 
+ action.contextClick();// 鼠标右键在当前停留的位置做单击操作 
+action.contextClick(driver.findElement(By.name(element)))// 鼠标右键点击指定的元素
+
+清单 3. 鼠标双击操作
+
+Actions action = new Actions(driver); 
+ action.doubleClick();// 鼠标在当前停留的位置做双击操作 
+action.doubleClick(driver.findElement(By.name(element)))// 鼠标双击指定的元素
+
+清单 4. 鼠标拖拽动作
+
+Actions action = new Actions(driver); 
+// 鼠标拖拽动作，将 source 元素拖放到 target 元素的位置。
+ action.dragAndDrop(source,target);
+// 鼠标拖拽动作，将 source 元素拖放到 (xOffset, yOffset) 位置，其中 xOffset 为横坐标，yOffset 为纵坐标。
+action.dragAndDrop(source,xOffset,yOffset);
+
+上面的拖拽动作可以拆分成如下动作： 参见清单5，6，7
+action.clickAndHold(source)   //鼠标悬停在当前位置，既点击并且不释放
+      .moveToElement(target).perform(); //moveToElement(target)移动到目标位置  perform()方法执行操作
+action.release(); //释放鼠标动作
+
+
+清单 5. 鼠标悬停操作
+
+Actions action = new Actions(driver); 
+ action.clickAndHold();// 鼠标悬停在当前位置，既点击并且不释放
+ action.clickAndHold(onElement);// 鼠标悬停在 onElement 元素的位置
+
+
+清单 6. 鼠标移动操作
+
+Actions action = new Actions(driver); 
+ action.moveToElement(toElement);// 将鼠标移到 toElement 元素中点
+// 将鼠标移到元素 toElement 的 (xOffset, yOffset) 位置，
+//这里的 (xOffset, yOffset) 是以元素 toElement 的左上角为 (0,0) 开始的 (x, y) 坐标轴。
+ action.moveToElement(toElement,xOffset,yOffset)
+// 以鼠标当前位置或者 (0,0) 为中心开始移动到 (xOffset, yOffset) 坐标轴
+ action.moveByOffset(xOffset,yOffset);
+
+
+清单 7. 鼠标释放操
+
+Actions action = new Actions(driver); 
+ action.release();// 释放鼠标
+
+
+
+键盘事件有以下几种类型：
+
+1. 对于普通键盘，使用 sendKeys(keysToSend) 就可以实现，比如按键 TAB、Backspace 等。
+
+清单 8. 普通键盘模拟 sendKeys(keysToSend)
+
+Actions action = new Actions(driver); 
+ action.sendKeys(Keys.TAB);// 模拟按下并释放 TAB 键
+ action.sendKeys(Keys.SPACE);// 模拟按下并释放空格键
+
+/***
+针对某个元素发出某个键盘的按键操作，或者是输入操作，
+比如在 input 框中输入某个字符也可以使用这个方法。这个方法也可以拆分成:
+action.click(element).sendKeys(keysToSend)。
+*/
+action.sendKeys(element,keysToSend);
+
+注：---------------------------------
+Actions 中的sendKeys(keysToSend) 对于修饰键 (Modifier Keys) 的调用并不会释放，也就是说当调用 actions.sendKeys(Keys.ALT); 
+actions.sendKeys(Keys.CONTROL); action.sendKeys(Keys.SHIFT); 的时候，相当于调用 actions.keyDown(keysToSend)，
+而如果在现实的应用中想要模拟按下并且释放这些修饰键，应该再调用 action.sendKeys(keys.NULL) 来完成这个动作。
+
+
+其次就是当 Actions 的 sendKeys(keysToSend) 执行完之后，焦点就不在当前元素了。所以我们可以使用 sendKeys(Keys.TAB) 来切换元素的焦点，
+从而达到选择元素的作用，这个最常用到的场景就是在用户名和密码的输入过程中。
+    
+第三点，在 WebDriver 中，我们可以使用 WebElement 类的 sendKeys(keysToSend) 来上传附件，比如 element.sendKeys(“C:\\test\\uploadfile\\test.jpg”); 这个操作将 test.jpg 上传到服务器，但是使用：
+action.sendKeys(element,“C：\\test\\upload\\test.jpg”); 或者
+action.click(element).sendKeys(“C：\\test\\upload\\test.jpg”);
+这2种方式是上传不成功的，虽然 WebDriver 在执行这条语句的时候不会出错，但是实际上并没有将文件上传。
+所以要上传文件，还是应该使用WebElement 类的 sendKeys(keysToSend)。
+------------------------------------
+
+清单 9. 修饰键方法 KeyDown(theKey)、keyUp(theKey)
+
+Actions action = new Actions(driver); 
+ action.keyDown(Keys.CONTROL);// 按下 Ctrl 键
+ action.keyDown(Keys.SHIFT);// 按下 Shift 键
+ action.keyDown(Key.ALT);// 按下 Alt 键
+ action.keyUp(Keys.CONTROL);// 释放 Ctrl 键
+ action.keyUp(Keys.SHIFT);// 释放 Shift 键
+ action.keyUp(Keys.ALT);// 释放 Alt 键
+
+所以要通过 Alt+F4 来关闭当前的活动窗口，可以通过下面语句来实现：
+action.keyDown(Keys.ALT).keyDown(Keys.F4).keyUp(Keys.ALT).keyUP(Keys.F4).perform();
+
+而如果是对于像键盘上面的字母键 a,b,c,d... 等的组合使用，可以通过以下语句实现：
+action.keyDown(Keys.CONTROL).sednKeys(“a”).perform();
+
+对于action.keyDown(theKey) 方法的调用，如果没有显示的调用 action.keyUp(theKey) 或者 action.sendKeys(Keys.NULL) 来释放的话，
+这个按键将一直保持按住状态。
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+selenium执行js脚本
+
+步骤：
+ 1.将driver强制转换为JavascriptExecutor类型
+2.调用executeScript方法
+
+应用场景：
+场景1：在页面加载的时候执行JS:
+WebDriver driver=new FirefoxDriver();
+((JavascriptExecutor)driver).executeScript("alert(\"hello,this is a alert!\")");
+
+场景2：在某个已经定位了的元素上执行js
+((JavascriptExecutor) driver).executeScript("arguments[0].onclick=function(){alert('js has been execute!');}",element);
+element.click();//触发该事件
+
+注意：
+1.executeScript(String script, object... args) 第二个参数可以有1或多个，
+  arguments[0]代表第一个可变参数(即上面的element) arguments[1]代表第二个可变参数...
+
+2.executeScript方法是可以有返回值的，参考案例1
+
+
+案例1：用js得到页面的title
+JavascriptExecutor js = (JavascriptExecutor)driver;
+//通过js获取网页的title 注意有return
+String title = (String) js.executeScript("return document.title");
+System.out.println(title);
+
+
+案例2：用js操作页面元素，如高亮显示某个元素
+WebElement element = driver.findElement(By.id("kw"));
+js.executeScript("arguments[0].setAttribute('style', arguments[1]);",element, "color: orange; border: 4px solid orange;");
+
+
+案例3：每隔一秒check一下页面加载是否完成，check次数是25
+public void checkPageIsReady() {
+    JavascriptExecutor js = (JavascriptExecutor) driver;
+    for (int i = 0; i < 25; i++) {
+        if ("complete".equals(js
+                .executeScript("return document.readyState").toString())) {
+            break;
+        }
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+selenium webdriver 自动化文件下载到本地目录：
+
+FirefoxProfile profile = new FirefoxProfile();
+
+//下载到指定目录
+profile.setPreference("browser.download.dir", "c:\\data");
+
+//browser.download.folderList 设置Firefox的默认下载文件夹。0是桌面；1是“我的下载”；2是自定义
+profile.setPreference("browser.download.folderList", 2); 
+
+//不询问下载路径；后面的参数为要下载页面的Content-type的值
+profile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream, application/vnd.ms-excel, text/csv, application/zip");
+
+driver = new FirefoxDriver(profile);
+
+
+案例：
+
+// 设置FireFox的安装路径
+System.setProperty("webdriver.firefox.bin", "G:\\火狐浏览器\\firefox.exe");
+//设置geckodriver驱动路径
+System.setProperty("webdriver.gecko.driver", "G:\\火狐浏览器\\geckodriver\\geckodriver.exe");
+
+FirefoxProfile profile = new FirefoxProfile();
+//下载到指定目录
+profile.setPreference("browser.download.dir", "d:\\data");
+//browser.download.folderList 设置Firefox的默认下载文件夹。0是桌面；1是“我的下载”；2是自定义
+profile.setPreference("browser.download.folderList", 2); 
+
+//不询问下载路径；后面的参数为要下载页面的Content-type的值
+profile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/octet-stream, application/vnd.ms-excel, text/csv, application/zip");
+
+FirefoxDriver driver = new FirefoxDriver(profile);
+			
+driver.get("https://jdk9.java.net/download/");
+		
+driver.findElement(By.xpath("//blockquote[@id='askLicense']/form/input[2]")).click();
+		
+driver.findElement(By.id("win64JREj")).click();
+	
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+Cookie操作：
+
+driver.manage().getCookies()获取cookie
+
+添加cookie
+driver.manage().addCookie(cookie);一般用来在登录前写个带用户名密码的cookie给浏览器，从而跳过登录，绕过验证码的难题
+
+根据名称找指定cookie
+driver.manage().getCookieNamed(name)
+
+删除cookie的3种方式：
+driver.manage().deleteCookieNamed("CookieName");
+
+driver.manage().deleteCookie(loadedCookie);
+
+driver.manage().deleteAllCookies();
+
+
+绕过输入验证码：
+webDriver.get("url");
+Cookie cookie=new Cookie("用于自动登录的cookie名","用于自动登录的cookie值","/",new Date(new Date().getTime()+1000*60*60));
+System.out.println(cookie.getExpiry());
+webDriver.manage().addCookie(cookie);
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+启动firefox时设置profile和插件加载：
+
+SELENIUM2在启动浏览器时，都是启动一个干净的没有插件及cookies信息的浏览器，即使是你之前的浏览器有设置过代理，
+到自动化启动时，也是没有代理的模式。
+
+设置profile:
+FirefoxProfile profile=new FirefoxProfile();
+profile.setPreference("key","value");
+...
+
+firefox插件加载：
+File file=new File("files/firebug-2.0.18-fx.xpi");
+FirefoxProfile profile=new FirefoxProfile();
+profile.addExtension(file);
+profile.setPreference("extensions.firebug.currentVersion", "2.0.18");
+
+
+为firefox设置代理：
+profile.setPreference("network.proxy.type", 2);
+profile.setPreference("network.proxy.autoconfig_url","file:///d:proxy.pac");
+profile.setPreference("signon.autologin.proxy", true);
+
+
+启动本机器的firefox配置：(推荐)
+
+ProfilesIni pi = new ProfilesIni();
+FirefoxProfile profile = pi.getProfile("default");
+webDriver=new FirefoxDriver(profile);
+
+
+chrome加载插件：
+File file = new File ("files/youtube.crx");
+ChromeOptions options = new ChromeOptions();
+options.addExtensions(file);
+WebDriver driver = new ChromeDriver(options);
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+webdriver截图功能：
+
+导入以下包：
+import java.io.File;
+import java.io.IOException;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+
+方法：
+WebDriver driver = new FirefoxDriver();
+File scrFile=((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+try {
+  FileUtils.copyFile(scrFile, new File("D:\\1.jpg"));
+} catch (IOException e1) {
+ e1.printStackTrace();
+}
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+RemoteWebDriver:
+
+当本机上没有浏览器，需要远程调用浏览器进行自动化测试时，需要用到RemoteWebDirver.
+在使用RemoteDriver时，必须在远程服务器启动一个SeleniumServer
+
+方式1：
+步骤：
+1.配置远程控制节点：在某个远程机器上运行selenium-server-standalone-3.0.1.jar
+java -jar D:\selenium-server-standalone-3.0.1.jar -port 4444 -role hub
+
+2.获取远程驱动
+WebDriver driver = newRemoteWebDriver(new URL("http://localhost:4446/wd/hub"),DesiredCapabilities.firefox());
+
+
+也可以设置使用指定的firefox配置来启动远程驱动：设置profile的方法上面有
+
+Profile profile = new FirefoxProfile();
+profile.setPreference("key","value");
+......
+DesiredCapabilities capabilities = DesiredCapabilities.firefox();
+capabilities.setCapability("firefox_profile", profile);
+driver = new RemoteWebDriver(new URL(“http://localhost:4446/wd/hub”),capabilities);
+
+
+方式2：详细说明参考selenium grid
+
+步骤：
+1.配置远程控制节点：在某个远程机器上运行selenium-server-standalone-3.0.1.jar
+java -jar D:\selenium-server-standalone-3.0.1.jar -port 4444 -role hub
+
+2.在某个远程机器上通过cmd启动一个firefox节点：
+java -Dwebdriver.gecko.driver=G:\火狐浏览器\geckodriver\geckodriver.exe -Dwebdriver.firefox.bin=G:\火狐浏览器\firefox.exe  -jar D:\selenium-server-standalone-3.0.1.jar -role webdriver -hub http://localhost:4444/grid/register -browser browserName=firefox -port 5555
+
+3.代码：
+DesiredCapabilities cap = DesiredCapabilities.firefox();
+cap.setBrowserName("firefox");
+cap.setPlatform(Platform.ANY);
+String Node = "http://localhost:5555/wd/hub";
+driver = new RemoteWebDriver(new URL(Node), cap);
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+
+
+入门案例：
+
+public class App 
+{
+    public static void main( String[] args )
+    {
+    	// 设置FireFox的安装路径
+    	System.setProperty("webdriver.firefox.bin", "G:\\火狐浏览器\\firefox.exe");
+    	//设置geckodriver驱动路径
+    	System.setProperty("webdriver.gecko.driver", "G:\\火狐浏览器\\geckodriver\\geckodriver.exe");
+
+    	// 创建一个 FireFox的浏览器实例
+        WebDriver driver = new FirefoxDriver();
+        
+		//10秒等待时间
+    	driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		
+		//最大化浏览器窗口
+    	driver.manage().window().maximize();
+		
+        // 让浏览器访问 Baidu
+        driver.get("https://www.baidu.com");
+		
+        // 获取 网页的 title
+        System.out.println("Page title is: " + driver.getTitle());
+    	
+        //------------通过百度搜索关键字'自动化测试'-------------      
+        // 通过 id 找到指定的 input 输入框
+        WebElement element = driver.findElement(By.id("kw"));
+        
+        //通过 xpath 找到指定的 input 输入框
+        //WebElement driver.findElement(By.xpath(".//*[@id='kw']"));
+
+        // 输入关键字
+        element.sendKeys("自动化测试");
+        
+        //获取输入的内容
+        System.out.println(element.getText());
+
+        // 提交 input 所在的表单
+        element.submit();
+        //---------------------------------------------
+		
+        try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+        
+        //关闭浏览器
+        driver.quit();
+    
+    }
+    
+}
+
+
+
+
+ 

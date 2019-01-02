@@ -1,0 +1,46 @@
+
+如果bean实现了BeanNameAware接口
+实现public void setBeanName(String arg0)方法,
+就能获取bean在配置文件中配置的id，Spring会把id传进来
+
+如
+<bean id="hello" class="xxx.xx.xxx.Hello"> 
+   //写了以下配置，Spring会在帮你实例化对象时，自动调用类的该属性的set方法赋值
+   <property name="say">  //属性
+     <value>hello world!</value> //属性值
+   </property>
+</bean>
+
+public class Hello implements BeanNameAware{
+
+	private String say;
+
+	public String getSay() {
+		return say;
+	}
+
+	public void setSay(String say) {
+		this.say = say;
+	}
+
+        public void setBeanName(String arg0){
+                System.out.println("这个bean的id是:"+arg0);
+        }
+
+      public static void main(String[] args) {
+           //初始化应用上下文,当我们需要用某个bean时ClassPathXmlApplicationContext类内部
+           //会解析xml文件，把bean初始化出来(用到才实例化，但是会预先实例化单例bean)
+           //以id为关键字，bean的实例对象为value存放在一个map容器中
+           ApplicationContext  ac=new ClassPathXmlApplicationContext("applicationContext.xml"); 
+           //通过getBean("key")取出存放在map中的对应的类的对象（Hello类对象）
+           Hello a=(Hello)ac.getBean("hello");
+	   System.out.println(a.getSay());
+	}
+}
+
+会把bean的id hello也输出来---> 这个bean的id是:hello
+
+-------------------------------------------------------------------------
+
+如果bean实现了BeanFactoryAware接口，就能获得容器的引用，从而调用容器的某些方法
+实现 setBeanFactory(String arg0)方法，就会把bean工厂传进来

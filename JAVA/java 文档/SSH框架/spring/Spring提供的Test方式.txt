@@ -1,0 +1,81 @@
+
+步骤：
+1.maven的pom.xml中加入spring-text依赖
+
+<dependency>    
+    <groupId>org.springframework</groupId>        
+    <artifactId>spring-test</artifactId>         
+    <version>4.1.4.RELEASE</version>           
+    <scope>test</scope> 
+</dependency>
+
+2.写一个单元测试类在测试类名上方使用@RunWith(SpringJUnit4ClassRunner.class)
+   作用: 在执行这个测试类中的测试方法前,自动实例化spring容器,并使用依赖注入功能。
+
+3.在测试类名上方使用@ContextConfiguration(classes = AppConfig.class)
+   作用:定义spring 的配置信息类路径
+
+
+4.将需要测试的接口依赖注入到单元测试类，接口写成测试类的成员变量
+
+
+--------------------------
+
+如果需要测试Action,则需要追加依赖
+<!-- 单元测试的依赖 -->        
+<dependency>           
+    <groupId>org.apache.struts</groupId>       
+    <artifactId>struts2-junit-plugin</artifactId>        
+    <version>2.3.16.3</version>          
+    <scope>test</scope>          
+    <exclusions>                
+      <exclusion>     
+          <groupId>org.springframework</groupId>   
+          <artifactId>spring-core</artifactId>     
+      </exclusion>                
+      <exclusion>    
+          <artifactId>spring-test</artifactId>    
+          <groupId>org.springframework</groupId>   
+      </exclusion>         
+   </exclusions>      
+</dependency>
+<dependency>         
+     <groupId>javax.servlet.jsp</groupId>       
+     <artifactId>jsp-api</artifactId>        
+     <version>2.2</version>            
+     <scope>test</scope>     
+</dependency>
+
+可能还需要移除多余的依赖
+
+
+同时单元测试类需要继承StrutsSpringJUnit4TestCase类。
+
+案例：测试添加权限
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = AppConfig.class)
+public class SpringTest extends StrutsSpringJUnit4TestCase{
+
+    @Test
+    public void testAddPrivilege(){
+        //1.获得父类中已提供的虚拟的请求对象
+        MockHttpServletRequest request = this.request;
+        request.setParameter("privilege.name", "创建存储过程的权限");
+        request.setParameter("privilege.description", "可以用来在数据库中创建存储过程");
+        //2.调用父类提供的方法,获得ActionProxy对象
+        System.out.println(this);
+        ActionProxy proxy = getActionProxy("/privilegeManage/privilegeAction_addPrivilege.action");
+        //3.调用方法
+        try {
+            String result = proxy.execute();
+            System.out.println(result);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+}
+
+--------------------------

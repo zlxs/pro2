@@ -1,0 +1,61 @@
+保证一个类只有一个实例，并且提供一个访问该实例的全局访问点
+
+1.懒汉式
+缺点：需要同步，并发效率低
+优点：可延时加载，资源利用率高
+
+public class A{
+  private static A instance;
+  private A(){}
+  public static A getInstance(){
+    if(instance==null){ 
+     synchronized(A.class){
+       if(instance==null){
+         instance=new A();
+       }  
+     }
+    }
+     return instance;
+  }
+}
+
+2.恶汉式
+缺点：不能延时加载,用不到时浪费资源
+优点：效率高，线程安全
+
+public class A{
+  private static A instance=new A();
+  private A(){}
+  public static A getInstance(){
+     return instance;
+  }
+}
+
+
+其他：
+双层检测锁式：
+基于懒汉式，在单例对象为null时，执行同步，一旦对象创建出来后，
+就不用再同步了，直接返回
+
+静态内部类式：
+也是一种延迟加载方式
+class B{
+  private B(){}
+  private static class A{
+    private static final A instance=new A();//final 可不加
+  }
+  
+  public static A getInstance(){
+    return A.instance;
+  }
+}
+
+枚举单例：
+public enum A{
+  INSTANCE;
+  //其他方法
+  public void xxx(){
+    
+  }
+}
+

@@ -1,0 +1,18 @@
+SpringMVC与Struts2的区别：
+
+1.SpringMVC基于方法开发的，Struts2基于类开发的
+
+  SpringMVC通过方法形参接收参数，Struts2使用成员变量接收参数
+
+  SpringMVC将url和controller方法映射。映射成功后SpringMVC生成一个Handler对象，对象中只
+  包含一个method,方法执行结束，形参数据销毁
+
+  SpringMVC的controller开发类似service开发
+
+-----------
+2.SpringMVC可以进行单例开发，并且建议使用单例开发，
+  而Struts通过类的成员变量接收参数,无法使用单例
+
+-----------
+3.经过实际测试，Struts2速度慢，在于使用Struts2标签，如果使用Struts2建议使用jstl标签，不用Struts2标签
+

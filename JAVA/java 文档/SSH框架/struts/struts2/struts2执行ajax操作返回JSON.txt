@@ -1,0 +1,67 @@
+需要导入struts2-json的jar包
+xwork-core-2.1.6.jar和struts2-json-plugin-2.1.8.jar
+
+maven构建的web项目：加依赖
+<!-- struts2的json依赖 -->  
+<dependency>  
+        <groupId>org.apache.struts</groupId>  
+        <artifactId>struts2-json-plugin</artifactId>  
+        <version>2.3.4</version>   
+        <scope>compile</scope>  
+</dependency>  
+
+
+配置aciton
+    在配置中，首先需要action所在的package继承了json-default，或者继承的父包继承了json-default。
+这配置action的返回类型的type为json,并且可以配置其序列化的属性等一些类参数
+
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE struts PUBLIC  
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"  
+    "http://struts.apache.org/dtds/struts-2.0.dtd">  
+<struts>   
+    <package name="json" extends="json-default" >  
+        <action name="json" class="com.xxx.JsonAction" method="json">  
+            <result type="json">  //result的type为json
+                <!-- 这里指定将被Struts2序列化的属性，该属性在action中必须有对应的getter方法 -->  
+                <!--param的name要为root-->
+                <param name="root">dataMap</param>  //dataMap为Action中的属性名，要有getter方法
+            </result>  
+        </action>  
+    </package>  
+</struts>  
+
+
+public class JsonAction extends ActionSupport{  
+    private static final long serialVersionUID = 1L;  
+      
+    private Map<String,Object> dataMap;  //将需要返回的对象设置为Action的成员变量
+    private String key = "Just see see";  
+      
+    public String json() {  
+        // dataMap中的数据将会被Struts2转换成JSON字符串，所以这里要先清空其中的数据  
+        dataMap = new HashMap<String, Object>();  
+        User user = new User();  
+        user.setName("张三");  
+        user.setPassword("123");  
+        dataMap.put("user", user);  
+        // 放入一个是否操作成功的标识  
+        dataMap.put("success", true);  
+        // 返回结果 固定为SUCCESS  
+        return SUCCESS;  
+    }  
+  
+    public Map<String, Object> getDataMap() {  
+        return dataMap;  
+    }  
+  
+    //设置key属性不作为json的内容返回  
+    @JSON(serialize=false)  
+    public String getKey() {  
+        return key;  
+    }  
+      
+}  
+
+返回值：
+{"success":true,"user":{"name":"张三","password":"123"}}  

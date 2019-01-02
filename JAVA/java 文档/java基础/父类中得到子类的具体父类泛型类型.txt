@@ -1,0 +1,36 @@
+//这是父类
+public class BaseDao<T> {  
+
+	private Class clazz;
+	
+	public BaseDao(){
+              //ParameterizedType参数化类型，即泛型
+              //this是子类的构造函数调用，所以指子类对象，
+              //getGenericSuperclass()得到带有泛型的父类
+              //getActualTypeArguments获取参数化类型的数组，泛型可能有多个
+		ParameterizedType pt = (ParameterizedType) this.getClass().getGenericSuperclass();//BaseDao<Category>
+		clazz = (Class) pt.getActualTypeArguments()[0];
+            System.out.println(clazz);
+	}
+	
+}
+
+//这是子类
+
+public class children extends BaseDao<String>{
+
+}
+
+
+//测试类
+
+public class text{
+
+ pubulic static void main(String[] args){
+   children c=new children();
+   
+}
+
+}
+
+输出：java.lang.String

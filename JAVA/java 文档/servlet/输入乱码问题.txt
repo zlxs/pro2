@@ -1,0 +1,20 @@
+post:
+request.setCharacterEncoding("编码");
+
+这样 String s=request.getParameter(key); request会用指定的编码格式，来解码，得到字符
+
+
+
+get:方式和超链接方式发送的数据要想不乱码
+只能用得到的数据去用当前页面的码表转换成字节数组，再用正确的码表转换成字符串
+String s=request.getParameter(key);
+s=new String(s.getBytes("iso8859-1"),"正确的编码");
+
+或者在
+该配置文件server.xml文件中Connector节点中添加属性 useBodyEncodingForURI="true"或者URIEncoding="编码格式"
+
+
+或先编码,在解码  在超链接上 参数编码
+	URLEncoder.encode(URLEncoder.encode("苏州", "UTF-8"),"UTF-8")
+服务器获得时解码
+	URLDecoder.decode(URLDecoder.decode(info, "UTF-8"),"UTF-8");

@@ -1,0 +1,40 @@
+
+@Target({TYPE,METHOD,FIELD,CONSTRUCTOR})//自定义的注解可以作用在 （类，接口（包括注解类型）或enum声明），方法，域和构造器上
+@Retention(RetentionPolicy.RUNTIME)//元注解，表示该注解在类运行时也可以获取到
+
+public @interface MyAnnotation {
+//注解的类型为8中基本类型，和它们的一维数组，还有Class,Enum和其他的Annotation
+//注解的方法的名称就是参数的名称，返回值类型就是参数的类型
+
+	String name() default "aaa";//注解的属性可以有缺省值(默认值)
+	int age();
+	Class clazz();
+	MyAnnotation1 annotation() default MyAnnotation1(name="xxx",age=8);
+	Gender gender();
+	
+}
+
+
+@interface MyAnnotation1 {
+       String name();
+         int age();
+
+}
+
+@interface MyAnnotation2 {
+     //特殊属性 在注解中可以不要属性名，直接赋值，如@MyAnnotation2("xsfa")=@MyAnnotation2(value="xsfa")
+     //这种方式仅限注解中只有一个属性，且属性是 String value();
+       String value();
+        
+
+}
+
+
+enum Gender {
+  male,female;
+}
+
+@MyAnnotation(name="xxx",age=10,clazz=String.class,annotation=@MyAnnotation1(name="yy",age=5),gender=Gender.male)
+class text{
+
+}

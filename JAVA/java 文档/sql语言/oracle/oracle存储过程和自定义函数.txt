@@ -1,0 +1,157 @@
+存储过程
+  用于在数据库中完成特定的操作或者任务
+
+1， 存储过程参数不带取值范围，in表示传入，out表示输出 
+  类型可以使用任意Oracle中的合法类型。 
+2， 变量带取值范围，后面接分号 
+3， 在判断语句前最好先用count（*）函数判断是否存在该条操作记录 
+4， 用select 。。。into。。。给变量赋值 
+5， 在代码中抛异常用 raise+异常名 
+
+as/is在存储过程（PROCEDURE）和函数(FUNCTION)中没有区别，
+在视图（VIEW）中只能用AS不能用IS，在游标(CURSOR)中只能用IS不能用AS。
+
+
+用法：
+定义一个插入数据的存储过程
+create or replace PROCEDURE  insertdeptproc    //insertdeptproc为自定义的存储过程名
+(
+  v_deptno in number，    //参数，由外部传入  不写in/out/in out时默认为in
+  v_dname in  varchar2，
+  v_loc   in  varchar2
+)
+IS/AS     IS关键词表明后面将跟随一个PL/SQL体
+BEGIN
+   insert into dept(depton,dname,loc) values(v_deptno,v_dname,v_loc);
+   commit;
+[
+EXCEPTION
+   异常处理部分,可忽略这部分
+]
+END;
+
+执行存储过程
+exec  insertdeptproc(77,'aaa','cc');
+
+-------------------------------------------------
+java调用存储过程：
+CallableStatement cstmt=null;
+
+String sql="call insertdeptproc(?,?,?)";
+cstmt=conn.prepareCall(sql);
+cstmt.setInt(1,77);
+cstmt.setString(2,"aaa");
+cstmt.setString(3,"cc");
+cstmt.executeUpdate();
+
+-------------------------------------------------
+
+
+使用out 创建带返回值的插入数据的存储过程
+
+create or replace PROCEDURE  insertdeptproc
+(
+  v_deptno in number，  --由外部程序传入
+  v_dname  in varchar2，--由外部程序传入
+  v_loc    in varchar2, --由外部程序传入
+  v_demo  out  varchar2  --输出参数 传递给调用环境
+)
+IS
+BEGIN
+   insert into dept(depton,dname,loc) values(v_deptno,v_dname,v_loc)；
+   commit;
+   v_demo:='success';
+END;
+
+
+-------------------------------------------------
+java调用带返回值的存储过程：
+CallableStatement cstmt=null;
+String sql="call insertdeptproc(?,?,?,?)";
+cstmt=conn.prepareCall(sql);
+cstmt.setInt(1,77);
+cstmt.setString(2,"aaa");
+cstmt.setString(3,"cc");
+//注册第四个参数是输出参数
+cstmt.registerOutParameter(4,java.sql.Types.VARCHAR);
+cstmt.executeUpdate();
+//获取注册时输出的参数
+System.out.println(cstmt.getString(4));
+
+
+-------------------------------------------------
+
+使用in out 创建带返回值的插入数据的存储过程
+
+create or replace PROCEDURE  insertdeptproc
+(
+  v_deptno in number，  --由外部程序传入
+  v_dname  in varchar2，--由外部程序传入
+  v_loc    in out  varchar2, --由外部程序传入 传递给调用环境
+)
+IS
+BEGIN
+   insert into dept(depton,dname,loc) values(v_deptno,v_dname,v_loc)；
+   commit;
+   v_loc:='success';
+END;
+
+
+-------------------------------------------------
+java调用带返回值的存储过程：
+CallableStatement cstmt=null;
+String sql="call insertdeptproc(?,?,?)";
+cstmt=conn.prepareCall(sql);
+cstmt.setInt(1,77);
+cstmt.setString(2,"aaa");
+cstmt.setString(3,"cc");
+//注册第3个参数是输出参数
+cstmt.registerOutParameter(3,OracleTypes.VARCHAR);
+cstmt.executeUpdate();
+//获取注册时输出的参数
+System.out.println(cstmt.getString(3));
+
+
+-------------------------------------------------
+
+自定义函数
+
+SQL语法方式创建的语法格式为：
+CREATE OR REPLACE FUNCTION function_name         /*函数名称*/
+(
+Parameter_name1,mode1 datatype1,　　　　　　　　　　　 /*参数定义部分*/
+Parameter_name2,mode2 datatype2,
+Parameter_name3,mode3 datatype3
+…
+)
+RETURN return_datatype　　　　　　　　　　　　　　　　/*定义返回值类型*/
+IS/AS
+BEGIN
+       Function_body　　　　　　　　　　　　　　　　　 /*函数体部分*/
+      RETURN scalar_expression                        /*返回语句*/
+END function_name;                                /*也可以直接写end不加函数名*/
+
+  
+例：
+  参数不超过10，返回0，否则返回1
+create or replace function aaa(v_number in number)
+ return number
+is
+begin 
+  if v_number<10 then
+     return 0;
+  else
+     return 1;
+  end if;
+end;
+
+jdbc调用自定义函数:
+CallableStatement cstmt=null;
+String sql="?=call insertdeptproc(?)";
+cstmt=conn.prepareCall(sql);
+cstmt.setInt(2,1234);
+//注册输出参数
+cstmt.registerOutParameter(1,OracleTypes.NUMBER);
+cstmt.execute();
+//获取注册时输出的参数
+System.out.println(cstmt.getDouble(1));

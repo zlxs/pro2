@@ -1,0 +1,14 @@
+
+在frame框架的某个页面下，可以操作其他页面的内容
+
+做法：
+
+1.得到父窗口(即主页面mian.html有frameset的页面)
+  var par=window.parent;
+
+2.得到所有的frame,返回数组
+  var fs=par.frames;
+
+3.通过对应页面的frame得到它的window对象，就可操作指定页面
+  eg. fs[1].window.document.body.bgColor="red";
+

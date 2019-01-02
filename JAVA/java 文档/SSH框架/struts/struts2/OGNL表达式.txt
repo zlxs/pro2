@@ -1,0 +1,163 @@
+
+OGNL表达式默认以ActionContext中的ValueStack作为根对象
+    所以去ValueStack中查找数据不用加#，访问非根对象属性，需要加#
+#相当于ActionContext. getContext()
+
+
+取出ActionContext自身中的对象--> #key
+取出ActionContext中5个区域（除ValueStack域）中的对象-->#request.key
+取出ActionContext中ValueStack中的对象--> key
+
+
+
+强行进行OGNL表达式解析%{}
+如：<s:textfield  name="username" label="%{#request.username}"  />
+  强行去request域里查询username为key的对应value作为label的值
+        （label表示出现在输入框左边的提示文字）
+
+
+OGNL表达式指的是<s:property  value="key.value[i]" />
+中的value里的内容
+
+                                                  
+在Action中定义的属性（有set和get方法） 会存放在值栈中
+在调用该Action时传入参数后 值栈中对应的属性才会有值，否则为null
+
+可以在jsp中通过OGNL表达式和s:property标签配合得到
+<s:property  value="key.value[i]" />
+
+
+访问值栈中的action的普通属性
+如：Action中有name属性
+  在jsp中得到：<s:property  value="name" />
+
+
+访问值栈中保存的Action中对象属性的普通属性
+如：Action中有User类对象属性
+ 在jsp中得到：<s:property  value="user.name" />
+
+注：Action中的User类属性，User类本身需要有默认的构造方法（参数为空的构造方法），
+否则stuts2无法自动帮你实例化该对象属性
+
+
+如果Action中的Cat类属性cat中还有一个friend属性，是Dog类属性，Dog类中有name属性
+ 则在jsp中：<s:property  value="cat.friend.name" />得到狗的名字，
+ 前提是先要传入参数 xxxAction？cat.friend.name="aaa"
+
+
+访问值栈中对象的普通方法
+<s:property  value="user.name.length()" />
+
+
+访问值栈中对象的普通方法
+假如Action中的Cat类属性cat中有方法qqq()
+<s:property  value="cat.qqq()" />
+
+
+
+访问值栈中Action的普通方法
+如Action中有方法m()
+<s:property  value="m()" />
+
+
+
+
+访问静态方法
+<s:property  value="@xxx.xx.xx.xxAction@静态方法" />
+  访问静态方法需要在struts.xml文件中配置： 默认是false
+<constant name="struts.ognl.allowStaticMethodAccess" value="true"></constant>
+
+
+
+访问静态属性
+<s:property  value="@xxx.xx.xx.xxAction@静态属性" />
+
+
+访问Math类的静态方法
+<s:property  value="@@max(2,3)" />
+两个@@表示访问Math类
+
+
+访问普通类的构造方法
+<s:property  value="new xxx.xx.xxx.User()" />
+
+
+访问List
+在Action中加一个List属性 users 和set get
+private List<Users> users=new ArrayList();
+<s:property  value="users" />
+
+
+访问List中某个元素
+<s:property  value="users[2]" />
+
+
+访问List中元素某个属性的集合
+<s:property  value="users.{age}" />  //users里所有User类对象的age属性的集合
+
+
+访问List中元素某个属性的集合中的特定值
+<s:property  value="users.{age}[0]" />
+或<s:property  value="users[0].age" />
+
+
+访问Map
+在Action中加一个Map属性 users 和set get
+private Map<String,Users> users=new HashMap();
+<s:property  value="users" />
+
+
+访问Map中某个元素
+<s:property  value="users.key" /> //key为具体的key的值
+或<s:property  value="users['key']" /> //这里注意[]中是字符串，需要""转义
+如：<s:property  value="users[\"xiaoming\"]" /> 用单引号''也可以
+
+
+访问Map所有的key
+<s:property  value="users.keys" /> 直接写keys
+
+
+访问Map所有的value
+<s:property  value="users.values" />
+
+
+访问Set
+在Action中加一个Set属性 users 和set get
+private Set<Users> users=new HashSet();
+<s:property  value="users" />
+
+
+访问Set中某个元素
+<s:property  value="users[1]" /> //取不到，因为set无顺序
+
+
+访问容器的大小
+<s:property  value="user.size()" />
+或<s:property  value="user.size" />
+
+
+投影和过滤
+
+?：获得所有符合逻辑的元素。
+^：获得符合逻辑的第一个元素。
+$：获得符合逻辑的最后一个元素。
+
+<s:property  value="users.{?#this.age==1}" />
+//this是指users集合中遍历到的那个User类对象
+//上面会取出age=1的User类对象的集合
+如果想要取出具体位置的User类对象用<s:property  value="users.{#this.age==1}[3]" />
+
+
+<s:property  value="users.{^#this.age>1}.{age}" />
+// ^表示开头的那个
+// 上面表示取出age>1的User类对象集合中第一个User类对象的age属性集合
+
+<s:property  value="users.{$#this.age>1}.{age}" />
+// $表示结尾的那个
+
+<s:property  value="users.{$#this.age>1}.{name}==null" />
+//表示取出age>1的User类对象集合中最后一个User类对象的name属性集合是否为空
+
+
+<s:property  value="[0].username" /> 0表示栈顶元素
+//访问值栈中从上往下数第几个位置，一直到栈顶的所有对象，刚访问过的Action在最上

@@ -1,0 +1,23 @@
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
+
+import javax.imageio.ImageIO;
+
+
+
+public class util {
+public static Image getImage(String path)
+{
+	URL i=util.class.getClassLoader().getResource(path);
+	BufferedImage image=null;
+	try {
+		image=ImageIO.read(i);
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
+	return image;
+	
+}
+}

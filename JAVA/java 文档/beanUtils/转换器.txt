@@ -1,0 +1,97 @@
+把bean 1 的数据 封装到bean 2中，如果bean 1和bean 2中数据类型不一样而属性名一样，则该属性的封装是无法成功的
+这时需要使用转换器，ConventerUtils.register(new myConventer, java.lang.String.class/...);
+myConventer需要实现Conventer接口，重写convert(Class type,Object value)方法,type是要转换成的的数据类型String，
+value的类型是转换前bean 1中数据类型
+
+如把bena A中的数据封装到bean B中
+A中Date a ----B中String a;
+A中Integer b------B中String b;
+则value是A中的数据，type是要转换成的String类型
+
+只有从非String类型向String类型封装数据，才会调用这个转换器
+
+
+
+
+
+
+
+import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.ConversionException;
+import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.beanutils.Converter;
+import org.junit.Test;
+
+public class C {
+
+	public static void main(String[] args) throws IllegalAccessException, InvocationTargetException
+	{
+		ConvertUtils.register(new Converter(){
+
+			@Override
+			public Object convert(Class type, Object value) {
+				if(value==null)
+				{
+					return null;
+				}
+				if(!(value instanceof String))
+				{
+					throw new ConversionException("不支持");
+				}
+				
+				String str=(String)value;
+				if(str.trim().equals(""))
+				{
+					return null;
+				}
+				SimpleDateFormat s=new SimpleDateFormat("yyyy-MM-dd");
+				Date d;
+				try {
+					d = (Date) s.parse(str);
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					throw new RuntimeException(e);
+				}
+				return d;
+			}
+
+			
+		}, Date.class);
+		B a=new B();
+		BeanUtils.setProperty(a, "name","sssssss");
+		BeanUtils.setProperty(a, "password","74100");
+		BeanUtils.setProperty(a, "age","99");
+		BeanUtils.setProperty(a, "time","1970-02-15");
+		System.out.println(a.getName());
+		System.out.println(a.getPassword());
+		System.out.println(a.getAge());
+		System.out.println(a.getTime().toLocaleString());
+	}
+	
+	@Test
+	public void test() throws IllegalAccessException, InvocationTargetException
+	{
+		Map map=new HashMap();
+		B b=new B();
+		map.put("name", "小王");
+		map.put("password","1234560");
+		map.put("time",new Date());
+		map.put("age",50);
+		BeanUtils.populate(b, map);
+		System.out.println(b.getName());
+		System.out.println(b.getPassword());
+		System.out.println(b.getAge());
+		System.out.println(b.getTime().toLocaleString());
+		
+	}
+	
+	
+	
+}

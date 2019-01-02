@@ -1,0 +1,25 @@
+1 客户端初始化一个指向Servlet容器的请求；
+
+2 这个请求经过一系列的过滤器（Filter）
+（这些过滤器中有一个叫做ActionContextCleanUp的可选过滤器，
+这个过滤器对于Struts2和其他框架的集成很有帮助，例如：SiteMesh Plugin）
+
+
+3 接着StrutsPrepareAndExecuteFilter（老版本是FilterDispatcher）被调用，
+     StrutsPrepareAndExecuteFilter（FilterDispatcher）询问ActionMapper来决定
+     这个请是否需要调用某个Action
+
+4 如果ActionMapper决定需要调用某个Action，StrutsPrepareAndExecuteFilter
+  （FilterDispatcher）把请求的处理交给ActionProxy
+
+5 ActionProxy通过Configuration Manager询问框架的配置文件，找到需要调用的Action类
+
+6 ActionProxy创建一个ActionInvocation的实例。
+
+7 ActionInvocation实例使用命名模式来调用，在调用Action的过程前后，
+涉及到相关拦截器（Intercepter）的调用。
+
+8 一旦Action执行完毕，ActionInvocation负责根据struts.xml中的配置找到对
+应的返回结果。返回结果通常是（但不总是，也可 能是另外的一个Action链）
+一个需要被表示的JSP或者FreeMarker的模版。在表示的过程中可以使用Struts2 框架
+中继承的标签。在这个过程中需要涉及到ActionMapper

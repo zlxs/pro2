@@ -1,0 +1,144 @@
+注：
+在Spring Boot主类中增加@EnableCaching注解开启缓存功能
+
+@SpringBootApplication
+@EnableCaching
+public class Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+
+}
+
+@EnableCaching注解自动化配置合适的缓存管理器（CacheManager），Spring Boot根据下面的顺序去侦测缓存提供者：
+
+  Generic
+  JCache (JSR-107)
+  EhCache 2.x
+  Hazelcast
+  Infinispan
+  Redis
+  Guava
+  Simple
+
+除了按顺序侦测外，我们也可以通过配置属性spring.cache.type来强制指定。
+
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+
+Cache注解详解:
+
+@Cacheable：加在方法上，用于将函数的返回值加入缓存，同时查询时会先从缓存中取，如果有，则不调用该函数，直接返回
+
+  value或cacheNames：缓存位置名称，不能为空，如果使用EHCache，就是ehcache.xml中声明的cache的name
+       用于指定缓存存储的集合名。由于Spring 4中新增了@CacheConfig，因此在Spring3中原本必须有的value属性，
+       也成为非必需项了
+
+  key：缓存对象存储在Map集合中的key值，非必需，缺省按照函数的所有参数组合作为key值，
+       若自己配置需使用SpEL表达式，比如：@Cacheable(key = "#user.name")：
+             表示使用函数第一个参数user的name属性作为缓存的key值
+
+  condition：触发条件，只有满足条件的情况才会加入缓存，默认为空，既表示全部都加入缓存，支持SpEL
+
+       比如：@Cacheable(key = "#p0", condition = "#p0.length() < 3")，
+          表示只有当第一个参数的长度小于3的时候才会被缓存  p0表示第一个参数
+
+
+  unless：另外一个缓存条件参数，非必需，需使用SpEL表达式。它不同于condition参数的地方在于它的判断时机，
+          该条件是在函数被调用之后才做判断的，所以它可以通过对result进行判断。
+
+  keyGenerator：用于指定key生成器，非必需。若需要指定一个自定义的key生成器，我们需要去实现org.springframework.cache.interceptor.KeyGenerator接口，并使用该参数来指定。
+          需要注意的是：该参数与key是互斥的
+
+  cacheManager：用于指定使用哪个缓存管理器，非必需。只有当有多个时才需要使用
+
+  cacheResolver：用于指定使用哪个缓存解析器，非必需。
+          需通过org.springframework.cache.interceptor.CacheResolver接口来实现自己的缓存解析器，并用该参数指定。
+
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+
+@CacheEvict：配置于函数上，通常用在删除方法上，用来从缓存中移除相应数据。
+
+  除了同@Cacheable一样的参数之外，它还有下面两个参数：
+
+  allEntries：非必需，默认为false。当为true时，会移除所有数据(清除所有缓存)
+
+  beforeInvocation：非必需，默认为false，会在调用方法之后移除数据。当为true时，会在调用方法之前移除数据。
+
+
+案例：
+
+ //清除掉指定key的缓存  
+ @CacheEvict(value="andCache",key="#user.userId + 'findById'")  
+ public void modifyUserRole(SystemUser user) {  
+     System.out.println("hello andCache delete"+user.getUserId());  
+ }  
+    
+  //清除掉全部缓存  
+  @CacheEvict(value="andCache",allEntries=true)  
+ public void setReservedUsers() {  
+   System.out.println("hello andCache deleteall");  
+ }  
+
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+
+@CachePut：  用于数据新增和修改操作上 
+  配置于函数上，能够根据参数定义条件来进行缓存，它与@Cacheable不同的是，它每次都会真是调用函数，
+  所以主要用于=======!!!!!数据新增和修改操作上!!!!!!=======。它的参数与@Cacheable类似
+
+  这个注解可以确保方法被执行，同时方法的返回值也被记录到缓存中，实现缓存与数据库的同步更新，
+  理解为update语句
+
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+
+@CacheConfig：
+  主要用于配置该类中会用到的一些共用的缓存配置。在这里@CacheConfig(cacheNames = "users")：
+  配置了该数据访问对象中返回的内容将存储于名为users的缓存对象中，
+  我们也可以不使用该注解，直接通过@Cacheable自己配置缓存集的名字来定义。
+
+
+案例：
+使用@CacheConfig
+@CacheConfig(cacheNames = "users")
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    @Cacheable
+    User findByName(String name);
+
+}
+或在@Cacheable中指定value="users"
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    @Cacheable(value="users")
+    User findByName(String name);
+
+}
+
+
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+@Caching  组合多个Cache注解
+如：
+@Caching(  
+        put = {  
+                @CachePut(value = "user", key = "#user.id"),  
+                @CachePut(value = "user", key = "#user.username"),  
+                @CachePut(value = "user", key = "#user.email")  
+        }  
+      //cacheable={}
+      //evict={}
+)  
+public User save(User user) 
+同时通过@CachePut缓存 id  username email 到缓存中
+
+
+
+注意事项：
+1.缓存的java对象必须实现Serializable接口
+2.CacheManage必须设置缓存过期时间，否则缓存对象将永不过期
+3.缓存适用于读多写少的场合，查询时缓存命中率很低、写操作很频繁等场景不适宜用缓存。
+

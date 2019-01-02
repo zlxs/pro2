@@ -1,0 +1,112 @@
+package com.tz.web.entity;
+
+import java.util.List;
+
+public class PageBean<T> {
+
+	private List<T> list;     //保存返回给页面的数据集合
+	private int totalRecord;  //符合条件的总记录数
+	private int pageSize;     //每页显示的数据量
+	private int totalPage;    //总页数
+	private int currentPage;  //当前第几页
+	private int previousPage; //上一页是第几页
+	private int nextPage;     //下一页是第几页
+	private int[] pageBar;    //页码条
+	
+	public List<T> getList() {
+		return list;
+	}
+
+	public void setList(List<T> list) {
+		this.list = list;
+	}
+	
+	public int getTotalRecord() {
+		return totalRecord;
+	}
+	
+	public void setTotalRecord(int totalRecord) {
+		this.totalRecord = totalRecord;
+	}
+	
+	public int getPageSize() {
+		return pageSize;
+	}
+	
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
+	}
+	
+	public int getTotalPage() {
+
+		if(this.totalRecord%this.pageSize==0){
+			this.totalPage = this.totalRecord/this.pageSize;
+		}else{
+			this.totalPage = this.totalRecord/this.pageSize+1;
+		}
+
+		return totalPage;
+	}
+	
+	public int getCurrentPage() {
+		return currentPage;
+	}
+	
+	public void setCurrentPage(int currentPage) {
+		this.currentPage = currentPage;
+	}
+	
+	public int getPreviousPage() {
+		if(this.currentPage-1<1){
+			this.previousPage = 1;
+		}else{
+			this.previousPage = this.currentPage-1;
+		}
+		return previousPage;
+	}
+	
+	public int getNextPage() {
+		if(this.getTotalPage()==0){
+			this.nextPage=1;
+		}else if(this.currentPage+1>=this.totalPage){
+			this.nextPage = this.totalPage;
+		}else{
+			this.nextPage = this.currentPage +1;
+		}
+		return nextPage;
+	}
+	
+	public int[] getPageBar() {
+		int startpage;
+		int endpage;
+		int pagebar[] = null;
+		if(this.getTotalPage()<=10){   //每页显示10条,如果总页数<=10条
+			pagebar = new int[this.getTotalPage()];
+			startpage = 1;
+			endpage = this.getTotalPage();
+		}else{
+			pagebar = new int[10];
+			startpage = this.currentPage - 4;
+			endpage = this.currentPage + 5;
+			
+			if(startpage<1){
+				startpage = 1;
+				endpage = 10;
+			}
+			
+			if(endpage>this.getTotalPage()){
+				endpage = this.getTotalPage();
+				startpage = this.getTotalPage() - 9;
+			}
+		}
+		
+		int index = 0;
+		for(int i=startpage;i<=endpage;i++){
+			pagebar[index++] = i;
+		}
+		
+		this.pageBar = pagebar;
+		return this.pageBar;
+	}
+	
+}

@@ -1,0 +1,25 @@
+闪回删除的表：
+	删除表：
+		drop table aa;
+		drop table aa purge; 不经过回收站，不能闪回
+
+	闪回删除的表语法：
+		FLASHBACK TABLE [schema.]<table_name> 
+		TO  
+		{[BEFORE DROP [RENAME TO table]]  
+		[ENABLE|DISABLE]TRIGGERS} 
+		
+	查看回收站
+		select * from recyclebin;或show recyclebin
+ 
+	清空回收站
+		purge recyclebin
+	
+	重名的对象：
+		会先闪回后删除的。
+
+	注意：
+		管理员没有回收站
+
+flashback table aa 
+ to before drop rename to bb

@@ -1,0 +1,84 @@
+编写一个实现tag接口的java类，一般用继承默认实现类TagSupport方法再重写需要的方法如doStartTag()
+
+如果要处理标签体：实现BodyTag接口或继承BodyTagSupport类：
+修改该标签体内容
+控制doStartTag()方法返回EVAL_BODY_BUFFERED,服务器会把标签体作为一个对象传递给标签处理器类，
+在doEndTag()方法中拿到标签体，调用this.getBodyContent()，再修改标签体后输出
+
+
+然后再在tld文件中描述标签，之后在jsp中加入<%@taglib url="" prefix=""%>就可以了
+
+jsp2.0之后继承simpleTag类
+
+
+1.1 1.2版本的tld文件 使用的是dtd约束，2.0之后使用的是schema约束
+
+tld文件描述方法：
+
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE taglib PUBLIC "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN"
+   "http://java.sun.com/j2ee/dtds/web-jsptaglibrary_1_1.dtd">
+<taglib>
+ <tlib-version>版本号描述</tlib-version>
+ <!--jsp的版本号，2.0之后不用配置-->
+ <jsp-version>1.1</jsp-version>
+ <short-name>指定标签库默认的前缀名(prefix)</short-name>
+ <uri>设定标签库唯一访问标识符</uri>
+ <info>标签库信息描述</info>
+
+ <tag><!-- 可以有多个-->
+  <name>设定标签的名称(页面使用时用<prefixName:name属性的值></prefixname>)</name>
+  <tag-class>设定标签的处理类(Com.myapp.web.tag.DemoViewTag)</tag-class>
+  <body-content>设定标签间的主体(body)内容形式</body-content>
+   //jsp2.0之前，传统标签只有三种值
+    jsp：表示标签间可有主体内容，包含jsp元素，如EL jsp动作 和 脚本元素<% %>
+    empty：表示标签间不能有主体内容
+    Tagdependent：表示该标签体内容由自定义标签类进行处理，而不被jsp容器解释 
+
+    //jsp2.0之后实现simpleTag接口的简单标签 有主体内容用 <body-content>scriptless</body-content>
+    scriptless表示 有标签体内容，接受文本，EL和JSP动作 但不能有脚本元素 <% %>
+
+  <info>demo.Viewport标签</info>
+  <attribute><!-- 可以有多个-->
+   <name>属性名</name>
+   <required>是否必须输入</required>
+   <rtexprvalue>是否可以动态赋值</rtexprvalue>
+   <type>属性类型</type>
+  </attribute>
+ </tag>
+
+</taglib>
+
+
+
+服务器在解析自定义标签时会把pageContext传递进去，在标签方法中可以得到pageContext
+
+实现IterationTag接口或继承TagSupport类：
+
+控制标签体重复执行多次
+重写doAfterBody()方法,该方法在标签体执行之后，doEndTag()方法执行之前执行 如果该方法返回EVAL_BODY_AGAIN
+则服务器会把标签体再执行一次，之后再调用这个方法，直到该方法返回SKIP_BODY才不执行该方法，
+执行doEndTag()方法。
+
+
+实现Tag接口或者标签类继承TagSupport类：
+控制标签体是否执行
+doStartTag()返回值可以控制标签体是否执行，return Tag.EVAL_BODY_INCLUDE 为执行return SKIP_BODY 为不执行;
+
+
+控制余下的jsp是否执行
+doEndTag()返回值可以控制余下的jsp是否执行,return Tag.EVAL_PAGE 为执行return SKIP_PAGE 为不执行;
+
+
+--------------------------------------------------------
+
+
+实现BodyTag接口或继承BodyTagSupport类：
+修改该标签体内容
+控制doStartTag()方法返回EVAL_BODY_BUFFERED,服务器会把标签体作为一个对象传递给标签处理器类，
+在doEndTag()方法中拿到标签体，调用this.getBodyContent()，再修改标签体后输出
+
+BodyContent bc=this.getBodyContent();
+String content=bc.toStrring();
+...修改
+this.pageContext.getOut().write(content);

@@ -1,0 +1,199 @@
+
+QBC策略： 
+
+Java代码 
+session.createCriteria(Category.class).add(Restrictions.like("name", "Laptop%"));  
+
+session.createCriteria(Category.class).add(Restrictions.like("name", "Laptop%"));  
+
+Java代码 
+Criteria criteria = session.createCriteria(Category.class)   
+.add(Restrictions.like("name", "Laptop%"));   
+criteria.addOrder(Order.asc("name"));   
+criteria.setFirstResult(0);//初始行数   
+criteria.setMaxResults(20);//每页显示行数  
+
+Criteria criteria = session.createCriteria(Category.class) 
+.add(Restrictions.like("name", "Laptop%")); 
+criteria.addOrder(Order.asc("name")); 
+criteria.setFirstResult(0);//初始行数 
+criteria.setMaxResults(20);//每页显示行数  
+
+节 8.03    数据过滤 
+方法                      说明    
+Restrictions.eq         =   
+Restrictions.allEq      利用Map来进行多个等于的限制    
+Restrictions.gt         >    
+Restrictions.ge         >=    
+Restrictions.lt         <  
+Restrictions.le         <=    
+Restrictions.between    BETWEEN   
+Restrictions.like       LIKE   
+Restrictions.in         in   
+Restrictions.and        and   
+Restrictions.or         or   
+Restrictions.sqlRestriction     用SQL限定查询 
+(a)    应用限制 
+
+Java代码 
+Criterion emailEq = Restrictions.eq("email", "w@163.com");   
+Criteria criteria = session.createCriteria(User.class);   
+criteria.add(emailEq);   
+User user = (User)criteria.uniqueResult();  
+
+Criterion emailEq = Restrictions.eq("email", "w@163.com"); 
+Criteria criteria = session.createCriteria(User.class); 
+criteria.add(emailEq); 
+User user = (User)criteria.uniqueResult();  
+
+(b)    比较表达式 
+
+Java代码 
+Restrictions.between("amount", new BigDecimal(100), new BigDecimal(200));   
+Restrictions.gt("amount", new BigDecimal(100));   
+Restrictions.in("email", emails);//注：emails为集合   
+Restrictions.isNull("email");   
+Restrictions.isNotNull("email");   
+Restrictions.isEmpty("bids");   
+Restrictions.sizeGe("bids", 3);//bids属性大小  
+ 
+
+(c)    字符串匹配 
+
+Java代码 
+Restrictions.like("email", "G%");   
+Restrictions.like("email", "G%",MatchMode.START);   
+注：MatchMode分为START,END,ANYWHERE,EXACT四种模式   
+Restrictions.like("email", "G%").ignoreCase();  
+
+Restrictions.like("email", "G%"); 
+Restrictions.like("email", "G%",MatchMode.START); 
+注：MatchMode分为START,END,ANYWHERE,EXACT四种模式 
+Restrictions.like("email", "G%").ignoreCase();  
+
+(d)    组合表达式和逻辑操作符 
+
+Java代码 
+Restrictions.or(   
+                Restrictions.and(   
+                        Restrictions.like("firstname", "G%"),   
+                        Restrictions.like("lastname", "K%")),   
+                        Restrictions.in("email",emails));  
+
+ 
+
+(f)    子查询 
+
+节 8.04    表关联 
+(a)    隐式关联 
+隐式关联有两种方法： 
+1、    Criteria接口的createCriteria()方法： 
+
+Java代码 
+session.createCriteria(Item.class)   
+.add(Restrictions.like("description", "Foo",MatchMode.ANYWHERE))   
+.createCriteria("bids")   
+.add(Restrictions.gt("amount",new BigDecimal(100)));   
+  
+session.createCriteria(Item.class)   
+            .createCriteria("seller")   
+            .add(Restrictions.like("email", "%@"));  
+
+session.createCriteria(Item.class) 
+.add(Restrictions.like("description", "Foo",MatchMode.ANYWHERE)) 
+.createCriteria("bids") 
+.add(Restrictions.gt("amount",new BigDecimal(100))); 
+
+session.createCriteria(Item.class) 
+            .createCriteria("seller") 
+            .add(Restrictions.like("email", "%@"));  
+
+2、    分配别名： 
+
+Java代码 
+session.createCriteria(Item.class)   
+            .createAlias("bids","b")   
+            .add(Restrictions.like("description", "%Foo%"))   
+            .add(Restrictions.gt("b.amount", new BigDecimal(100)));   
+  
+session.createCriteria(Item.class)   
+            .createAlias("seller", "s")   
+            .add(Restrictions.like("s.email","%@"));  
+
+session.createCriteria(Item.class) 
+            .createAlias("bids","b") 
+            .add(Restrictions.like("description", "%Foo%")) 
+            .add(Restrictions.gt("b.amount", new BigDecimal(100))); 
+
+session.createCriteria(Item.class) 
+            .createAlias("seller", "s") 
+            .add(Restrictions.like("s.email","%@"));  
+
+(b)    抓取关联 
+
+Java代码 
+session.createCriteria(Item.class)   
+            .setFetchMode("bids",FetchMode.JOIN)   
+            .add(Restrictions.like("description", "%Foo%"))  
+
+session.createCriteria(Item.class) 
+            .setFetchMode("bids",FetchMode.JOIN) 
+            .add(Restrictions.like("description", "%Foo%"))  
+
+
+
+投影
+(a)    简单投影 
+
+Java代码 
+session.createCriteria(Item.class)   
+        .add(Restrictions.gt("endDate", new Date()))   
+        .setProjection(Projections.id());//返回单一属性   
+  
+session.createCriteria(Item.class).setProjection(   
+Projections.projectionList().add(Projections.id()).   
+add(Projections.property("description")));//返回一个Object[]  
+ 
+
+
+(b)    统计分组 
+
+Java代码 
+session.createCriteria(Item.class)   
+.setProjection(Projections.rowCount());   
+  
+session.createCriteria(Item.class)   
+            .setProjection(Projections.projectionList()   
+            .add(Projections.rowCount())   
+            .add(Projections.sum("sales"))   
+            .add(Projections.avg("score"))   
+            );   
+  
+    session.createCriteria(Bid.class)   
+        .createAlias("bidder", "u")   
+        .setProjection(Projections.projectionList()   
+                .add(Property.forName("u.id").group())   
+                .add(Property.forName("u.username").group())   
+                .add(Property.forName("id").count())   
+                .add(Property.forName("amount").avg())   
+            );  
+
+session.createCriteria(Item.class) 
+.setProjection(Projections.rowCount()); 
+
+session.createCriteria(Item.class) 
+            .setProjection(Projections.projectionList() 
+            .add(Projections.rowCount()) 
+            .add(Projections.sum("sales")) 
+            .add(Projections.avg("score")) 
+            ); 
+
+    session.createCriteria(Bid.class) 
+        .createAlias("bidder", "u") 
+        .setProjection(Projections.projectionList() 
+                .add(Property.forName("u.id").group()) 
+                .add(Property.forName("u.username").group()) 
+                .add(Property.forName("id").count()) 
+                .add(Property.forName("amount").avg()) 
+            );  
+

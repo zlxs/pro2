@@ -1,0 +1,54 @@
+
+自定义参数绑定
+如:
+ <input type="text" name="time" value="1999-09-01" />
+ 把request中表示时间类型的字符串参数，封装给Date类型的形参
+
+需要向处理器适配器中注入自定义的参数绑定组件
+
+在SpringMVC.xml配置文件中配置：
+
+<mvc:annotation-driven conversion-service="conversionService"></mvc:annotation-driven>
+
+<!--自定义参数绑定-->
+<bean id="conversionService" 
+      class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+  
+  <!--转换器-->
+  <property name="converters">
+     <list>
+        <!--日期类型转换-->         
+        <bean class="xxx.xx.controller.converter.DateConverter"></bean>
+     </list>
+  </property>
+
+</bean>
+
+//定义日期类型转换器
+public class DateConverter implements Converter<String,Date>{
+
+  public Date convert(String source){
+    DateFormat df=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");    
+    
+    try{
+        Date date=df.parse(source);
+        return date;
+    }catch(Exception e){
+        e.printStackTrace();
+    }
+    return null;
+  }
+
+}
+
+
+@Controller
+@RequestMapping("/testController")
+public class TestController {
+   @RequestMapping("/login.do")  
+    public String login(Date time)  
+    {  
+      System.out.println(time);  ;
+      return "/hello";  
+    } 
+}

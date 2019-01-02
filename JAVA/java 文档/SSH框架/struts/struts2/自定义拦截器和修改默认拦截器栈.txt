@@ -1,0 +1,117 @@
+自定义拦截器
+
+实现Interceptor接口 或继承AbstractInterceptor抽象类
+重写intercept(ActionInvocation invocation) 方法
+
+
+或继承 AbstractInterceptor类，用这种，不用重写init 和destroy了
+
+
+在拦截器中得到当前Action名和namespace
+String namesoace=invocation.getProxy().getNamespace();
+String actionName=invocation.getProxy().getActionName();
+
+得到当前Action
+Object action=invocation.getAction();
+
+
+public String intercept(ActionInvocation invocation){
+
+  拦截下来做的操作  
+   ...
+  invocation.invoke();//这个一定要加，放行
+  
+  返回拦截器做的操作 
+   ...
+} 
+
+再在struts.xml文件中配置自定义的拦截器，不能配置在defaultStack之后，因为struts的executeFilter不放行
+ 配置在之后该拦截器无法执行
+<interceptors>
+  <interceptor name="my" class="xxx.xx.xx.MyInterceptor"><interceptor>
+</interceptors>
+
+<action name="test" class="xxx.xx.xx.TestAction">
+  <result>/test.jsp</result>
+  <interceptor-ref  name="my"></interceptor-ref>
+  <interceptor-ref  name="defaultStack"></interceptor-ref>
+</action>
+
+---------------------------------------------------------------
+实例：
+自定义拦截器实现判断用户是否登录，没登录不让访问其他action的方法,并跳转到登录页面进行登录
+注：拦截器拦截的是action，要想拦截jsp等可以使用servlet的filter
+
+public class LoginInterceptor implements Interceptor {
+	@Override
+	public void destroy() {
+	}
+	@Override
+	public void init() {
+	}
+	@Override
+	public String intercept(ActionInvocation invocation) throws Exception {
+        //获取Struts2的session中的用户登录标记
+        Object user = invocation.getInvocationContext().getSession().get("user");
+	//得到当前action
+        Object action=invocation.getAction();
+        //如果是负责登录的action，就放行，否则表单提交时对应的登录方法执行前也会被拦截下来，
+        //判断session中有没有登录标记，这时登录方法未执行，是没有登录标记的，所以又会转到登录页面，导致永远都登录不了
+        if(action instanceof LoginAction){
+          return invocation.invoke();
+	}
+        //如果未登录，转到登录页面
+        if(user==null){
+	  return "login";
+	}
+	//放行
+	  return invocation.invoke();
+	}
+}
+
+
+<!-- 配置自定义的拦截器 -->
+ <interceptors>
+   <interceptor name="loginInterceptor" class="xxx.xx.Interceptor.LoginInterceptor"></interceptor>
+   <!-- 可以自定义拦截器栈，便于多个action的拦截器配置-->
+   <interceptor-stack name="myInterceptors">
+     <interceptor-ref name="loginInterceptor"></interceptor-ref>
+     <interceptor-ref name="defaultStack"></interceptor-ref>
+   </interceptor-stack>
+ </interceptors>
+ <!-- 改变默认拦截器栈引用 -->
+ <default-interceptor-ref name="myInterceptors"></default-interceptor-ref>
+ 
+ <!--配置全局result,否则许多action没有配置login的result时，拦截器找不到当前action的login
+  的result，就会报异常-->
+ <global-results >
+    <result name="login">/login.jsp</result>
+ </global-results>
+
+public class LoginAction extends ActionSupport implements SessionAware{
+	private String name;
+	private Map<String,Object> session;
+	public Map<String, Object> getSession() {
+		return session;
+	}
+	public void setSession(Map<String, Object> session) {
+		this.session = session;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String execute(){
+             //这里未用数据库，只是模拟一下，登录名为aaa才能登录
+		if(name!=null&&name.equals("aaa")){
+		  this.session.put("user", "aaa");//向Struts2的session中存入登录标记
+		 return "success";
+		}
+		else{
+		 return "login";
+		}
+	}
+}
+

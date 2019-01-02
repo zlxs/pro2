@@ -1,0 +1,6 @@
+
+解决办法：
+1.将对应的wsdl文档保存到本地
+2.修改wsdl文档的部分内容
+  将<s:element ref="s:schema" /><s:any /> 替换成 <s:any minOccurs="2" maxOccurs="2"/>
+3.

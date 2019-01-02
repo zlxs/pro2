@@ -1,0 +1,34 @@
+我们可以通过javascript来动态的给每个html标签添加一些自定义的属性
+以便于完成一些功能
+
+当然，并不是只有html的元素才能添加自定义属性，js中只要是对象类型的数据都可以添加，如数组等，包括json对象
+
+如：
+
+以下代码
+
+var btns=document.getElementsByTagName("button");
+for(var i=0;i<btns.length;i++){
+   btns[i].onclick=function(){
+      alert(i+1);
+   };
+}
+
+目的是为了点击第一个按钮弹出1，第二个按钮弹出2，...
+但是，由于作用域的关系， 在onclick发function中获取到的i的值，并不是0,1,2...
+而是每个onclick的function中获取的i的值都是固定的 为btns.length
+所以我们无法在functin中使用外面for循环的对应的i值来完成一些特定的功能，
+
+这时可以在button标签上添加自定义属性 如 num,让num来记住对应的i，然后在function中就可以通过
+各个button各自的num来获取对应的i值，完成功能
+
+代码修改如下：
+var btns=document.getElementsByTagName("button");
+for(var i=0;i<btns.length;i++){
+   btns[i].num=i;
+   btns[i].onclick=function(){
+      alert(this.num+1);
+   };
+}
+
+自定义属性可以帮助我们更方便的完成许多功能

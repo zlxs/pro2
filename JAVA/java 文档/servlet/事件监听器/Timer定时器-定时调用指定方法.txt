@@ -1,0 +1,26 @@
+import java.util.Calendar;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
+public class SendMailTimer implements ServletContextListener {
+
+	public void contextInitialized(ServletContextEvent sce) {
+		Timer timer = new Timer();
+		Calendar c = Calendar.getInstance();
+		c.set(2015, 11, 10, 11, 47, 17);//注意 月份是从0开始的，所以11代表12月份
+		timer.schedule(new TimerTask(){
+			@Override
+			public void run() {
+				System.out.println("发邮件！！！");
+			}
+		}, c.getTime());//在指定时间点调用方法
+	}
+	
+	public void contextDestroyed(ServletContextEvent sce) {
+		// TODO Auto-generated method stub
+
+	}
+}

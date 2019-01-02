@@ -1,0 +1,138 @@
+SqlSession是线程不安全的，在SqlSession实现类中除了有接口中的方法（操作数据库的方法）
+   还有数据域属性
+
+SqlSession最佳应用场合在方法体内，定义成局部变量。
+
+
+selectOne表示查询出一条记录进行映射。
+
+selectList表示查询出一个列表(多条记录)进行映射。
+
+insert("映射文件中mapper的namespace+insert标签的id",实体)  表示添加一条记录
+
+delete("映射文件中mapper的namespace+insert标签的id"，id值)   删除一条记录
+
+update("映射文件中mapper的namespace+insert标签的id"，实体)   更新一条记录
+
+
+测试：
+
+/*
+  测试增加
+*/
+@Test
+public void testAdd(){
+   InputStream in=Test.class.getClassLoader().getResourceAsStream("mybatis-cfg.xml");
+   SqlSessionFactoryBuilder builder=new SqlSessionFactoryBuilder();
+   SqlSessionFactory sessionFactory=builder.build(in);
+   SqlSession session = sessionFactory.openSession();
+   //映射文件的namespace名+select标签的id名  
+   String statement="xxx.xx.domain.user.addUser";
+   User user=new User();
+   user.setName("bbb");
+   user.setPassword("123");
+   session.insert(statement,user);//方法也有返回值，是int类型，表示影响数据库几条记录
+   session.commit();//mybatis默认开启事务的，需要手动提交事务
+   session.close();//关闭session
+}
+
+/*
+  测试查找
+*/
+@Test
+public void testFind(){
+   InputStream in=Test.class.getClassLoader().getResourceAsStream("mybatis-cfg.xml");
+   SqlSessionFactoryBuilder builder=new SqlSessionFactoryBuilder();
+   SqlSessionFactory sessionFactory=builder.build(in);
+   SqlSession session = sessionFactory.openSession();
+   String statement="xxx.xx.domain.user.getUser";
+   User user=(User) session.selectOne(statement,1);
+   System.out.println(user.getName());
+   session.close();
+}
+
+/*
+  测试删除
+*/
+@Test
+public void testDelete(){
+   InputStream in=Test.class.getClassLoader().getResourceAsStream("mybatis-cfg.xml");
+   SqlSessionFactoryBuilder builder=new SqlSessionFactoryBuilder();
+   SqlSessionFactory sessionFactory=builder.build(in);
+   SqlSession session = sessionFactory.openSession();  
+   String statement="xxx.xx.domain.user.deleteUser";
+   session.delete(statement,1);//方法也有返回值，是int类型，表示影响数据库几条记录
+   session.commit();
+   session.close();
+}
+
+/*
+  测试更新
+*/
+@Test
+public void testUpdate(){
+   InputStream in=Test.class.getClassLoader().getResourceAsStream("mybatis-cfg.xml");
+   SqlSessionFactoryBuilder builder=new SqlSessionFactoryBuilder();
+   SqlSessionFactory sessionFactory=builder.build(in);
+   SqlSession session = sessionFactory.openSession();  
+   String statement="xxx.xx.domain.user.updateUser";
+   User user=new User();
+   user.setName("sss");
+   user.setPassword("222");
+   user.setId(1);//指定修改id为1的记录的信息
+   session.update(statement,user);//方法也有返回值，是int类型，表示影响数据库几条记录
+   session.commit();
+   session.close();
+}
+
+/*
+  测试查找所有记录
+*/
+@Test
+public void testFindAll(){
+   InputStream in=Test.class.getClassLoader().getResourceAsStream("mybatis-cfg.xml");
+   SqlSessionFactoryBuilder builder=new SqlSessionFactoryBuilder();
+   SqlSessionFactory sessionFactory=builder.build(in);
+   SqlSession session = sessionFactory.openSession();  
+   String statement="xxx.xx.domain.user.getAllUser";
+   //返回的是List集合，但集合里保存的类型是什么需要在映射文件中配置
+   List<User> users=session.selectList(statement);
+   for(User user:users){
+     System.out.println(user.getName());
+     System.out.println(user.getPassword());
+   }
+   session.close();
+}
+
+
+对应的User类的映射文件 user.xml
+<?xml version="1.0" encoding="UTF-8"?>
+ <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--为这个mapper指定一个唯一的namespace，namespace的值习惯上设置成包名+映射文件名，
+    这样就能够保证namespace的值是唯一的
+-->
+<mapper namespace="xxx.xx.domain.user">
+
+  <select id="getUser" parameterType="int" resultType="xxx.xx.domain.User">
+    select * from user where id=#{id}
+  </select>
+
+  <!--这里resultType指定返回List集合里保存的数据类型为User-->
+  <select id="getAllUser" resultType="xxx.xx.domain.User">
+     select * from user
+  </select>
+
+  <insert id="addUser" parameterType="xxx.xx.domain.User">
+     <!--#{}里写对应实体类的属性名 -->
+     insert into user(name,password) values(#{name},#{password})
+  </insert>
+
+  <delete id="deleteUser" parameterType="int">
+     delete from user where i=#{id}
+  </delete>
+
+  <update id="updateUser" parameterType="xxx.xx.domain.User">
+     update user set name=#{name},password=#{password} where id=#{id}
+  </update>
+</mapper>

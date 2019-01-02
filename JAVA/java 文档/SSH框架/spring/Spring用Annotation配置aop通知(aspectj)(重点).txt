@@ -1,0 +1,190 @@
+1.使用AspectJ开发aop
+
+需要添加aop 的命名空间
+定义xml元素<aop:aspectj-autoproxy /> 使AspectJ注解起作用，自动为匹配的类生成代理对象
+
+编写java类，并用@Aspect注解成通知，通知也是bean,需要在Spring中配置
+AspectJ支持的6种通知注解：前5种加在方法上
+  @Before: 前置通知，在方法执行之前执行
+  @After: 后置通知，在方法执行之后执行
+  @AfterRunning: 返回通知，在方法返回结果之后执行
+  @AfterThrowing: 异常通知，在方法抛出异常之后
+  @Around: 环绕通知，围绕着方法执行,需要有返回值
+  @DeclareParents: 引入通知,为类增加新的属性与方法，加在接口属性上(见最下面)  
+
+@After和@AfterRunning的区别是，前者无论方法是否正确
+执行都加通知，后者只有方法正确执行才加通知
+
+@Order(1/2/...)    加在通知类上
+使用@Order注解来指定同样类型的通知，如两个前置通知，应用于
+同一个切入点（同一个类的同一个方法），指定谁先执行，谁后执行
+值越小，优先级越高
+
+@Pointcut("execution(* xxx.xx.xxx.A.show(..))")  加在方法上，一般单独定义一个
+空的方法，即不需要参数和代码的方法，
+单独定义切入点表达式，便于重复利用
+
+
+默认的5种通知的执行顺序： 环绕的前置-->前置通知-->方法执行-->返回通知/异常通知-->环绕的后置-->后置通知
+
+-------------------------------------------------------------------
+具体应用方式：
+
+aop的原理是代理，动态代理需要目标对象类实现了接口，cglib则不需要
+public interface A{
+  public void show();
+}
+
+@Component  //使用注解配置bean,代替xml配置
+public class AImpl implements A{
+  public void show(){
+    System.out.println("xxxxxx");
+  }
+}
+
+@Aspect
+@Component 
+public class B{
+
+  @Before("execution(* xxx.xx.xxx.A.show(..))") //声明哪些类的哪些方法执行前调用这个方法
+  //实现了A接口的所有类，如果只想作用于AImpl的话可以用* xxx.xx.xxx.AImpl.show(..)
+  public void before(JoinPoint jp){
+    System.out.println("before");
+  }
+
+  @AfterReturning(value="execution(* xxx.xx.xxx.A.show(..))",
+                  returning="ret") //returning用于指定在通知中接收目标方法的返回值的参数
+  public void afterReturning(JoinPoint jp,Object ret){//注：JoinPoint参数一定要放在第一个
+     System.out.println("afterReturning");
+  }
+  
+  @After("execution(* xxx.xx.xxx.A.show(..))")
+  public void after(JoinPoint jp){
+     System.out.println("after");
+  }
+
+   @AfterThrowing(value="execution(* xxx.xx.xxx.A.show(..))",throwing="e")//指定接收异常信息的参数
+   public void afterThrowing(JoinPoint jp,Exception e){//注：Joinpoint参数一定要放在最左边   Exception可以换成Throwable
+     System.out.println("afterThrowing");
+  }
+  
+  /*
+  @Around("execution(* xxx.xx.xxx.A.show(..))")
+  public Object Around(ProceedingJoinPoint pjp){  //ProceedingJoinPoint pjp这个参数很重要，注意返回值为Object
+  //目标对象的方法要执行，就需要调用pjp.proceed();
+     System.out.println("around");
+     Object result=null;
+     try {
+	result=pjp.proceed();//控制目标对象的方法执行，proceed()方法返回值就是目标对象返回值
+     } catch (Throwable e) {
+	System.out.println("抛异常了"+e);
+     }
+     System.out.println("around");
+     return result;//返回目标对象返回值
+  }
+  */
+}
+
+
+------------*****************************-------------
+可以通过环绕通知，取代前面四种通知
+ @Around("execution(public * com.tz.aop.*.*(..))")
+    public Object around(ProceedingJoinPoint pjp){
+        System.out.println("-----------------------------------------");
+        System.out.println("before...");
+        System.out.println("around_before...");
+        Object result=null;
+        try {
+            result=pjp.proceed();//控制目标对象的方法执行，proceed()方法返回值就是目标对象返回值
+            System.out.println("afterReturn...");
+        } catch (Throwable e) {
+            System.out.println("afterThrow...");
+        } finally {
+            System.out.println("after...");
+        }
+        System.out.println("around_after...");
+        System.out.println("-----------------------------------------");
+        return result;
+    }
+------------*****************************-------------
+
+-------------------------------------------------------------------
+
+注解的参数execution 用来指定通知方法对哪些类的哪些方法有效
+
+格式：修饰符 返回值 包.类名(参数)   修饰符可以不写
+
+如：
+@Before("execution(* *..*Service.*（..))")
+（方法返回值匹配规则，包匹配规则，类匹配规则，方法匹配规则，参数匹配规则）
+第一个*表示返回值规则，任何返回值都行
+*..表示任何包和它的子包
+*Service表示以Service结束的类名
+.*方法的匹配规则，任何方法
+(..)表示方法的任何参数都有效
+-------------------------------------------------------------------
+
+如果想要在通知的方法中，得到目标对象的相关属性
+可以在方法中加一个参数 连接点Joinpoint jp  注意是：import org.aspectj.lang.JoinPoint;
+获得目标对象当前正在调用的方法： jp.getSignature().getName();
+获得目标对象：jp.getTarget();
+获得代理对象：jp.getThis();
+获得参数： jp.getArgs();
+
+获得目标对象类名 jp.getTarget.getName();
+
+-------------------------------------------------------------------
+
+也可以单独定义切入点，然后在每个通知中引用该切入点，避免每次都配置
+
+@Aspect
+@Component
+public class B{
+ 
+ @Pointcut("execution(* xxx.xx.xxx.A.show(..))") //单独定义切入点，定义在一个方法上
+ public void performer(){} //这个方法不需要其他代码，只是为了方便引用
+
+  @Before("performer()")  //直接调用定义切入点注解的方法名
+  public void before(){
+    System.out.println("before");
+  }
+
+  @AfterReturning(pointcut="performer()",returning="ret")
+  public void afterReturning(Object ret){
+     System.out.println("afterReturning");
+  }
+}
+-------------------------------------------------------------------
+@DeclareParents
+AspectJ引入通知:为类增加新的属性或方法
+
+创建一个接口
+public interface AddDate{
+  public void setDate(Date date);
+  public Date getDate();
+}
+
+实现类
+@Component
+public class AddDateImpl implements AddDate{
+    private Date date;
+    public void setDate(Date date){
+       this.date=date;
+    }
+    public Date getDate(){
+       return date;
+    }
+}
+
+@Aspect
+@Component
+public class X{
+  //引用通知,给类增加新的属性与方法
+   @DeclareParents(value="xxx.xx.xxx.AImpl",
+                   defaultImpl=xxx.xx.xxx.AddDateImpl.class)  
+    private AddDate addDate;//这个属性一定要是接口
+
+}
+
+value：指定哪些类可以拥有该属性
+defalutImpl：指定接口的实现类

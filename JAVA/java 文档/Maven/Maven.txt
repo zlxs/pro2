@@ -1,0 +1,104 @@
+
+maven可以把一个项目分成多个模块开发，然后再把它们引入到一起
+
+maven有一个仓库，里面放置了许多项目jar，要用到其他项目jar时就去仓库中获取，
+ 没有就去网上下载
+
+
+
+# Maven 安装流程
+
+## 配置环境
+### 安装之前
+1. 配置JAVA_HOME环境变量
+2. CMD中可以输入 java -version 看到版本号
+
+### 获得文件
+在 \\192.168.3.169\共享\6.教师资源\胡荆陵\环境相关\maven 路径下，  
+找到 apache-maven-3.x-bin.zip 安装文件(32bit/64bit通用)
+
+### 解压缩
+解压缩到非C盘并且不带中文的路径下，比如: D:/maven
+
+### 配置环境变量
+* 新增 M2_HOME 环境变量,    
+比如: D:/maven (根据解压缩的实际路径来设置)
+* 编辑 PATH 环境变量,  
+追加 %M2_HOME%\bin;
+
+### 确认安装
+cmd命令行输入 `mvn -v`  
+看到版本信息
+
+
+## 常用操作
+### 配置本地 maven 仓库
+将以下内容配置到 maven 解压缩目录的 conf 目录 settings.xml 文件中
+```
+<localRepository>E:\repo</localRepository>
+    <mirrors>   
+    <mirror>   
+        <id>nexus-releases</id>   
+        <mirrorOf>*</mirrorOf>   
+        <url>http://192.168.0.41:9002/nexus/content/groups/public/</url>   
+    </mirror>
+</mirrors>   
+```
+localRepository 设定为自己的路径  
+mirror 配置在天智的局域网内使用,在互联网环境下要注释掉
+
+### 新建maven jar项目
+1. CMD 下执行: `mvn archetype:generate -DarchetypeCatalog=internal`  
+2. 选择 7 (quickstart)建立一个helloWorld项目
+3. 在 pom.xml 中追加 plugin 配置
+```
+<build>
+	<plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-jar-plugin</artifactId>
+			<configuration>
+				<archive>
+				<manifest>
+					<addClasspath>true</addClasspath>
+					<classpathPrefix>lib/</classpathPrefix>
+					<!-- mainClass 需要根据自己的类路径进行匹配 -->
+					<mainClass>com.tz.App</mainClass>						
+				</manifest>
+				</archive>
+			</configuration>
+		</plugin>
+	</plugins>
+</build>
+```
+4. 然后依次执行:  
+`mvn package`   
+`cd target`  
+`java -jar xxxx.jar`
+
+### 新建maven war项目
+1. CMD 下执行: `mvn archetype:generate -DarchetypeCatalog=internal`  
+2. 选择10: maven-archetype-webapp
+3. 在 pom.xml 中补充以下内容:    
+```
+<plugin>
+    <groupId>org.apache.tomcat.maven</groupId>
+    <artifactId>tomcat7-maven-plugin</artifactId>
+    <version>2.2</version>
+</plugin>
+```
+4. 再运行 mvn package,就可以自动打包成war包
+  
+### 手动安装ojdbc jar包
+1. ojdbc6.jar 不在maven repo中
+2. 手动安装命令如下:
+cmd 进入ojdbc.jar的目录
+`mvn install:install-file -DgroupId=ojdbc -DartifactId=ojdbc -Dpackaging=jar -Dversion=6 -Dfile=ojdbc6.jar -DgeneratePom=true`
+3. 之后在 pom.xml 中就可以引用  
+```
+<dependency>
+	<groupId>ojdbc</groupId>
+	<artifactId>ojdbc</artifactId>
+	<version>6</version>
+</dependency>
+```

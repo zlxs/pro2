@@ -1,0 +1,53 @@
+新建class名为dateformat
+
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Scanner;
+
+public class dateformat {
+ public static void main(String[] args)
+ {
+	 DateFormat df=new SimpleDateFormat("yyyy-MM-dd");//日期格式化
+	 DateFormat df1=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	 System.out.println("请输入日期，按照格式如：2015-8-3");
+	 Scanner s=new Scanner(System.in);
+	 String input=s.nextLine();
+	 try{   
+		Date date=df.parse(input);//String类转化为Date类，并格式化为yyyy-MM-dd
+	        Calendar c=new GregorianCalendar();
+	        c.setTime(date); //传入输入的日期
+	        c.set(Calendar.DATE,1);//重新设置时间为该月第一天
+	        int j=c.get(Calendar.DAY_OF_WEEK)-1;//返回当前是星期几，也就是重设后当月1号对应的星期几，-1是因为
+	        //星期日对应1，星期一对应2。。。
+	        c.setTime(date);//再把日期调整回来
+	        int MAXDAY=c.getActualMaximum(Calendar.DATE);//获取该时间的月份的最大天数
+	        Date time=new Date();
+	        int m=c.get(Calendar.DATE);//获取该月时间是几号，以便日历中标注出来
+	        System.out.println("当前时间:"+df1.format(time));//目前现实的时间
+	        System.out.println("所输入时间对应月的日历:");
+	        System.out.println("日\t一\t二\t三\t四\t五\t六\t");
+	        for(int k=0;k<j;k++)
+	        {
+	        	System.out.print("\t");
+	        }
+	        
+	   	    for(int i=1;i<=MAXDAY;i++)
+	   	    {
+	   	     if(i==m)
+	   	     {
+	   	      System.out.print("*");	 
+	   	     }
+	   		 System.out.print(i+"\t");
+	   		 if((i+j)%7==0)
+	   			 System.out.println();
+	   	    }
+	     }catch(Exception e)
+		 {   
+	         e.printStackTrace();
+	     } 
+ }
+}

@@ -1,0 +1,22 @@
+为何使用EL表达式能够访问valueStack中对象的属性
+原因是Struts2对HttpServletRequest作了进一步的封装。简略代码如下：
+
+ public class StrutsRequestWrapper extends HttpServletRequestWrapper {
+       public StrutsRequestWrapper(HttpServletRequest req) {
+           super(req);
+       }
+       public Object getAttribute(String s) {
+        ......
+        ActionContext ctx = ActionContext.getContext();
+        Object attribute = super.getAttribute(s);//先从request范围获取属性值
+        if (ctx != null) {
+            if (attribute == null) {//如果从request范围没有找到属性值,即从ValueStack	中查找对象的属性值
+               ......
+               ValueStack stack = ctx.getValueStack();
+               attribute = stack.findValue(s);
+               ......
+            }
+        }
+        return attribute;
+    }
+}

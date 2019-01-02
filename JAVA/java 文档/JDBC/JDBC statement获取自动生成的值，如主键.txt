@@ -1,0 +1,35 @@
+自动生成值是指在执行SQL语句时，由数据库提供的值，比如表的主键、记录的创建日期等。
+在JDBC中，可以使用Statement或PrepareStatement对象的方法来得到数据库自动生成的值
+
+
+如果SQL语句中有数据库自动生成的列值，可以通过如下方法来执行SQL
+
+Statement:
+
+//columnIndexs表示自动生成列在表中的下标位置
+int count = stmt.executeUpdate(String sql, int[] columnIndexs);
+
+//columnNames 表示自动生成列在表中的列名
+int count = stmt.executeUpdate(String sql, String[] columnNames);
+
+
+PrepareStatement:
+
+conn.PrepareStatement(String sql,String[] columnnames);String[]参数设置要返回的自动生成的值的对应的列名
+conn.PrepareStatement(String sql,int[] columnIndexs);
+
+
+Sql执行完成后，再通过下面的方法就可以获取自动生成的值
+ResultSet rs = stmt.getGeneratedKeys();
+
+
+例：
+	Connection conn=JDBCUtils.getConnection();
+	String sql="insert into Users(id,name) values(user_seq.nextval,?)";
+	PreparedStatement st = conn.prepareStatement(sql, new String[]{"id"});//表示返回user_seq生成的id的值
+	st.setString(1, "aaa");
+	st.executeUpdate();
+	ResultSet rs = st.getGeneratedKeys();//获取含有自动生成的主键值的结果集
+        if(rs.next()){
+            System.out.println(rs.getLong(1));//获取id的值，需要用返回结果中列的位置作为参数 不能写成 rs.getLong("id")
+        }

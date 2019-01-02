@@ -1,0 +1,198 @@
+DOM属性
+
+nodeName:
+var name=node.nodeName;
+如果node是元素节点 如<input>：nodeName返回这个元素的名称 input/select/...
+如果node是属性节点 如：<input name="">节点的name属性：返回这个属性的名称
+如果node是文本节点 如<p>文本1</p>中"文本1"才是文本节点：返回内容为#text的字符串
+
+nodeName是一个只读属性，不能赋值
+
+nodeType:
+返回一个整数，这个数值代表着给定节点的类型
+1--元素节点
+2--属性节点
+3--文本节点
+
+nodeType是只读属性
+
+nodeValue:
+如果给定节点是一个属性节点，返回值是这个属性的值
+如果给定节点是一个文本节点，返回值这个文本节点的内容
+如果给定节点是一个元素节点，返回值为null
+
+
+------------------------------------------------------------------
+
+-------获取元素宽和高------
+
+元素.style.width:样式宽   
+
+元素.clientWidth:可视区宽
+   样式宽+padding
+ 
+元素.offsetWidth:占位宽
+   样式宽+padding+border（可视区宽+边框）
+
+高一样
+
+-------获取元素left和top------
+元素.offsetLeft[Top] : 只读属性  当前元素到定位父级的距离（偏移值）
+		       即到当前元素的offsetParent的距离			
+                       如果没有定位父级  offsetLeft[Top] -> html(即margin为0的情况下的body)
+			
+
+------------------------------------------------------------------
+
+元素.children和元素.childNodes
+
+元素.childNodes 返回元素的子节点集合，不包含孙辈节点
+    所含节点包括 文本节点和元素节点
+
+如
+  <ul>
+    <li></li>
+ </ul>
+
+ul的childNodes有3个，两个是<ul>和<li> </li>和</ul>之间的回车换行符，1个是<li></li>节点
+
+因此不建议使用 childNodes
+建议使用 children代替
+
+元素.children 返回元素的子节点集合  所含节点只包括元素节点，不存在文本节点，所以
+  对于上方的ul  调用children返回的节点只有一个<li></li>节点
+
+------------------------------------------------------------------
+
+元素.parentNode 只读属性 获取当前节点的父级节点
+
+元素.offsetParent : 只读属性 获取离当前元素最近的一个有定位属性的父节点
+    如果没有定位父级，默认是body
+
+
+------------------------------------------------------------------
+
+元素.firstChild 
+  返回元素的第一个子节点 会包含文本类型的节点
+
+元素.firstElementChild
+  返回元素的第一个元素类型的子节点
+
+对应的还有 
+  元素.lastChild  
+  元素.lastElementChild
+
+
+------------------------------------------------------------------
+
+元素.nextSibling;获取指定节点的后一个兄弟节点，如果该节点已经是最后一个节点了，则返回null
+   var b=a.nextSibling;//获取a节点的后一个兄弟节点
+
+元素.previousSibling;获取指定节点的前一个兄弟节点
+
+*******
+注意：nextSibling和previousSibling会获取到文本节点和属性节点，
+    所以一般情况下不会得到我们想要的节点对象，而是获取到文本节点
+
+可以使用
+   nextElementSibling和previousElementSibling来代替，这两个方法只会获取属性节点
+*******
+
+------------------------------------------------------------------
+
+元素.attributes
+  返回元素的属性节点集合
+
+如：
+  <p id="a" style=" margin:0;"></p>
+
+调用
+  var p=document.getElementById("a");
+  var attrs=p.attributes;
+  for(var i=0;i<attrs.length;i++){
+     alert(attrs[i].name+":"+attrs[i].value);
+  }
+
+会弹出对话框 id:a 和 style: margin:0;
+
+属性节点的name属性用来获取属性的名称
+属性节点的value属性用来获取属性的值
+
+------------------------------------------------------------------
+
+创建新节点，并添加到页面指定位置
+var s=document.createElement()
+元素.appendChild(s);
+
+document.createElement();//创建新元素节点 ,方法返回值是指向新建节点的引用指针，返回的是一个元素节点
+  createTextNode();//新建一个文本节点
+ 新节点不会自动添加到文档里
+
+  <select id="a" name="a">
+   <option value="xx">xx</option>
+   <option value="yy">yy</option>
+  </select>
+
+ //创建一个元素节点，
+  var node=document.createElement("option");
+ //设置属性
+  node.setAttribute("value","zz");
+  //创建文本节点
+  var s=document.createTextNode("zz");
+  //把文本节点添加到新建的元素节点中
+  node.appendChild(s);
+ //把新建节点添加到原有节点中
+ document.getElementById("a").appendChild(node);
+
+------@@@------
+注：select的option节点可以直接通过
+  var option=new Option(value,innerHTML); 创建
+
+添加到select中也可以直接通过 select对象.add(option,[before参数])方法
+  before表示添加到哪个option元素之前,不写则在最后添加
+---------------
+ 
+------------------------------------------------------------------
+
+元素.removeChild(element);从给定元素节点里删除一个子节点
+
+
+------------------------------------------------------------------
+
+插入节点：insertBefore()和appendChild();
+ insertBefore();把一个节点插入到给定元素节点的给定子节点前面
+
+ var a=(targetNode.parentNode).insertBefore(newnode,targetnode);
+
+
+------------------------------------------------------------------
+
+innerHTML 可以直接插入html标记
+
+element.innerHTML="<b>xxx</b>"
+
+------------------------------------------------------------------
+
+replaceChild(newnode,oldnode);替换节点
+
+node1.replaceChild(newnode,oldnode);把node1节点下的子节点oldnode替换为另一个节点newnode
+
+
+------------------------------------------------------------------
+
+getAttribute();返回一个给定元素的给定属性节点的值
+
+<input type="text" name="xx" id="a">
+ var element=document.getElementById("a");
+ var a=element.geAttribute("name"); 返回值是element节点的name属性的值
+ alert(a);//输出xx
+
+------------------------------------------------------------------
+
+setAttribute();将给定元素节点添加一个新的属性值，或改变它原有的属性的值
+
+<input type="text" name="xx" id="a">
+
+ var element=document.getElementById("a");
+ element.setAttribute("value","小明");//添加value="小明"
+ element.setAttribute("name","yy");//把name="xx"改为name="yy"

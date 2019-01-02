@@ -1,0 +1,37 @@
+服务器之所以知道哪个session是哪个会话的，是因为session是基于cookie的
+
+服务器在创建session后，会把session的id以cookie的形式写给浏览器，但这个cookie不会设置有效期，
+浏览器一关闭就没了，在实际开发中，要在服务器端得到这个session的id，
+再自己写一个同样的设置了有效期的cookie，写给浏览器来覆盖这个不设置有效期的cookie，cookie名为JSESSIONID
+这样在浏览器关闭了，再打开还能使用服务器原来给你创建的session
+
+HttpSession session=request.getSession();
+String sessionId=session.getId();
+Cookie cookie=new Cookie("JSESSIONID",sessionId);
+cookie.setMaxAge(600);
+cookie.setPath("/");
+response.aCookie(cookie);
+
+
+
+如果客户端的cookie被禁用了，则可以通过超链接来获
+得session的id 
+先request.getSession()得到session,在用String newurl=response.encodeURL("url地址")来
+重写url就可以使url上加入这个url指向的servlet给你创建的session的id
+
+重定向的话需要用encodeRedirectURL方法重写url
+
+JSTL实现
+<c:url>可以为会话管理重写 URL
+
+
+session的生命周期：
+第一次调用 getSession()时创建session,30分钟没人用就摧毁（可以自己配置session的有效时间 setMaxInactiveInterval(毫秒)）
+
+
+getSession(false)表示只获取，不创建  作用：如查看购物车需要调用getSession获取session
+中保存的值显示，而在把东西保存在购物车时才需要创建session,没买东西时就查看购物车不需要创建session
+这时就可以使用getSession(false)
+
+
+session.invalidate();方法销毁session,如 在退出登录时可以使用

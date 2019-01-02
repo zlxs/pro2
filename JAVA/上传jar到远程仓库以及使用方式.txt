@@ -1,0 +1,117 @@
+部署jar:
+1.
+在配置文件pom.xml 中增加以下内容：
+
+<distributionManagement>
+        <repository>
+            <id>nexus-releases</id>
+            <name>release reap</name>
+            <url>http://localhost:8081/nexus/content/repositories/releases/</url>
+        </repository>
+
+        <snapshotRepository>
+            <id>nexus-snapshots</id>
+            <name>snapshot reap</name>
+            <url>http://localhost:8081/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+2.
+在配置文件settings.xml中<servers></servers>之间增加以下内容：
+
+<server>
+  <id>nexus-releases</id>
+   <username>admin</username>
+  <password>admin123</password>
+</server>
+<server>
+  <id>nexus-snapshots</id>
+  <username>admin</username>
+  <password>admin123</password>
+</server>
+
+3.
+执行 mvn clean deploy
+
+
+
+
+其他项目使用该jar：
+
+方式1：
+
+在pom.xml文件中加入
+
+<repositories>
+        <repository>
+            <id>my-repo</id>
+            <name>Nexus Repository</name>
+            <url>http://localhost:8081/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <!--snapshots默认是关闭的,需要开启  -->
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+*注：
+如果配置了mirror要注意该仓库是否会被拦截了，查看maven的setting.xml文件，如果被拦截了，则配置mirror不拦截该仓库：
+
+如：
+<mirror>
+        <id>nexus-aliyun</id>
+        <mirrorOf>*,!my-repo</mirrorOf> //或配置成central最好
+        <name>Nexus aliyun</name>
+        <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+    </mirror>
+
+---------------------------------------------------------------------------------
+
+方式2：直接在setting.xml文件中配置，这样就不需要每次都在pom.xml中设置repositories了
+
+
+直接使用私服仓库：配置mirror ,无需在pom.xml中配置repositories
+
+<mirror>
+        <id>nexus-local</id>
+        <mirrorOf>central</mirrorOf>
+        <name>Nexus Local</name>
+	<url>http://localhost:8081/nexus/content/groups/public</url> 
+</mirror>
+
+---------------------------------------------------------------------------------
+
+方式3：
+
+把私服repository配置在setting.xml中：
+
+
+在<profiles>标签中增加一个profile配置，如下：
+
+<profile>
+      <id>nexusProfile</id>
+	  <repositories>
+		<repository>
+			<id>nexus-local</id>
+			<name>Nexus Local</name>
+			<url>http://localhost:8081/nexus/content/groups/public/</url>
+		</repository>
+
+		<releases>
+			<enabled>true</enabled>
+		</releases>
+
+		<snapshots>
+			<enabled>true</enabled>
+		</snapshots>
+	  </repositories>
+</profile>
+
+然后在<activeProfiles>标签中，激活上面的profile配置，如下：
+
+<activeProfiles>
+    <activeProfile>nexusProfile</activeProfile>
+</activeProfiles>

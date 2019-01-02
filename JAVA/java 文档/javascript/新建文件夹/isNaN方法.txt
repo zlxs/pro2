@@ -1,0 +1,16 @@
+isNaN(参数)  用来判断参数是否是数字类型，或是否可以转换为数字类型   是 false 不是 true
+
+该方法内部会调用Number(参数)方法，如果该方法返回的是NaN
+则 isNaN返回 true
+如果Mumber返回的是数字，则isNaN方法返回false
+
+
+如：
+isNaN(1) false
+isNaN('') false
+isNaN([]) false
+isNaN('hello') true
+
+
+
+NaN表示不是数字类型

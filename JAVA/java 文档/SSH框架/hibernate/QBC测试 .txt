@@ -1,0 +1,723 @@
+package test;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projection;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.tool.hbm2ddl.SchemaExport;
+import org.junit.Test;
+
+import com.tz.hibernate.dao.IStuDao;
+import com.tz.hibernate.dao.impl.StuDaoImpl;
+import com.tz.hibernate.entity.HQL_Customer;
+import com.tz.hibernate.entity.HQL_Dept;
+import com.tz.hibernate.entity.HQL_Emp;
+import com.tz.hibernate.entity.test.TestEmp;
+import com.tz.hibernate.util.HibernateCallback;
+import com.tz.hibernate.util.HibernateTemplate;
+import com.tz.hibernate.util.HibernateUtil;
+
+public class TestHibernate {
+	IStuDao sd = new StuDaoImpl();
+	SessionFactory sf = HibernateUtil.getSessionFactory();
+	
+	@Test
+	public void createTable(){
+		Configuration cfg = new Configuration();
+		cfg.configure();
+		//
+		SchemaExport se = new SchemaExport(cfg);
+		se.create(true, true);
+	}
+	
+	//查询所有客户
+	@Test 
+	public void testQuery1(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			String hql = "from HQL_Customer c";
+			Query query = ss.createQuery(hql);
+			
+			List<HQL_Customer> cs = query.list();
+			
+			for(HQL_Customer c :cs){
+				System.out.println(c);
+			}
+			
+			tr.commit();
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+	
+	//查询姓王的客户
+	@Test
+	public void testQuery2(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			String hql = "from HQL_Customer c where c.cname like :name";
+			Query query = ss.createQuery(hql);
+			//query.setParameter("aaa", "王三");
+			query.setString("name", "%王%");
+			List<HQL_Customer> cs = query.list();
+			
+			for(HQL_Customer c :cs){
+				System.out.println(c);
+			}
+			tr.commit();
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+	
+	//查询薪资大于8000的并且小于20000员工
+	@Test
+	public void testQuery3(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			//String hql = "from HQL_Emp e where e.salary >= :minSalay and e.salary <= :maxSalay";
+			//String hql = "from HQL_Emp e where e.salary between :minSalay and :maxSalay";
+			String hql = "from HQL_Emp e where e.salary != :mySalary";
+			
+			Query query = ss.createQuery(hql)
+					.setDouble("mySalary", 8000);
+				//	.setDouble("maxSalay", 20000);
+			
+			List<HQL_Emp> cs = query.list();
+			
+			for(HQL_Emp c :cs){
+				System.out.println(c);
+			}
+			tr.commit();
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+	
+	//查询员工的姓名及其年收入
+	@Test
+	public void testQuery4(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			//当hibernate进行投影查询时,返回值就不是list集合了,而是一个集合中存放是对象数组
+			String hql = "select e.ename,e.salary*12  from HQL_Emp e ";
+			
+			Query query = ss.createQuery(hql);
+			List<Object[]> objs = query.list();
+			
+			for(Object[] arr:objs){
+				for(int i=0;i<arr.length;i++){
+					System.out.print(arr[i]+" ");
+				}
+				
+				System.out.println("");
+			}
+			
+			tr.commit();
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+	
+	
+	//查询表里的记录数
+	@Test
+	public void testQuery5(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			//当hibernate进行投影查询时,返回值就不是list集合了,而是一个集合中存放是对象数组
+			//String hql = "select count(e)  from HQL_Emp e ";
+			//String hql = "select e.ename  from HQL_Emp e where e.empId=:id";
+			String hql = "select e.ename,e.salary  from HQL_Emp e where e.empId=:id";
+			
+			Query query = ss.createQuery(hql)
+					.setLong("id", 3001L);
+			//Long count = (Long) query.uniqueResult();
+			//String name = (String) query.uniqueResult();
+			Object[] arr = (Object[]) query.uniqueResult();
+			
+			System.out.println(arr[0]+":"+arr[1]);
+			
+			tr.commit();
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+	
+	//查询数据,封装成自定义对象
+	@Test
+	public void testQuery6(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			//当hibernate进行投影查询时,返回值就不是list集合了,而是一个集合中存放是对象数组
+			//String hql = "select count(e)  from HQL_Emp e ";
+			//String hql = "select e.ename  from HQL_Emp e where e.empId=:id";
+			String hql = "select new com.tz.hibernate.entity.test.TestEmp(e.ename,e.salary)  from HQL_Emp e";
+			
+			Query query = ss.createQuery(hql);
+					//.setLong("id", 3001L);
+			List<TestEmp> emps = query.list();
+			
+			for(TestEmp t :emps){
+				System.out.println(t.getEname()+":"+t.getSalary());
+			}
+			
+			tr.commit();
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+
+	//查询所有员工一个月的薪资,平均薪资,最高薪资,最低薪资
+	@Test
+	public void testQuery7(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			//当hibernate进行投影查询时,返回值就不是list集合了,而是一个集合中存放是对象数组
+			String hql = "select sum(e.salary),avg(e.salary),max(e.salary),min(e.salary) from HQL_Emp e";
+			
+			Query query = ss.createQuery(hql);
+					//.setLong("id", 3001L);
+			Object[] arr = (Object[]) query.uniqueResult();
+			System.out.println("工资总和:"+arr[0]+"-->平均工资:"+arr[1]+"-->最高工资:"+arr[2]+"-->最低工资:"+arr[3]);
+			
+			tr.commit();
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+	
+	//查询每个部门所有员工一个月的薪资,平均薪资,最高薪资,最低薪资
+	@Test
+	public void testQuery8(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			//当hibernate进行投影查询时,返回值就不是list集合了,而是一个集合中存放是对象数组
+			String hql = "select e.dept.deptId, sum(e.salary),avg(e.salary),max(e.salary),min(e.salary) from HQL_Emp e group by e.dept.deptId order by avg(e.salary) desc";
+			
+			Query query = ss.createQuery(hql);
+					//.setLong("id", 3001L);
+			List<Object[]> objs = query.list();
+			for(Object[] arr :objs){
+
+				System.out.println("部门ID:"+arr[0]+"-->工资总和:"+arr[1]+"-->平均工资:"+arr[2]+"-->最高工资:"+arr[3]+"-->最低工资:"+arr[4]);
+			}	
+			tr.commit();
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+
+	//参数是集合的赋值方式
+	@Test
+	public void testQuery10(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			//当hibernate进行投影查询时,返回值就不是list集合了,而是一个集合中存放是对象数组
+			String hql = "from HQL_Emp e where e.dept.deptId in :id";
+			Query query = ss.createQuery(hql)
+					.setParameterList("id", new Object[]{1002L,1003L});
+					//.setLong("id", 3001L);
+			List<HQL_Emp> emps = query.list();
+			for(HQL_Emp e : emps){
+				System.out.println(e.getEname());
+			}
+			tr.commit();
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+
+	//从对象中,直接查询对象
+	@Test
+	public void testQuery9(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			//当hibernate进行投影查询时,返回值就不是list集合了,而是一个集合中存放是对象数组
+			String hql = "select distinct e.dept from HQL_Emp e";
+			Query query = ss.createQuery(hql);
+					//.setLong("id", 3001L);
+			List<HQL_Dept> depts = query.list();
+			for(HQL_Dept d : depts){
+				System.out.println(d.getDname());
+			}
+			tr.commit();
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+	
+	//内连接
+	@Test
+	public void testQuery11(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			//当hibernate进行投影查询时,返回值就不是list集合了,而是一个集合中存放是对象数组
+			String hql = "from HQL_Emp e inner join e.dept d";
+			Query query = ss.createQuery(hql);
+					//.setLong("id", 3001L);
+			List<Object[]> objs = query.list();
+			
+			for(Object[] arr :objs){
+				System.out.println("员工姓名:"+((HQL_Emp)arr[0]).getEname()+"-->部门名称:"+((HQL_Dept)arr[1]).getDname());
+			}
+			
+			
+			tr.commit();
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+	
+	//左连接
+	@Test
+	public void testQuery12(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			//当hibernate进行投影查询时,返回值就不是list集合了,而是一个集合中存放是对象数组
+			String hql = "from HQL_Dept d left join d.emps e";
+			Query query = ss.createQuery(hql);
+					//.setLong("id", 3001L);
+			List<Object[]> objs = query.list();
+			
+			for(Object[] arr :objs){
+				
+				System.out.println("-->部门名称:"+((HQL_Dept)arr[0]).getDname());
+			}
+			
+			
+			tr.commit();
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+	
+	//子查询
+	@Test
+	public void testQuery13(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			//当hibernate进行投影查询时,返回值就不是list集合了,而是一个集合中存放是对象数组
+			//String hql = "from HQL_Dept d where (select count(*) from d.emps) > 0";
+			String hql = "from HQL_Dept d where d.emps is not empty" ;
+			
+			Query query = ss.createQuery(hql);
+					//.setLong("id", 3001L);
+			List<HQL_Dept> depts = query.list();
+			
+			for(HQL_Dept d :depts){
+				System.out.println(d.getDname());
+			}
+			
+			tr.commit();
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+	
+	@Test
+	public void testIterator(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			String hql = "from HQL_Dept d";
+			Query query = ss.createQuery(hql);
+			
+			//List<HQL_Dept> ds = query.list();
+			
+//System.out.println("================================");			
+			
+			Iterator<HQL_Dept> depts = query.iterate();
+			
+			while(depts.hasNext()){
+				HQL_Dept d = depts.next();
+				System.out.println(d.getDname());
+			}
+System.out.println("=================================");			
+			
+			depts = query.iterate();
+			while(depts.hasNext()){
+				HQL_Dept d = depts.next();
+				System.out.println(d.getDname());
+			}
+			tr.commit();
+		} catch (HibernateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+	
+	
+	@Test
+	public void test1NQuestion(){
+		Session ss = null;
+		Transaction tr = null; 
+		
+		try {
+			ss = sf.openSession();
+			tr = ss.getTransaction();
+			tr.begin();
+			
+			//String hql = "from HQL_Emp e left join fetch e.dept";
+			String hql = "from HQL_Emp e";
+			Query query = ss.createQuery(hql);
+			List<HQL_Emp> emps = query.list();
+			
+			for(HQL_Emp e :emps){
+				System.out.println(e.getEname());
+			}
+			
+			tr.commit();
+		} catch (HibernateException e) {
+			e.printStackTrace();
+		}finally{
+			if(ss != null){
+				ss.close();
+			}
+		}
+	}
+	
+	@Test
+	public void testTeplate(){
+		
+		List<HQL_Emp> emps = sd.selectAllEmp();
+		for(HQL_Emp e :emps){
+			System.out.println(e.getEname());
+		}
+	}
+	
+	@Test
+	public void testTeplateSave(){
+		
+		sd.saveDept(new HQL_Dept("市场部"));
+	}
+	
+	//分页,排序,条件
+	@Test
+	public void testQbc1(){
+		HibernateTemplate.execute(new HibernateCallback() {
+			@Override
+			public Object doInHibernate(Session ses) throws HibernateException {
+				Criteria c = ses.createCriteria(HQL_Emp.class)
+						.add(Restrictions.ge("salary", new Double(3000)))
+						.addOrder(Order.asc("salary"))
+						.setFirstResult(0)
+						.setMaxResults(5);
+				
+				List<HQL_Emp> emps = c.list();
+				for(HQL_Emp e :emps){
+					System.out.println(e.getEname()+":"+e.getSalary());
+				}
+				return null;
+			}
+		});
+	}
+	
+	//isNull isempty sizeGE
+	@Test
+	public void testQbc2(){
+		HibernateTemplate.execute(new HibernateCallback() {
+			@Override
+			public Object doInHibernate(Session ses) throws HibernateException {
+				//没有员工的部门
+				Criteria c1 = ses.createCriteria(HQL_Dept.class)
+						.add(Restrictions.isEmpty("emps"));
+				
+				//员工数大于等于3的部门
+				Criteria c2 = ses.createCriteria(HQL_Dept.class)
+						.add(Restrictions.sizeGe("emps",3));
+				
+				//查询是经理的员工
+				Criteria c3 = ses.createCriteria(HQL_Emp.class)
+						.add(Restrictions.isNull("manager"));
+				
+				
+				/*List<HQL_Emp> emps = c.list();
+				for(HQL_Emp e :emps){
+					System.out.println(e.getEname()+":"+e.getSalary());
+				}*/
+				return null;
+			}
+		});
+	}
+	
+	//子查询
+	@Test
+	public void testQbc3(){
+		HibernateTemplate.execute(new HibernateCallback() {
+			@Override
+			public Object doInHibernate(Session ses) throws HibernateException {
+				Criteria c = ses.createCriteria(HQL_Emp.class)
+						.add(Restrictions.ge("salary", new Double(5000)))
+						.createCriteria("dept");
+				
+				List<HQL_Emp> emps = c.list();
+				for(HQL_Emp e :emps){
+					System.out.println(e.getEname()+":"+e.getDept().getDname()+":"+e.getSalary());
+				}
+				return null;
+			}
+		});
+	}
+		
+	//抓取查询
+	@Test
+	public void testQbc4(){
+		HibernateTemplate.execute(new HibernateCallback() {
+			@Override
+			public Object doInHibernate(Session ses) throws HibernateException {
+				Criteria c = ses.createCriteria(HQL_Emp.class)
+						.add(Restrictions.ge("salary", new Double(5000)));
+						//.setFetchMode("dept", FetchMode.JOIN);
+				
+				List<HQL_Emp> emps = c.list();
+				for(HQL_Emp e :emps){
+					System.out.println(e.getEname()+":"+e.getDept().getDname()+":"+e.getSalary());
+				}
+				return null;
+			}
+		});
+	}
+	
+	
+	//抓取查询
+	@Test
+	public void testQbc5(){
+		HibernateTemplate.execute(new HibernateCallback() {
+			@Override
+			public Object doInHibernate(Session ses) throws HibernateException {
+				Criteria c = ses.createCriteria(HQL_Emp.class)
+						.add(Restrictions.ge("salary", new Double(5000)))
+						.setProjection(Projections.projectionList()
+								.add(Projections.property("ename"))
+								.add(Projections.property("salary")));
+						
+						//.setProjection(Projections.property("ename"));
+						//.setProjection(Projections.id());
+				
+				
+				//List<Long> emps = c.list();
+				List<Object[]> emps = c.list();
+				for(Object[] e :emps){
+					System.out.println(e[0]+":"+e[1]);
+				}
+				return null;
+			}
+		});
+	}
+	
+	//函数查询
+	@Test
+	public void testQbc6(){
+		HibernateTemplate.execute(new HibernateCallback() {
+			@Override
+			public Object doInHibernate(Session ses) throws HibernateException {
+				Criteria c = ses.createCriteria(HQL_Emp.class)
+						.setProjection(Projections.projectionList()
+								.add(Projections.rowCount())
+								.add(Projections.sum("salary"))
+								.add(Projections.avg("salary")));
+						
+						//.setProjection(Projections.property("ename"));
+						//.setProjection(Projections.id());
+				
+				
+				//List<Long> emps = c.list();
+				List<Object[]> emps = c.list();
+				for(Object[] e :emps){
+					System.out.println(e[0]+":"+e[1]+";"+e[2]);
+				}
+				return null;
+			}
+		});
+	}
+	
+	//分组查询
+	@Test
+	public void testQbc7(){
+		HibernateTemplate.execute(new HibernateCallback() {
+			@Override
+			public Object doInHibernate(Session ses) throws HibernateException {
+				Criteria c = ses.createCriteria(HQL_Emp.class)
+						.setProjection(Projections.projectionList()
+								.add(Projections.property("dept.deptId"))
+								.add(Projections.rowCount())
+								.add(Projections.sum("salary"))
+								.add(Projections.avg("salary"))
+								.add(Projections.groupProperty("dept.deptId"))
+								);
+							
+				List<Object[]> emps = c.list();
+				for(Object[] e :emps){
+					System.out.println(e[0]+":"+e[1]+";"+e[2]);
+				}
+				return null;
+			}
+		});
+	}
+		
+}

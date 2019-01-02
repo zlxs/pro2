@@ -1,0 +1,40 @@
+@Order(1)  加在AspectJ的通知上
+
+使用@Order注解来指定同样类型的通知，如两个前置通知，应用于
+同一个切入点（同一个类的同一个方法），指定谁先执行，谁后执行
+
+值越小，优先级越高
+
+如
+@Order(1)
+@Aspect
+@Component
+class A{
+  @Before("execution(* xxx.xx.xxx.A.show(..))")
+  public void beforeByA(){
+    System.out.println("aaa");
+  }
+}
+
+@Order(2)
+@Aspect
+@Component
+class B{
+  @Before("execution(* xxx.xx.xxx.C.show(..))")
+  public void beforeByB(){
+    System.out.println("bbb");
+  }
+}
+
+@Component
+class C{
+  public void show(){
+    System.out.println("ccc");
+  }
+}
+
+测试输出：
+aaa
+bbb
+ccc
+通知beforeByA先执行beforeByB后执行

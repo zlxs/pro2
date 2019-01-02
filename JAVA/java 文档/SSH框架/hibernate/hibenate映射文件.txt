@@ -1,0 +1,95 @@
+类名.hbm.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<!--package声明pojo类所在的包，如果不写那么在class中需要指明pojo类所在的包-->
+<hibernate-mapping package="cn.xxx.xx">
+
+    <!--class映射一个pojo类,table表示pojo类对应的表名-->
+    <class name="User" table="user">    --指定User类和数据库user表对应 
+        
+        <!--映射主键字段-->
+        <id name="id" column="user_id" type="integer" >    --User类的id属性 对应user表的user_id字段
+             <!--主键生成策略-->
+             <generator class="increment" />   //代理主键，插入数据时使主键字段每次+1 ，存在多线程并发问题
+        </id>
+
+        <!--普通字段映射-->
+        <property name="name" column="name" type="string" />
+    </class>
+
+</hibernate-mapping>
+
+
+
+
+
+
+一、映射主键的配置方法：
+主要是由generator子元素是指定主键生成策略，详细说明如下：
+
+<id name="id">
+    <generator class="native/identity/.."/>
+</id>
+
+
+二、普通属性的声明方法
+<property name="name" type="string" column="name" not-null="true" length="35"/>
+
+<!-- 日期要指定什么类型 -->
+<property name="birthday" type="date"></property>
+
+<!-- 大文本类型，最好指定长度 -->
+<property name="description" column="description" type="text" length="5000"></property>
+
+<!-- 二进制类型，最好指定长度 -->
+<property name="photo" type="binary" length="512000"></property>
+
+<!-----------------------------说明---------------------------------
+    name：对象中的属性名，必须要有
+    type：数据的类型，不写时会自动检测
+    column：对应的列名，不写时默认为属性的名称
+    not-null：true/false，是否有非空约束，默认为false
+    length：长度，默认为255
+-->
+
+最好都指定类型，类型制定的有两种包括：Hibernate类型制定和Java基本数据类型制定
+
+ 
+
+三、组成关系映射
+<component name="userAddress"   class="cn.itcast.UserAddress">
+    <property name="address"></property>
+    <property name="code"></property>
+    <property name="phone"></property>
+</component>]
+
+ 
+
+四、集合关系映射
+1对多：                      sort="natural" 就会像TreeSet那样排序，重写compareto
+                             order-by 指定查询集合元素用的SQL中的order by排序 ，一般用这种
+<set name="orders" cascade="all" inverse="true" sort="natural" >
+  <key column="cid">   //多的一方的加外键的字段
+  <one-to-many class="cn.xxx.xx.Orders">
+</set>
+
+
+多对1：
+<many-to-one name="customer" column="cid" calss="cn.xxx.xx.Customer" not-null="true">
+</many-to-one>
+
+多对多：
+Teacher:
+<set name="students" table="Teacher_Student">
+  <key column="teachers_id"> //中间表中与Teacher表关联的字段名
+  <many-to-many class="cn.xxx.xx.Student" column="students_id"> //中间表中与Student表关联的字段名
+</set>
+
+Student：
+<set name="teachers" table="Teacher_Student" inverse="true">
+  <key column="students_id"> //中间表中与Student表关联的字段名
+  <many-to-many class="cn.xxx.xx.Teacher" column="teachers_id"> //中间表中与Teacher表关联的字段名
+</set>

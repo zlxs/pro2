@@ -1,0 +1,27 @@
+
+JQuery对象是JQuery包装Dom对象后产生的对象
+如果一个对象是JQuery对象，那么它就可以使用jquery的方法： $("#text").html();获取id为text的元素内的html代码
+等同于Dom对象的方法 document.getElementById("text").innerHTML;
+
+约定：表示JQuery对象的变量前加$
+如 var $variable=JQuery对象
+
+
+Dom对象转换为JQuery对象:  $(Dom对象)
+如：
+var usernameElement=document.getElementById("username");
+var $usernameElement=$(usernameElement);
+
+
+JQuery对象转化为Dom对象:
+方法1：JQuery对象是一个数组对象，可以用[index]的方法，来得到相应的Dom对象
+
+标签<input type="text" id="username">
+
+var $usernameElement=$("#username");//相当于 var a=document.getElementById("username"); var $a=$(a);
+var  usernameElement=$usernameElement[0];//获取Dom对象
+
+
+方法2：通过get(index)方法，来得到相应的Dom对象
+var $usernameElement=$("#username");
+var  usernameElement=$usernameElement.get(0);

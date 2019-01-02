@@ -1,0 +1,12 @@
+jdbc中向数据库发送sql语句的两种statement对象的区别
+
+PreparedStatement是Statement的子类，
+PreparedStatement可以防止sql注入，
+PreparedStatement会预编译sql语句，减轻数据库的压力，执行效率高于Statement
+
+用PreparedStatement开发较好，建议都用这种方式，用法如下：
+
+String sql="select * from user where username=? and paaword=?";
+PreparedStatement st=conn.prepareStatement(sql);//预编译这条sql
+st.setString(1,"username");//替换第一个？符号
+st.setString(2,"password");//替换第二个？符号

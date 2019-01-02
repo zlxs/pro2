@@ -1,0 +1,36 @@
+在系统中某个业务总是按事先约定好的流程执行，但是在流程中有些实现细节是不同的
+
+方式：
+   定义抽象类，并实现一个final的模版方法，在此方法中，把确定的代码完成，
+   而不确定的逻辑通过定义抽象方法(可以定义多个)，由子类去实现具体的逻辑，只要在模版方法中调用就可以了。 
+
+
+
+public abstract A{
+
+  public final void test(){
+
+     //...
+     a();
+     //...
+
+  }
+  
+  public abstract void a();
+}
+
+public class B extends A{
+
+  public void a(){
+    System.out.println("具体逻辑...");
+  }
+}
+
+public class Test1{
+  A m=new B();
+  m.test();
+}
+
+
+
+  

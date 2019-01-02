@@ -1,0 +1,18 @@
+DiskFileItemFactory factory=new DiskFileItemFactory();
+	ServletFileUpload upload=new ServletFileUpload(factory);
+	upload.setHeaderEncoding("UTF-8");//解决上传文件名的乱码
+
+        List<FileItem> list = upload.parseRequest(request);
+		for(FileItem item:list )
+		{
+			if(item.isFormField())//为普通输入项
+			{
+				System.out.println(item.getFieldName()+" : "+item.getString("utf-8"));
+			}
+          
+                         .............
+                      ...........
+
+
+        //  getString方法重载了， item.getString("utf-8")//解决普通输入项的乱码问题
+         //内部原理是反向查码表，用iso8859-1转成字符数组，再查utf-8码表转成字符串

@@ -1,0 +1,11 @@
+
+导入p命名空间
+
+<bean id="user" class="xxx.xx.xxx.User"  p:name="aaa" p:password="123" ></bean>
+
+class User{
+  private String name;
+  private String password;
+  set get
+}
+

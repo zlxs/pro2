@@ -1,0 +1,93 @@
+public class TestLucene {
+	
+	public static void main(String[] args) throws Exception{
+		
+		//模拟一条数据
+		User user=new User();
+		user.setId(1);
+		user.setName("张三");;
+		user.setDiscription("全文检索入门");
+		
+		//建立索引
+		//把数据转换为Document的形式
+		Document doc=new Document();
+		doc.add(new IntField("id",user.getId(),Store.YES));
+		doc.add(new StringField("name",user.getName(),Store.YES));//StringField不分词
+		doc.add(new TextField("discription",user.getDiscription(),Store.YES));//TextField分词
+		
+		File file=new File("data/index");
+		//索引存放的位置;lucene提供了两种索引存放的位置，一种是磁盘，一种是内存。
+		Directory directory=FSDirectory.open(file);
+		//分析器，它的作用是把一个字符串按某种规则划分成一个个词语，并去除其中的无效词语
+		Analyzer analyzer=new StandardAnalyzer(Version.LUCENE_44);
+		
+		IndexWriterConfig config=new IndexWriterConfig(Version.LUCENE_44, analyzer);
+		//用来将文档加入索引，同时控制索引过程中的一些参数使用。
+		IndexWriter indexWriter=new IndexWriter(directory, config);
+		//将这个文档添加到索引中
+		indexWriter.addDocument(doc);
+		//随后将writer关闭，这点很重要。
+		indexWriter.close();
+	
+		//查询
+		//queryString--->Query 把查询的字符串转换为查询对象
+		String queryString="检索";
+		//是一个解析用户输入的工具，可以通过扫描用户输入的字符串，生成Query对象。
+		QueryParser queryParser=new QueryParser(Version.LUCENE_44,"discription",analyzer);
+		Query query=queryParser.parse(queryString);
+		//lucene中最基本的检索工具，所有的检索都会用到IndexSearcher工具
+		IndexReader indexReader=DirectoryReader.open(directory);
+		//通过indexReader可以有效的获取到文档的数量
+		System.out.println("numDocs:"+indexReader.numDocs());
+		System.out.println("maxDocs:"+indexReader.maxDoc());
+		IndexSearcher indexSearcher=new IndexSearcher(indexReader);
+		
+		//进行搜索，得到结果   TopDocs
+		TopDocs topDocs = indexSearcher.search(query,10);//指定最多返回前n条结果  返回的是包装所有信息的集合
+		System.out.println("查询到的总记录数"+topDocs.totalHits);//总记录数
+		// 内部把返回结果先进行匹配度得分，把得分高的排在前面
+		ScoreDoc[] scoreDoc = topDocs.scoreDocs;//通过返回信息的集合，得到结果的数组，ScoreDoc代表一条结果，保存的是编号，用时根据编号取数据
+		List<User> list=new ArrayList<User>();
+		for(int i=0;i<scoreDoc.length;i++){
+			doc=indexSearcher.doc(scoreDoc[i].doc);//根据编号取出document
+			User u=new User();
+			u.setId(Integer.parseInt(doc.get("id")));//获取doc中指定名称的属性的值
+			u.setName(doc.get("name"));
+			u.setDiscription(doc.get("discription"));
+			list.add(u);
+		}
+		indexReader.close();
+		directory.close();
+		
+		for(User u:list){
+		 System.out.println(u.getId());
+         System.out.println(u.getName());
+         System.out.println(u.getDiscription());
+		}
+	}	
+	
+}
+
+class User {
+	private int id;
+	private String name;
+	private String discription;
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getDiscription() {
+		return discription;
+	}
+	public void setDiscription(String discription) {
+		this.discription = discription;
+	}
+}

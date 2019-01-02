@@ -1,0 +1,3 @@
+如何创建数据库实例：
+
+使用配置和移植工具中的Database Configuration Assistant

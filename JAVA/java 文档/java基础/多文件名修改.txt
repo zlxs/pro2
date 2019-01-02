@@ -1,0 +1,44 @@
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class dfsdf {
+
+	
+ public static void main(String[] args)
+ {
+	 File f=new File("e:/A");
+	 if(!f.exists())
+	 {
+		 f.mkdirs();
+		 for(int i=1;i<=10;i++)
+		 {
+		 File k=new File(f,i+".txt");
+		  try {
+			k.createNewFile();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 }
+	 }
+	 
+	 if(f.isDirectory())
+	 {
+		 List<File> list=new ArrayList<File>();
+		 File[] a=f.listFiles(); 
+		 
+	     for(int i=0;i<a.length;i++)
+	     {
+		  list.add(a[i]);
+	     }
+	     
+	     for(int i=0;i<list.size();i++)
+	     {   
+		  File s=list.get(i);
+		  s.renameTo(new File("e:/A/±±"+(i+1)+".txt"));	 
+	     }
+	 }
+ }
+}

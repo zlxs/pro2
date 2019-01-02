@@ -1,0 +1,24 @@
+ 
+conf下server.xml文件中<Engine></Engine>中加入如：
+
+<Host name="www.baidu.com"  appBase="D:\apache-tomcat-8.0.28\webapps\baidu">//替换主机名
+        <Context path="" docBase="D:\apache-tomcat-8.0.28\webapps\baidu"/>//替换默认web应用
+</Host>
+
+可以把localhost:8080/baidu替换为www.baidu.com:8080,前提是要在dns下注册自己的域名
+
+
+在server.xml文件中的修改Connector节点的port属性为80
+可以把端口替换为默认端口80，这样就不用输入8080了
+
+
+
+在web应用的WEB-INF下的web.xml中
+加入
+  <welcome-file-list>
+        <welcome-file>1.html</welcome-file>
+  </welcome-file-list>
+
+即可把web应用下的1.html设置为默认页面（主页）
+
+地址栏输入http://主机:8080/web应用名 即可访问1.html

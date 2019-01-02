@@ -1,0 +1,111 @@
+web.xml中配置一个监听器，myeclipse会自动配置
+org.springframework.web.context.ContextLoaderListener是一个ServletContextListener类监听器，
+在web容器（servletContext）初始化时 初始化spring框架
+
+applicationContext.xml
+
+基础配置：
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd">
+  
+  //Spring会自动解析bean标签中的内容，实例化Hello类对象，以id的值hello为key存入一个Map集合
+  <bean id="hello" class="xxx.xx.xxx.Hello"> 
+   //写了以下配置，Spring会在帮你实例化对象时，自动调用类的该属性的set方法赋值
+   <property name="say">  //属性
+     <value>hello world!</value> //属性值
+   </property>
+
+   <!-- 此种方式也可以为属性赋值
+      <property name="say" value="hello world!"> 
+    -->   
+  </bean>
+
+   <!-- ---------------------------------------------------------------------
+    如果一个类中含有另一个类的引用,如正常情况：UserServiceImpl中有UserDaoImpl类的属性dao
+    ---------------------------------------------------------------------- --> 
+  <bean id="userDao" class="xxx.xx.xxx.UserDaoImpl">
+   ......
+  </bean>
+  <bean id="userService" class="xxx.xx.xxx.UserServiceImpl">
+    <property name="dao" ref="userDao"> //依赖注入DI，让Spring维护类之间的关系,
+    //Spring会根据ref的值(ref的值是bean的id)为key去map中找出对应的对象，赋给dao属性
+    ......
+  </bean>
+</beans>
+
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class Hello {
+
+	private String say;
+
+	public String getSay() {
+		return say;
+	}
+
+	public void setSay(String say) {
+		this.say = say;
+	}
+	
+	public static void main(String[] args) {
+           //初始化应用上下文,当我们需要用某个bean时ClassPathXmlApplicationContext类内部
+           //会解析xml文件，把bean初始化出来(用到才实例化，但是会预先实例化单例bean)
+           //以id为关键字，bean的实例对象为value存放在一个map容器中(只存放单例bean，原型bean每次都new新的，所以不需要存放在map中)
+           ApplicationContext  ac=new ClassPathXmlApplicationContext("applicationContext.xml"); 
+           //通过getBean("key")取出存放在map中的对应的类的对象（Hello类对象）
+           Hello a=(Hello)ac.getBean("hello");
+	   System.out.println(a.getSay());
+	}
+	
+}
+
+
+
+class UserDaoImpl{
+  属性和set get   
+}
+
+class UserServiceImpl{
+  private UserDao dao;//实际工作是这样的UserDao dao=new UserDaoImpl();
+  其他属性
+  set 方法 
+  get 方法
+}
+
+-----------------------------------------------------------------------
+bean标签的scope属性：默认是singleton
+  singleton: 描述bean是单例的，全局只有一个,直接实例化出来
+  prototype: 原型的,用到时才实例化，每次都实例化一个新的bean
+
+
+-----------------------------------------------------------------------
+
+
+BeanFactory factoy=new XmlBeanFactory(new FileInputStream("beans.xml"));
+和
+ApplicationContext  ac=new ClassPathXmlApplicationContext("applicationContext.xml");
+在实例化bean上的区别：
+bean工厂只把bean的定义信息加载进来，用到时才实例化
+ApplicationContext是更加高级的容器，功能很强大，对于单例bean会直接实例化，
+  其他bean也是用到时才实例化
+
+-----------------------------------------------------------------------
+
+bean标签的init-method属性：
+ 配置该bean初始化时调用的方法
+如：
+init-method="a";//初始化时调用bean的a()方法
+
+-----------------------------------------------------------------------
+
+bean标签的destroy-method属性：
+ 配置该bean被销毁时调用的方法
+如：
+destroy-method="b";//销毁时调用bean的b()方法

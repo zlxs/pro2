@@ -1,0 +1,104 @@
+1、Configuration:负责配置并启动Hibernate
+   进行配置信息管理，用来产生SessionFactory实例
+      new Configuration().configure();的configure方法会自动去找classpath(src)下的hibernate.cfg.xml文件
+
+
+
+2、SessionFactory:负责初始化Hibernate
+     它充当数据存储源的代理(如：维护数据库连接池)，并负责创建Session对象
+       getCurrentSession() //上下文中有session就直接拿来用，没有则创建一个新的
+       openSession()  //创建新的session
+       使用openSession()需要手动close,使用getCurrentSession()不需要手动close()，事物提交会自动关闭
+    
+      使用getCurrentSession()方法需要在hibernate.cfg.xml中配置：
+      <!-- 当前session保存在哪，使用getCurrentSession()方法使用的 -->
+      <property name="hibernate.current_session_context_class">thread</property>
+
+
+3、Session:持久化对象，负责持久化对象的CRUD操作
+      
+   Java应用程序与Hibernate之间的主要运行时接口。它是抽象了持久化服务概念的核心抽象API类。
+   Session的生命周期绑定在一个物理的事务（tansaction）上面。
+
+   session.beginTransaction()  //开启事务
+
+----------------------增---------------------------
+   session.save(object)  //把实体对象持久化到session缓存中，
+     调用save()方法，hibernate会给对象分配一个存入表中时的主键id（手动提供主键id时，不分配）,
+           同时对象从临时状态--->持久化状态
+      session缓存中有个map,map的key就是该对象的主键id,value保存的是该对象的引用
+   
+----------------------删---------------------------
+   session.delete(object)  //从数据库中移除持久化（persistent）对象的实例。
+
+
+
+
+----------------------查---------------------------
+   session.load(Class theClass, Serializable id)   //在符合条件的实例存在的情况下，
+                根据给定的实体类和标识返回持久化状态的实例。
+  
+   session.get(Class clazz, Serializable id)   //根据给定标识和实体类返回持久化对象的实例，
+              如果没有符合条件的持久化对象实例则返回null。
+     get与load的区别：
+        1.不存在对应记录时表现不一样，load会抛异常，get返回null
+        2.load返回的是代理对象，等到真正用到对象的内容时才发出sql语句
+           如:User u=session.load(User.class,1);时不发出sql，等到调用u.getName()时，才初始化代理对象u,发出查询sql
+
+        3.get直接从数据库加载，不会延迟，直接发送查询sql语句
+    
+
+----------------------改--------------------------
+   修改可以用以下方法
+          User user=(User) session.load(User.class,1);//先查询出要修改的数据，封装成实体对象
+          user.setName("xxx");//再调用set方法修改，之后hibernate会自动检查缓存中数据和sql中是否一致，
+                     不一致则更新sql中的对应数据的内容，不过它更新时，是把所有字段的内容都更新一遍，而不是只
+                   更新改变了的字段
+                                           
+   session.update(Object object)  // 根据给定的detached（游离状态）对象实例的标识更新对应的持久化实例。
+     object实体对象封装需要更新的数据的内容，必须设置id属性，并且在sql中存在该主键id对应的数据，
+      该方法也是更新全部字段，不推荐使用该方法
+
+    手动构造的对象（临时态对象）也可以update,但要指定所有的属性
+
+
+   --------------------------------------------------------------------
+   更新部分修改的字方法：
+   1.映射文件中使用dynamic-update
+   2.使用HQL(EJBQL)  推荐
+   --------------------------------------------------------------------
+
+
+
+   session.getTransaction.commit()   //事务一提交，session就会关闭
+     对象从持久化状态--->游离状态（脱管状态）      
+  
+  
+  
+   session.flush()   //提前对数据库进行操作，使数据库与缓存同步，但不提交，然后清除缓存，
+                主要为了避免内存溢出   比如update方法在commit时才执行更新sql操作，调用了该方法后，
+         就立即执行更新操作
+
+   session.refresh(Object o)  //刷新，让缓存中指定对象内容跟数据库同步
+
+   session.clear() //清空缓存，不操作数据库
+
+   session.evict(object o); //evict清除session缓存中指定对象
+
+
+
+4、SchemaExport：用于生成数据表
+     
+     Configuration conf= new Configuration().configure()  
+     SchemaExport dbExport=new SchemaExport(conf); 
+     dbExport.create(true, false);//第一个为True就是把DDL语句输出到控制台，
+         第二个参数表示是否真正在数据库中执行建表的语句 
+             True就是根据持久类和映射文件先执行删除再执行创建操作
+     
+     第二个参数建议设置为false,否则每次都重新建表，会丢失数据
+
+5、Transaction:负责事务
+
+
+6、Query和Criteria:负责执行各种数据库查询
+

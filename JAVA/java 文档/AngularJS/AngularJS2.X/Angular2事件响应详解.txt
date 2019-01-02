@@ -1,0 +1,201 @@
+事件响应详解
+
+在Angular2.0中，Html视图dom树的任何一个节点上都可以添加相应的事件，例如OnClick事件，OnMouseOver,OnMouseOut事件,OnKeyUp事件等等。
+
+添加事件的格式形如下面这样
+
+<button (click)="onClickMe()">点击我!</button>
+
+等号左边的(click)表明是什么事件的响应。右边是Angular表达式，即事件的响应函数onClickMe()
+
+在前面笔记中，我们已经了解了搭建和运行Angular2.0的app，现在我们在前面的框架上，在app目录下面新建一个文件，文件名：click-me.component.ts
+
+代码如下：
+
+
+@Component({
+  selector: 'click-me',
+  template: `
+    <button (click)="onClickMe()">Click me!</button>
+    {{clickMessage}}`
+})
+export class ClickMeComponent {
+  clickMessage = '';
+  onClickMe(){
+    this.clickMessage ='欢迎来到Angular 2.0 !';
+  }
+}
+
+如果在AppComponent组件中引用时 代码如下：
+
+import {Component} from 'angular2/core';
+import {ClickMeComponent } from './click-me.component'
+@Component({
+    selector: 'my-app',
+    template: `
+    <h1>Angular 2 App</h1>
+    <click-me></click-me>
+    `
+    directives: [ClickMeComponent],
+})
+export class AppComponent { }
+
+提示：不要忘记添加directives列表，不然组件指令是无效的。
+Onkeyup事件
+
+在app目录下新建一个keyup.components.ts文件,内容如下
+
+import {Component} from 'angular2/core';
+
+@Component({
+  selector: 'key-up',
+  template: `
+   <input (keyup)="onKey($event)">
+   <p>{{values}}</p>
+  `
+})
+export class KeyUpComponent {
+  values='';
+  // without strong typing
+  onKey(event:any) {
+    this.values += event.target.value + ' | ';
+  }
+}
+
+在AppComponent组件中引用时 代码如下：
+
+import {Component} from 'angular2/core';
+import {ClickMeComponent } from './click-me.component'
+import {KeyUpComponent } from './keyup.component'
+
+@Component({
+    selector: 'my-app',
+    template: `
+    <h1>Angular 2 App</h1>
+    <click-me></click-me>
+    <key-up></key-up>
+    `
+    ,
+    directives: [ClickMeComponent,KeyUpComponent],
+})
+export class AppComponent { 
+
+}
+
+提示：
+
+    directives的数组格式。
+    我写demo的时候，发现selector的名字如果是keyup在其他模板中引用，运行会报错，所以我改成key-up。
+
+loopback功能
+
+在app目录下新建一个loopback.components.ts文件,内容如下
+
+import {Component} from 'angular2/core';
+
+@Component({
+  selector: 'loopback',
+  template: `
+   <input #box (keyup)="0">
+   <p>{{box.value}}</p>
+  `
+})
+export class LoopbackComponent  {
+
+}
+
+#box是input元素的引用变量。 我们可以通过box取出input的值。
+
+在AppComponent组件中引用时 代码如下：
+
+import {Component} from 'angular2/core';
+import {ClickMeComponent} from './click-me.component'
+import {KeyUpComponent} from './keyup.component'
+import {LoopbackComponent} from './loopback.component'
+
+@Component({
+    selector: 'my-app',
+    template: `
+    <h1>Angular 2 App</h1>
+    <h2>点击事件</h2>
+    <click-me></click-me>
+    <h2>key up 事件</h2>
+    <key-up></key-up>
+    <h2>loopback</h2>
+    <loopback></loopback>
+    `
+    ,
+    directives: [ClickMeComponent,KeyUpComponent,LoopbackComponent],
+})
+export class AppComponent { 
+
+}
+
+keyup和loopback的结合使用
+
+@Component({
+  selector: 'key-up2',
+  template: `
+    <input #box (keyup)="onKey(box.value)">
+    <p>{{values}}</p>
+  `
+})
+export class KeyUpComponent_v2 {
+  values='';
+  onKey(value:string) {
+    this.values += value + ' | ';
+  }
+}
+
+只监听Enter键的keyup事件
+
+有时候，在用户输入的时候，我们只需要监听Enter键，其他按键事件不需要监听，那么我们可以通过Angular完成只监听Enter键的事件。示例代码如下
+
+@Component({
+  selector: 'key-up3',
+  template: `
+    <input #box (keyup.enter)="values=box.value">
+    <p>{{values}}</p>
+  `
+})
+export class KeyUpComponent_v3 {
+  values='';
+}
+
+上面代码(keyup.enter)表示只监听enter键的按下事件，当用户按·enter键·时，程序才执行等号右边的表达式，即把box.value值赋给values。
+blur事件
+
+当用户按enter键或者光标移开输入框时，显示输入的内容：
+
+@Component({
+  selector: 'key-up4',
+  template: `
+    <input #box
+      (keyup.enter)="values=box.value"
+      (blur)="values=box.value">
+    <p>{{values}}</p>
+  `
+})
+export class KeyUpComponent_v4 {
+  values='';
+}
+
+关键代码：(blur)="values=box.value"
+focus事件(光标进入事件）
+
+import {Component} from 'angular2/core';
+
+@Component({
+  selector: 'myfocus',
+  template: `
+    <p>{{values}}</p>
+    <input #box (focus)="values='请输入您的地址' ">
+
+   `
+})
+export class FocusComponent {
+  values='';
+}
+
+
+

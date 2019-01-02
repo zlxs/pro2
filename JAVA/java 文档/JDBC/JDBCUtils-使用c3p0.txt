@@ -1,0 +1,77 @@
+package com.tz.jdbc.utils;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import javax.sql.DataSource;
+
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+
+public class JDBCUtils {
+	
+	private static ThreadLocal<Connection> tl=new ThreadLocal<>();
+	private static DataSource ds;
+	
+	static {
+		
+	   try {
+		   ds=new ComboPooledDataSource();//c3p0的xml配置文件放在classpath(src)下
+	   } catch(Exception e) {
+		   throw new ExceptionInInitializerError(e);
+	   }
+	}
+
+	public static Connection getConnection() throws SQLException {
+	
+		Connection conn=tl.get();
+		if(conn==null) {
+			conn=ds.getConnection();
+			conn.setAutoCommit(false);
+			tl.set(conn);
+		}
+		return conn;
+	}
+	
+	public static void commitTransaction() throws SQLException {
+		
+		Connection conn=tl.get();
+		if(conn!=null) {
+			conn.commit();
+		}
+	}
+	
+	public static void closeConnection() throws SQLException {
+		
+		Connection conn=tl.get();
+		if(conn!=null) {
+			
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				throw e;
+			} finally {
+				tl.remove();
+			}
+		}
+	}
+	
+	public static void release(Statement st,ResultSet rs){
+	
+		try {
+			if(rs!=null)
+			rs.close();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		} finally {
+			try {
+				if(st!=null)
+				st.close();
+			} catch (SQLException e) {
+				throw new RuntimeException(e);
+			}
+		}		
+	}
+	
+}

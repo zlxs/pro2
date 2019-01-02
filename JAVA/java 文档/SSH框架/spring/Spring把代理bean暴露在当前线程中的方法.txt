@@ -1,0 +1,9 @@
+  
+在代理bean中配置
+<property name="exposeProxy" value="true"></property>
+
+然后在代码中写
+AopContext.currentProxy()就能得到暴露在当前线程中的代理对象
+
+
+

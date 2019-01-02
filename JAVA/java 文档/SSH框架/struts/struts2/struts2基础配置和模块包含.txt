@@ -1,0 +1,110 @@
+struts.xml
+
+基础配置：
+
+<struts>
+    <!--constant是用来修改struts2的常量的，可以通过它来
+    修改请求后缀等功能  如：name="struts.action.extension" value="do"-->
+    <!-- 开发模式 ,修改配置文件不用重启服务器 -->
+    <constant name="struts.configuration.xml.reload" value="true"/>
+
+    <!-- struts2的action必须放在一个指定的包空间下定义 -->
+    <package name="default"  namespace="/"  extends="struts-default">
+    <!-- 定义处理请求URL为login.action的Action -->
+        <action name="login" class="xxx.xx.xxx.LoginAction">
+        <!-- 定义处理结果字符串和资源之间的映射关系 -->
+            <result name="success">/success.jsp</result>
+            <result name="error">/error.jsp</result>
+        </action>
+    </package>
+</struts>
+
+
+<package>元素有如下属性：
+
+name：包的名称。用来区分Action重名的情况
+extends：要继承的包，后面配置的是被继承的包的名称。可选
+namespace：包的命名空间,决定了action的访问路径，默认是"" ，即namespace="" ，可以接收所有路径的action 
+abstract：定义包为抽象的，也就是不能包含Action的定义，表示该包是用来给其它包继承的。可选
+
+注：package和namespace在开发的时候都以模块来命名
+
+namespace可以写为/，或者/xxx，或者/xxx/yyy，对应的action访问路径为/yourAction.action，
+/xxx/yourAction.action，或者/xxx/yyy/yourAction.action    末尾.action可省略
+
+
+
+
+--------------------------------
+模块包含：
+<include file="xxx.xml" />
+可以把xxx.xml（xxx.xml需要是struts.xml格式，头文件也要是struts.xml的）加入
+到struts.xml的对应位置
+
+如
+<struts>
+  <constant name="struts.devMode" value="true"></constant>
+  <include file="login.xml" />
+</struts>
+
+login.xml:
+
+头文件
+<struts>
+    <!-- struts2的action必须放在一个指定的包空间下定义 -->
+    <package name="default"  namespace="/"  extends="struts-default">
+    <!-- 定义处理请求URL为login.action的Action -->
+        <action name="login" class="org.qiujy.web.struts.action.LoginAction">
+        <!-- 定义处理结果字符串和资源之间的映射关系 -->
+            <result name="success">/success.jsp</result>
+            <result name="error">/error.jsp</result>
+        </action>
+    </package>
+</struts>
+-----------------------------------
+
+为namespace配置默认Action
+
+<package name="default"  namespace="/"  extends="struts-default">
+        <!-- 配置默认Action,即在该namespace下没有对应名称的Action时
+         默认的Action
+        -->
+        <default-action-ref name="index"></default-action-ref>
+        <!--不加class属性也能跳转到default.jsp-->
+        <action name="index" class="xxx.xx.Action.DefaultAction">
+            <result name="success">/default.jsp</result>
+        </action>
+    
+        <action name="login" class="xxx.xx.xxx.LoginAction">
+            <result name="success">/success.jsp</result>
+        </action>
+</package>
+
+还有一个标签<default-class-ref class="xxx.xx.Action.DefaultAction"></default-class-ref>
+作用是：如果没有为action配置class属性，则交给指定的Action处理
+如：
+  <package name="teststruts" namespace="/" extends="struts-default">    
+      <default-class-ref class="xxx.xx.Action.TestAction"></default-class-ref>
+      <action name="testAction" class="xxx.xx.Action.TestAction">
+        <result name="success" type="dispatcher">/success.jsp</result>
+      </action>
+      <action name="oneAction">
+        <result name="success">/success.jsp</result>
+      </action>
+      <action name="twoAction">
+        <result name="success">/success.jsp</result>
+      </action>
+  </package>
+访问oneAction和twoAction都会执行TestAction的execute方法
+
+-----------------------------------
+
+为Action的属性注入值：通过DI依赖注入方式，同Spring类似
+<package name=“tz" namespace="/test" extends="struts-default">
+	<action name="helloworld" class="cn.tz.action.HelloWorldAction" >
+		<param name="savePath">/images</param>
+		<result name="success">/WEB-INF/page/hello.jsp</result>
+	</action>
+</package>
+上面通过<param>节点为action的savePath属性注入“/images”
+注意：属性必须提供setter方法。

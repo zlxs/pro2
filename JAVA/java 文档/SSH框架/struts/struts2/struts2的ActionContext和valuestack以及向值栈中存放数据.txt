@@ -1,0 +1,129 @@
+ActionContext
+是Action执行时的上下文,上下文可以看作是一个容器(其实我们这里的容器就是一个大的Map，大Map的value也是Map)
+它是被存放在当前线程中的，获取ActionContext也是从ThreadLocal中获取的
+一个线程有一个唯一的ActionContext
+
+-------------------*******------------------
+ActionContext的几个特点：
+
+1，ActionContext是struts2新设计出来的存储数据的容器，该容器是个map集合，
+   它里面持有到达各个容器(其它map)的引用
+   Actioncontext封装了6个域的对象 request session application valuestack attr parameters  
+   attr 用于按request > session > application顺序访问其属性（attribute）
+
+2，我们可以通过 ActionContext方便的获取到其它容器，如同一个快捷方式，是struts2的数据中心。
+
+3，ActionContext是threadloacl线程绑定的, 当struts2接受到请求后,就会马上创建一个ActionContext
+   然后各个位置都可以获取到ActionContext
+
+4，ActionContext意思就是action运行的上下文，负责存储action运行产生的数据
+
+5，ActionContext它里面有个map集合用来存储数据，但是ActionContext本身作为一个对象，它也有很多其它开发方法 。
+     Actioncontext.getcontext()  //获取ActionContext里的大map集合；
+     Actioncontext.getcontext().getValueStack()  //获取值栈
+
+6.一次Action调用都会创建一个ActionContext 
+
+-------------------*******------------------
+向Application的指定域中存放和获取数据：
+
+ActionContext.getContext().put("aaa", "request");
+ActionContext.getContext().getSession().put("aaa", "session");
+ActionContext.getContext().getApplication().put("aaa", "application");
+
+jsp获取：el表达式方式
+  ${requestScope.aaa }
+  ${sessionScope.aaa }
+  ${applicationScope.aaa } 
+
+OGNL方式通过struts2标签取值：
+ <s:property value="#aaa"/>    request
+ <s:property value="#request.aaa"/>   request
+ <s:property value="#session.aaa"/>    session
+ <s:property value="#application.aaa"/>  application
+
+取出ActionContext自身中的对象--> #key
+取出ActionContext中5个区域（除ValueStack域）中的对象-->#request.key
+取出ActionContext中ValueStack中的对象--> key
+
+------------------------------------------------------------------------
+
+ValueStack与ActionContext的联系和区别：
+
+联系：ValueStack.getContext()方法得到的Map其实就是ActionContext对应的Map。
+      在创建ActionContext时，就是把ValueStack.getContext()作为ActionContext的构造函数的参数。
+      所以，ValueStack和ActionContext本质上可以互相获得。
+ActionContext中持有的属性context和ValueStack对象中持有的对象属性context的类型都是OgnlContext类型，其实是同一个对象
+
+
+相同点：它们都是在一次HTTP请求的范围内使用的，即它们的生命周期都是一次请求。
+不同点：值栈是栈的结构，ActionContext是映射（Map）的结构。
+
+------------------------------------------------------------------------
+struts2把ValueStack对象保存在名为：struts.valueStack的request域中.
+即ValueStack作用域为request.当action创建的时候，ValueStack就创建了，
+action被销毁的时候，ValueStack就销毁了
+
+ValueStack贯穿整个action的生命周期，每一个action实例都拥有一个ValueStack对象，
+其中保存了当前action对象和其他相关对象
+
+重要--------------------------------
+ValueStack中的数据分两部分存放：root（栈结构，CompoundRoot）和context（map形式,OgnlContext，其实就是ActionContext.getContext的对象）
+
+ 1）其中的root对象是CompoundRoot，CompoundRoot继承了ArrayList，提供了额外的方法：push(),和pop()方法，
+      用来对root对象中所包含的数据进行存取.正是由于这两个方法，CompoundRoot变成了一个栈结构.
+    * struts2中，一个请求在最终到达Action的方法之前，Action对象本身会被压入ValueStack
+    （实际上就是放到ValueStack的CompoundRoot中），所以action对象是CompoundRoot中的一个元素.
+ 2）* 其中的context对象是OgnlContext，它实现了map接口，
+      ActionContext中持有的属性context和ValueStack对象中持有的对象属性context的类型都是OgnlContext类型，其实是同一个对象
+      context里封装了其他5个对象(parameters,request,session,application,attr)的引用
+
+要在表达式中访问到context中的对象，需要使用“#对象名.属性名”的语法规则。 
+
+#表示将context对象的元素放入到CompoundRoot对象的栈顶。访问完后， 
+context对象的元素会从栈顶移出，自动释放。 
+
+#相当于ActionContext. getContext()
+#session.msg表达式相当于ActionContext.getContext().getSession(). getAttribute(”msg”) 
+
+ValueStack的默认实现是OgnlValueStack
+
+-----------------------------------------------
+
+获取ValueStack的三种方式
+ 1）ValueStack valueStack = ActionContext.getContext().getValueStack();    
+        ActionContext为Action的上下文，其中有重要的6大对象
+        * valueStack,parameters,request,session,application,attr
+        * 而ognl表达式必须选择AcitonContext中的一个对象作为根对象（root），默认为valueStack，
+        因此访问valueStack中的数据不加# 而如果要使用另外5个对象作为根对象，需要加#前缀.
+
+ 2）ValueStack valueStack = ServletActionContext.getValueStack(ServletActionContext.getRequest());        
+         ServletActionContext继承了ActionContext，它与web容器耦合，可以获取web容器的一些信息.
+ 3）ValueStack valueStack = (ValueStack) ServletActionContext.getRequest().getAttribute("struts.valueStack");
+
+
+常用的存储数据的方法：
+        （1）向map中存数据，即ValueStack中的context（OgnlContext）
+            * 通过request，session等向map中存储数据
+                ServletActionContext.getRequest().setAttribute("username","joey");
+                ServletActionContext.getSession().put("pwd","123");
+            * 直接向map中放数据，这种方式会同时把值存入request这个map中去，在页面上通过${requestScope.msg}就能获取数据
+              至于为什么request这个map中的数据可以通过el表达式获取，是因为struts2重写了HttpServletRequest的getAttribute()方法
+                ActionContext.getContext().put("msg","how you doing");    
+        （2）向对象栈中存数据，即ValueStack中的root（CompoundRoot）对象
+            * 先得到root，再把数据压入到root中，这中方式是放入到栈底.
+                ValueStack valueStack = ActionContext.getContext().getValueStack();
+                valueStack.getRoot().add(new Person());
+            * 先得到root，利用add(index,Object)把一个对象压入到root中指定位置.
+                ValueStack valueStack = ActionContext.getContext().getValueStack();
+                valueStack.getRoot().add(0，new Person());//这里0，表示压入栈顶.
+            * 存放一个map到对象栈中
+                ValueStack valueStack = ActionContext.getContext().getValueStack();
+                valueStack.set("name","tom"); //先封装成Map，在把Map放入到对象栈中，且放入栈顶.
+            * 利用valueStack的push方法把一个对象直接压入栈顶
+                ValueStack valueStack = ActionContext.getContext().getValueStack();
+                valueStack.push(new Person());
+
+
+valuestack生命周期：
+ValueStack的生命周期是随着request的创建而创建，随request的销毁而销毁

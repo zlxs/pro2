@@ -1,0 +1,112 @@
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class GzipFilter implements Filter {
+
+	public void doFilter(ServletRequest req, ServletResponse resp,
+			FilterChain chain) throws IOException, ServletException {
+		
+		HttpServletRequest request = (HttpServletRequest) req;
+	        HttpServletResponse response = (HttpServletResponse) resp;
+		
+		ResponseProxy proxy = new ResponseProxy(response);//把真实对象传递进去
+
+		chain.doFilter(request, proxy.createProxy());
+
+
+		
+		byte[] out = proxy.getBuffer();  //得到目标资源的输出
+		
+		byte gzipout[] = gzip(out);		
+		
+		response.setHeader("content-encoding", "gzip");//告诉浏览器数据是压缩的
+		response.setHeader("content-length", gzipout.length + "");//告诉浏览器压缩数据的长度
+		response.getOutputStream().write(gzipout);//调用原来的response输出给浏览器
+               
+	}
+
+         //压缩函数
+	public byte[] gzip(byte b[]) throws IOException{
+		//将数据写到字节数组缓冲流中
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		GZIPOutputStream gout = new GZIPOutputStream(bout);
+		gout.write(b);
+                //确保数据写入缓冲流中
+		gout.close();
+                //返回压缩后的数据
+		return bout.toByteArray();
+	}
+	
+	class ResponseProxy{
+		private ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		private PrintWriter pw = null;
+		
+		public byte[] getBuffer(){
+			if(pw!=null){
+				pw.close();
+			}
+			return bout.toByteArray();
+		}
+		
+		
+		private HttpServletResponse response;
+
+		public ResponseProxy(HttpServletResponse response){
+			this.response = response;
+		}
+		public HttpServletResponse createProxy(){
+			return (HttpServletResponse) Proxy.newProxyInstance(GzipFilter.class.getClassLoader(), response.getClass().getInterfaces(), new InvocationHandler(){
+				public Object invoke(Object proxy, Method method, Object[] args)
+						throws Throwable {
+					if(!method.getName().equals("getWriter") && !method.getName().equals("getOutputStream")){
+						method.invoke(response, args);
+					}
+					
+					if(method.getName().equals("getWriter")){   //PrintWriter.write("中国");写中文到流中时，会默认查gb2312码表，但输出
+                                        //时会以utf-8输出，所以会产生乱码，所以不能直接向printWriter输出，而要向转换流OutputStreamWriter输出，并指定查utf-8码表编码
+						pw = new PrintWriter(new OutputStreamWriter(bout,"UTF-8"));
+						return pw;
+					}
+					
+					if(method.getName().equals("getOutputStream")){   //ServletOutputSttream.write()
+						return new ServletOutputStream(){
+							@Override
+							public void write(int b) throws IOException {
+								bout.write(b);
+							}
+						};
+					}
+					return null;
+				}
+			});
+		}
+		
+	}
+	
+	public void destroy() {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void init(FilterConfig filterConfig) throws ServletException {
+		// TODO Auto-generated method stub
+
+	}
+
+}

@@ -1,0 +1,21 @@
+<html:file property=""/>
+
+在ActionForm中对应的属性类型为FormFile;//private FormFile formFile;
+
+struts在接收上传信息时，会把上传文件信息封装到对应的formFile对象中
+需要导入文件上传的jar
+
+
+exectue(){
+
+FileUploadForm f=(FileUploadForm)form;
+
+FormFile ff=f.getFormFile();
+//获取上传文件数据
+byte[] b=ff.getFileData();
+
+//获取上传路径
+String path=this.getServlet.getServletContext.getRealPath("/upload");//webroot下建一个upload文件夹，
+会在tomcat的webapps的具体web应用的根目录下创建一个upload文件夹保存上传文件
+
+}

@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Vertical Drop Down Menus</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<!--[if lt IE 7]>
+<script type="text/javascript">
+sfHover = function() {
+	var sfEls = document.getElementById("nav").getElementsByTagName("LI");
+	for (var i=0; i<sfEls.length; i++) {
+		sfEls[i].onmouseover=function() {
+			this.className+=" over";
+		}
+		sfEls[i].onmouseout=function() {
+			this.className=this.className.replace(new RegExp(" over\\b"), "");
+		}
+	}
+}
+if (window.attachEvent) window.attachEvent("onload", sfHover);
+</script>
+<![endif]-->
+
+<style type="text/css">
+body {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: x-small;
+}
+
+* html body {
+	font-size: xx-small;
+}
+
+ul#nav,ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	width: 150px;
+	border-top: 1px solid #ccc;
+}
+
+ul#nav li {
+	position: relative;
+	width: 150px;
+	float: left;
+	clear: left;
+}
+
+#nav li ul {
+	position: absolute;
+	top: 0;
+	margin-left:-999em;
+	min-height: 0;
+}
+
+/* Styles for Menu Items */
+ul#nav li a {
+	display: block;
+	text-decoration: none;
+	color: #777;
+	background: #ffcccc; /* IE6 Bug */
+	line-height: 2em;
+	height: 2em;
+	padding: 0 5px;
+	width: 138px;
+	border: 1px solid #ccc;
+	border-top: none;
+}
+
+* html ul#nav a {
+	width: 150px;
+	width: 13px;
+}
+
+/* this sets all hovered lists to red */
+#nav li:hover a,#nav li:hover li a:hover
+{
+	color: #fff;
+	background-color: red;
+}
+
+/* set dropdown to default */
+#nav li:hover li a
+{
+	color: #777;
+	background-color: #ffffcc;
+}
+
+#nav li ul li a {
+	
+}  /* Sub Menu Styles */
+#nav li:hover ul,#nav li.over ul {
+	margin-left: 149px;
+}
+</style>
+</head>
+<body>
+<h1>Drop Down Vertical menu based on Suckerfish Menus</h1>
+<ul id="nav">
+	<li><a href="#">Home </a></li>
+	<li><a href="#">About </a>
+	<ul>
+		<li><a href="#">History </a></li>
+		<li><a href="#">Team </a></li>
+		<li><a href="#">Offices </a></li>
+	</ul>
+	</li>
+	<li><a href="#">Services </a>
+	<ul>
+		<li><a href="#">Web Design </a></li>
+		<li><a href="#">Internet Marketing </a></li>
+		<li><a href="#">Hosting </a></li>
+		<li><a href="#">Domain Names </a></li>
+		<li><a href="#">Broadband </a></li>
+	</ul>
+	</li>
+	<li><a href="#">Contact Us</a>
+	<ul>
+		<li><a href="#">United Kingdom</a></li>
+		<li><a href="#">France</a></li>
+		<li><a href="#">USA</a></li>
+		<li><a href="#">Australia</a></li>
+	</ul>
+	</li>
+</ul>
+</body>
+</html>

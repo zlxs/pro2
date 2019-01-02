@@ -1,0 +1,12 @@
+
+在跳转到表单的那个Action中加入this.saveToken(request);然后再跳转到表单显示页面,
+内部会把token带给表单并保存在session域中，表单再把值放在用隐藏输入项中
+之后在表单提交的Action中调用
+boolean flag=this.isTokenValid(request)，
+如果flag为true说明初次提交，
+删除session中的token,调用this.resetToken(request);
+并执行后续操作，
+如果flag为false说明重复提交，不执行后续操作
+
+原理和之前的servlet服务器端防表单重复提交一致
+

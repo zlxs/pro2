@@ -1,0 +1,140 @@
+mybatis开发dao层的方式：
+
+  1.原始dao开发方法（程序员需要写dao接口和dao实现类） 不推荐
+
+  2.mapper代理方法（程序员只需要写mapper接口和映射文件） 推荐
+
+
+原始开发dao的方法存在问题：
+1.dao接口实现类方法中存在大量模版方法，设想能否将这些代码提取出来，大大减轻程序员的工作量。
+
+2.调用sqlSession方法时将statement的id硬编码了
+
+3.调用sqlSession方法时传入的变量，由于sqlSession方法使用泛型，即使变量类型传入错误，在
+   编译阶段也不报错，不利于程序员开发
+
+----------------------------------------------------------------------------------
+原始dao开发方法  不推荐
+    需要向dao实现类中注入SqlSessionFactory
+
+案例：
+public interface UserDao{
+
+  public void insertUser(User user) throws Exception;
+
+  public User findUserById(int id) throws Exception;
+
+  public void deleteUser(int id) throws Exception;
+
+}
+
+public class UserDaoImpl implements UserDao{
+
+ //这里通过构造函数注入SqlSessionFactory
+ private SqlSessionFactory sqlSessionFactory;
+
+ public UserDaoImpl(SqlSessionFactory sqlSessionFactory){
+   this.sqlSessionFactory =sqlSessionFactory;
+ }
+
+ public void insertUser(User user) throws Exception{
+   SqlSession sqlSession=sqlSessionFactory.openSession();
+   sqlSession.insert("xxx.xx.domain.user.addUser",user);
+   sqlSession.close();
+ }
+
+ public User findUserById(int id) throws Exception{
+   SqlSession sqlSession=sqlSessionFactory.openSession();
+   User user=sqlSession.selectOne("xxx.xx.domain.user.findUser",id);
+   sqlSession.close();
+   return user;
+ }
+
+ public void deleteUser(int id) throws Exception{
+   SqlSession sqlSession=sqlSessionFactory.openSession();
+   sqlSession.delete("xxx.xx.domain.user.deleteUser",id);
+   sqlSession.close();
+ }
+
+}
+
+----------------------------------------------------------------------------------
+mapper代理方法开发dao  推荐使用
+
+//mapper接口：相当于dao接口
+public interface UserMapper{
+
+  public void insertUser(User user) throws Exception;
+
+  public User findUserById(int id) throws Exception;
+
+  public void deleteUser(int id) throws Exception;
+
+}
+
+----------------@@@------------------
+在mybatis-cfg.xml文件中mapper配置
+<mappers>
+   <!--配置接口文件位置-->
+   <mapper class="xxx.xx.mapper.UserMapper" /> 
+</mappers> 
+-------------------------------------
+
+开发规范：
+1.映射文件的namespace要等于mapper接口的地址
+ namespace="xxx.xx.mapper.UserMapper"
+
+2.mapper接口的方法名和映射文件中 select/insert/delete/update标签的id一致
+
+3.mapper接口中方法输入参数类型和映射文件中各标签的parameterType指定类型一致
+
+4.mapper接口中方法返回值类型和映射文件中各标签的resultType指定类型一致,
+        返回list时，泛型类型要和resultType指定类型一致
+
+5.mapper接口方法参数只能有一个
+   即使mapper接口只有一个参数，可以使用包装类型的pojo满足不同的业务方法需求
+
+6.mapper接口需要和映射文件在同一目录下
+
+
+总结：
+以上开发规范主要是对下边的代码进行统一生成：
+   User user=sqlSession.selectOne("xxx.xx.mapper.UserMapper.findUserById",id);
+   sqlSession.insertUser("xxx.xx.mapper.UserMapper.insertUser",user)
+
+-------------------------------------
+
+也可以用注解方式开发mapper接口：
+
+public interface UserMapper {
+
+  @Insert("insert into user(name,password) values(#{name},#{password})")
+  public void insertUser(User user);
+	
+  @Delete("delete from user where id=#{id}")
+  public void deleteUser(int id);
+		
+  @Select("select * from user where id=#{id}")
+  public User findUserById(int id);
+
+}
+
+-------------------------------------
+
+测试：
+@Test
+public void addUser(){
+
+    InputStream in=Test.class.getClassLoader().getResourceAsStream("mybatis-cfg.xml");
+    SqlSessionFactoryBuilder builder=new SqlSessionFactoryBuilder();
+    SqlSessionFactory sessionFactory=builder.build(in);
+    SqlSession session = sessionFactory.openSession();
+
+    //mybatis会提供接口的实现类
+    UserMapper userMapper = session.getMapper(UserMapper.class);
+    User user=new User("小明","123");
+
+    userMapper.insertUser(user);
+
+    session.close();
+}

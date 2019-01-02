@@ -1,0 +1,41 @@
+属性读操作： 获取属性值
+
+   var value=元素.属性名; 
+
+属性写操作： 修改属性值
+
+   元素.属性名=value;
+
+---------------------------------------------------------------
+
+获取元素里的html内容  如标签 <p>内容</p> 中的内容
+  使用 元素.innerHTML  非常重要
+
+  读：var text=元素.innerHTML;
+  写：元素.innerHTML=text;
+
+如：
+  <p id="x"><label>内容</label></p>
+  则document.getElementById("x").innerHTML; 
+  获取到的是 <label>内容</label> 这串字符串
+
+---------------------------------------------------------------
+
+操作CSS样式：
+  1.元素.style.某个样式名=""; 
+  2.元素.style["某个样式名"]=""; 用[]便于动态修改样式
+
+注：
+  js中不允许出现"-"  所有如 font-size这样的样式都需要改为 如 fontSize这样的
+  把"-"去掉，后一个单词首字母换成大写
+
+  3.元素.className="某个class";
+
+注：不能用 class 要用 className  class是js的保留字
+
+  4.元素.style.cssText=" 样式名:样式值; 样式名:样式值; ...";
+    如： 元素.style.cssText=" width:500px; height:800px; font-size:12px;";
+
+注：该种方式可以一次添加或修改多个样式，且不会把原有的样式给清空，
+    但如果之前在js中某个元素节点已经设置了cssText="...",
+    则下次再给同一个元素设置cssText会把该元素之前通过cssText设置的所有样式都给删除了

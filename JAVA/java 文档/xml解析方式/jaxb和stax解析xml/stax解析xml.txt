@@ -1,0 +1,166 @@
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+public class TestStax {
+
+	public static void main(String[] args) throws XMLStreamException {
+		XMLInputFactory factory=XMLInputFactory.newInstance();
+		InputStream in=null;
+		in=TestStax.class.getClassLoader().getResourceAsStream("book.xml");
+		XMLStreamReader reader = factory.createXMLStreamReader(in);
+		while(reader.hasNext()){		
+			//1为开始节点  4为文本节点     2为结束节点
+			int type=reader.next();
+			//如果是开始节点
+			if(type==XMLStreamConstants.START_ELEMENT){
+				//getName()方法获取节点名称
+				System.out.println("<"+reader.getName()+">");
+				//获取属性和属性值
+				if(reader.getAttributeCount()>0){
+				   for(int i=0;i<reader.getAttributeCount();i++){
+				   System.out.println(reader.getAttributeName(i)+":"+reader.getAttributeValue(i));
+				   }
+				}
+			}
+			//如果是文本节点
+			if(type==XMLStreamConstants.CHARACTERS){
+				System.out.println(reader.getText().trim());
+			}
+			//如果是结束节点
+			if(type==XMLStreamConstants.END_ELEMENT){
+				System.out.println("</"+reader.getName()+">");
+			}						
+			
+		}	
+	}
+
+
+        	
+	//方式二：基于迭代的方式解析
+	public static void test1(){
+		XMLInputFactory factory=XMLInputFactory.newInstance();
+		InputStream in=null;
+		in=TestStax.class.getClassLoader().getResourceAsStream("book.xml");
+		try {
+			XMLEventReader reader=factory.createXMLEventReader(in);
+			while(reader.hasNext()){
+				XMLEvent event=reader.nextEvent();
+				//如果是开始节点
+				if(event.isStartElement()){
+					//event.as...转换节点
+					String name=event.asStartElement().getName().toString();
+					System.out.println(name);
+				}						
+			}			
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		}			
+	}
+
+        //方式二的过滤器模式
+        	public static void test1(){
+		XMLInputFactory factory=XMLInputFactory.newInstance();
+		InputStream in=null;
+		in=TestStax.class.getClassLoader().getResourceAsStream("book.xml");
+		try {
+                        //通过过滤器可以减少迭代次数，提高效率
+			XMLEventReader reader=factory.createFilteredReader(factory.createXMLEventReader(in), new EventFilter() {
+				@Override
+				public boolean accept(XMLEvent event) {
+                                        //如果是开始节点，才继续执行
+					if(event.isStartElement())
+					   return true;
+					return false;
+				}
+			});
+			while(reader.hasNext()){
+				XMLEvent event=reader.nextEvent();
+				//如果是开始节点
+				if(event.isStartElement()){
+					//event.as...转换节点
+					String name=event.asStartElement().getName().toString();
+					System.out.println(name);
+				}		
+			}	
+			
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+        //--------------------写xml操作
+        	public static void test3(){
+		try {
+		    XMLStreamWriter writer=XMLOutputFactory.newInstance().createXMLStreamWriter(System.out);	    
+		    writer.writeStartDocument("UTF-8", "1.0");
+		    writer.writeEndDocument();
+		    writer.writeStartElement("book");
+		    writer.writeAttribute("author","老王");
+		    writer.writeCharacters("think in java");
+		    writer.writeEndElement();	    
+		    writer.flush();
+		    writer.close();
+                    //输出到控制台上：<?xml version="1.0" encoding="UTF-8"?><book author="老王">think in java</book>
+
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		} catch (FactoryConfigurationError e) {
+			e.printStackTrace();
+		}		
+	}
+        
+       //更新节点
+      public static void test4(){
+		InputStream in=TestStax.class.getResourceAsStream("book.xml");
+		//1.创建工厂
+		 DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
+	     //2.得到解析器
+		 DocumentBuilder documentbuilder=null;
+		try {
+		    documentbuilder = factory.newDocumentBuilder();
+		    //3.得到对应xml文件的document对象
+		    Document document = documentbuilder.parse(in);
+		    //通过Xpath来获取指定节点
+		    XPath xpath=XPathFactory.newInstance().newXPath();
+		    NodeList list=(NodeList) xpath.evaluate("/编程资料/书", document, XPathConstants.NODESET);
+		    Element book=(Element) list.item(0);
+		    Element price=(Element) book.getElementsByTagName("售价").item(0);
+		    price.setTextContent("20");
+                    //把修改写入原来的xml文件的操作，和jaxp_dom一样
+		    Transformer tran=TransformerFactory.newInstance().newTransformer();
+		    tran.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+		    tran.setOutputProperty(OutputKeys.INDENT, "yes");
+		    tran.transform(new DOMSource(document),new StreamResult(new FileOutputStream("src/book.xml")));
+		    
+			
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerFactoryConfigurationError e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (XPathExpressionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+
+
+}

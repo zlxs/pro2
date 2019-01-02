@@ -1,0 +1,18 @@
+如何访问设备(如：驱动器)上的内容？
+
+不能直接通过 cd 目录名(如/dev/cdrom) 来访问
+需要通过挂载
+
+1.进入根目录下mnt目录
+  mnt目录是让用户临时挂载别的文件系统
+
+cd /mnt
+2.创建目录
+mkdir cdr(目录名随意) 
+3.把光盘挂载到 根目录下的mnt下的新创建的文件夹cdr下  此时cdr就是cdrom的挂载点
+mount /dev/cdrom /mnt/cdr
+4.访问设备内容
+cd /mnt/cdr
+
+取消挂载
+umount /mnt/cdr

@@ -1,0 +1,92 @@
+  
+<!--POM模型版本4.0.0固定-->
+<modelVersion>4.0.0</modelVersion>
+  
+
+<!--项目组织唯一的标识符，实际对应JAVA的包的结构，是main目录里java的目录结构
+    一般写法 ：公司部门的网址倒过来
+    即 项目的包名
+-->
+<groupId>com.test.maven</groupId>
+ 
+<!--项目的某一模块名
+	项目的唯一的标识符，实际对应项目的名称，就是项目根目录的名称
+ -->
+<artifactId>TestMaven</artifactId>
+
+<!--项目的版本-->
+<version>0.0.1-SNAPSHOT</version>
+
+<!--打包的格式,可以为：pom , jar , maven-plugin , ejb , war , ear , rar , par
+	一般java项目为jar  web项目为war
+-->
+<packaging>war</packaging>
+
+
+
+<!--为项目添加依赖关系-->
+<dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+</dependencies>
+
+
+     
+scope 标签，表示什么时候加入依赖jar
+  * compile，缺省值，适用于所有阶段，会随着项目一起发布。 
+  * provided，类似compile，但期望JDK、容器或使用者会提供这个依赖，如tomcat会提供servlet的api，打包时就无需导入该jar。 
+            这个scope 只能作用在编译和测试时，打包时不加入该类jar包，同时没有传递性。
+  * runtime，只在运行时使用，如JDBC驱动，适用运行和测试阶段。 
+  * test，只在测试时使用，用于编译和运行测试代码。不会随项目发布。 
+  * system，类似provided，但需要显式提供包含依赖的jar，Maven不会在Repository中查找它。 
+    如果你将一个依赖范围设置成系统范围，你必须同时提供一个 systemPath 元素。
+    注意该范围是不推荐使用的（你应该一直尽量去从公共或定制的 Maven 仓库中引用依赖）。
+
+
+
+<!--配置资源文件-->
+<properties>
+   <!--字符编码-->
+   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+   <!--jar版本统一管理，    用法 如：使用${}来得到配置的spring版本
+              <version>${spring.version}</version>   方便修改版本
+   -->
+   <spring.version>1.2.6</spring.version>
+   <junit.version>4.12</junit.version>
+
+</properties>
+
+
+<!--公司内部私服远程仓库-->
+<!--maven私服远程仓库的配置-->
+<repositories>
+  <repository>
+  <!--配置私服远程仓库id-->
+  <id></id>
+  <name></name>
+  <!--私服远程仓库地址--> 
+  <url></url>
+ 
+  <!--告诉Maven可以从这个仓库下载releases版本的构件-->
+  <releases>  
+      <enabled>true</enabled>  
+  </releases>
+
+  <!--告诉Maven不要从这个仓库下载snapshot版本的构件-->
+  <snapshots>
+      <enabled>false</enabled>
+  </snapshots>
+
+  </repository> 
+</repositories>
+
+
+
+
+
+

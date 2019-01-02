@@ -1,0 +1,304 @@
+
+使用监听器的方式完成web服务器启动时，Spring容器就初始化
+
+在web.xml中配置监听器（myeclipse在整合spring时会自动配置好）
+<!--上下文载入监听器，web服务器启动时，完成spring容器的初始化-->
+<listener>
+  <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+</listener>
+<!--通过配置上下文参数，指定spring配置文件的位置，通过它可以把配置文件写到多个xml中，
+  然后再加到param-value里去，多个spring配置的xml文件用，隔开，但每个xml之前都要加classpath:
+-->
+<context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:applicationContext.xml</param-value>
+</context-param>
+
+
+以前是在struts-config.xml文件中配置：
+<!--为了确保Spring容器在服务器启动时，直接完成实例化，需要配置plug-in-->
+  <plug-in className="org.springframework.web.struts.ContextLoaderPlugIn">
+    <set-property property="contextConfigLocation" value="/WEB-INF/classes/applicationContext.xml"/>
+  </plug-in>
+现在不需要这么配置了
+
+
+struts-cfg.xml文件配置：
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.3//EN" "http://struts.apache.org/dtds/struts-config_1_3.dtd">
+
+<struts-config>
+
+  <form-beans>
+    <form-bean name="userForm" type="xxx.xx.ActionForm.UserForm"></form-bean> 
+  </form-beans>  
+
+  <!-- 由于Action在Spring容器初始化时创建并存放在容器中，用时从容器中获取，type属性配置
+         成spring提供的action代理类，或者不配置type,而使用
+    下面的controller配置，建议就用这种，注意需要导入spring-struts.jar这个包-->
+  <action-mappings>
+    <action path="/userAction" name="userForm" type="org.springframework.web.struts.DelegatingActionProxy"
+           validate="false">
+      <forward name="success"  path="/success.jsp"></forward>
+    </action>
+  </action-mappings>
+
+  <!--配置spring给出的代理请求处理器 ，确保到Spring容器中寻找对应的action实例，而不是实例化新的对象-->
+  <!--
+  <controller processorClass="org.springframework.web.struts.DelegatingRequestProcessor"></controller>
+  -->
+  
+  <message-resources parameter="com.yourcompany.struts.ApplicationResources" />
+</struts-config>
+
+----------------------------------------------------------
+----------------------------------------------------------
+Spring与Strut1，hibernate整合
+
+
+实体类：
+public class User {
+	private Integer id;
+	private String username;
+	private String password;	
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+}
+映射文件：
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="xxx.xx.entity.User" table="user">
+        <id name="id" column="id" type="integer" >   
+            <generator class="increment" />   
+        </id>
+        <property name="username" column="username" type="string" />
+        <property name="password" column="password" type="string" ></property>
+    </class>
+</hibernate-mapping>
+----------------------------------------------------------
+dao层：
+接口：
+public interface UserDao {
+	public void add(User user);
+	public User find(String username,String password);
+}
+实现类：
+public class UserDaoImpl implements UserDao {
+	private HibernateTemplate ht;
+	@Override
+	public void add(User user) {
+          ht.save(user);
+	}
+	@Override
+	public User find(String username, String password) {
+		String sql="insert into User u values(?,?)";
+		return (User)ht.find(sql, new Object[]{username,password});
+	}
+	public HibernateTemplate getHt() {
+		return ht;
+	}
+	public void setHt(HibernateTemplate ht) {
+		this.ht = ht;
+	}
+}
+----------------------------------------------------------
+service层：
+接口：
+public interface UserService {
+	public void add(User user);
+	public User find(String username,String password);
+}
+实现类：
+public class UserServiceImpl implements UserService {
+	private UserDao dao;
+	@Override
+	public void add(User user) {
+        dao.add(user);
+	}
+	@Override
+	public User find(String username, String password) {
+		return dao.find(username, password);
+	}
+	public UserDao getDao() {
+		return dao;
+	}
+	public void setDao(UserDao dao) {
+		this.dao = dao;
+	}
+}
+----------------------------------------------------------
+Action与FormBean
+
+public class UserForm extends ActionForm {
+	private Integer id;
+	private String  username;
+	private String  password;
+	
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+}
+
+public class UserAction extends Action {
+    private UserService service;   
+    public UserService getService() {
+		return service;
+	}
+	public void setService(UserService service) {
+		this.service = service;
+	}
+	@Override
+	public ActionForward execute(ActionMapping mapping, ActionForm form,
+			HttpServletRequest request, HttpServletResponse response)
+			throws Exception {
+    	UserForm userForm = (UserForm)form;
+    	User user=new User();
+    	user.setUsername(userForm.getUsername());
+    	user.setPassword(userForm.getPassword());
+        this.service.add(user);	   
+	return mapping.findForward("success");
+	}
+}
+----------------------------------------------------------
+struts-cfg.xml文件配置：
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.3//EN" "http://struts.apache.org/dtds/struts-config_1_3.dtd">
+
+<struts-config>
+
+  <form-beans>
+    <form-bean name="userForm" type="xxx.xx.ActionForm.UserForm"></form-bean> 
+  </form-beans>  
+
+  <!-- 由于Action在Spring容器初始化时创建并存放在容器中，用时从容器中获取，type属性配置
+         成spring提供的action代理类，或者不配置type,而使用
+    下面的controller配置，建议就用这种，注意需要导入spring-struts.jar这个包-->
+  <action-mappings>
+    <action path="/userAction" name="userForm" type="org.springframework.web.struts.DelegatingActionProxy"
+           validate="false">
+      <forward name="success"  path="/success.jsp"></forward>
+    </action>
+  </action-mappings>
+
+  <!--配置spring给出的代理请求处理器 ，确保到Spring容器中寻找对应的action实例，而不是实例化新的对象-->
+  <!--
+  <controller processorClass="org.springframework.web.struts.DelegatingRequestProcessor"></controller>
+  -->
+  
+  <message-resources parameter="com.yourcompany.struts.ApplicationResources" />
+</struts-config>
+
+----------------------------------------------------------
+applicationContext.xml文件配置：
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <bean id="hibernateTemplate" class="org.springframework.orm.hibernate4.HibernateTemplate">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>   
+    <bean id="userDao" class="xxx.xx.dao.UserDaoImpl">
+        <property name="ht" ref="hibernateTemplate"></property>
+    </bean>
+    <bean id="userService" class="xxx.xx.service.UserServiceImpl">
+        <property name="dao" ref="userDao"></property>
+    </bean>
+
+    <!-- 配置Action只能用name,不能用id ，且要和struts配置文件中action的path匹配-->
+    <bean name="/userAction" class="xxx.xx.Action.UserAction">
+        <property name="service" ref="userService"></property>
+    </bean>
+
+	<bean id="dataSource"
+		class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="url"
+			value="jdbc:mysql://localhost:3306/spring">
+		</property>
+		<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+		<property name="username" value="root"></property>
+		<property name="password" value="root"></property>
+	</bean>
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">
+					org.hibernate.dialect.MySQLDialect
+				</prop>
+				<prop key="hibernate.hbm2dl_auto">update</prop>
+				<prop key="hibernate.show_sql">true</prop>
+			</props>
+		</property>
+		<property name="mappingResources">
+	        <list>
+	            <value>xxx/xx/entity/User.hbm.xml</value>
+	        </list>
+	    </property>	
+	</bean>
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	
+	<tx:advice id="txadvice" transaction-manager="transactionManager">	
+	  <tx:attributes>
+	     <tx:method name="save*" propagation="REQUIRED" isolation="DEFAULT"/>
+	     <tx:method name="update*" propagation="REQUIRED" isolation="DEFAULT"/>
+	     <tx:method name="delete*" propagation="REQUIRED" isolation="DEFAULT"/>
+	     <tx:method name="load*" propagation="REQUIRED" isolation="DEFAULT" read-only="true"/>
+	     <tx:method name="get*" propagation="REQUIRED" isolation="DEFAULT" read-only="true"/>
+	     <tx:method name="find*" propagation="REQUIRED" isolation="DEFAULT" read-only="true"/>
+	     <tx:method name="*" propagation="REQUIRED" isolation="DEFAULT"/>
+	  </tx:attributes>
+	</tx:advice>
+	
+	<aop:config>
+	  <aop:pointcut expression="execution(* *..*ServiceImpl.*(..))" id="txPointcut"/>
+	  <aop:advisor advice-ref="txadvice"  pointcut-ref="txPointcut"/>
+	</aop:config>
+	
+	<tx:annotation-driven transaction-manager="transactionManager" />
+</beans>

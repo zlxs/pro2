@@ -1,0 +1,75 @@
+可滚动，可更新结果集 ResultSet
+
+需要在获取statement时传人两个参数：
+Statement stmt=conn.createStatement(int type, int concurrency);
+
+Type：
+  TYPE_FORWARD_ONLY：结果集游标只能向前移动
+  TYPE_SCROLL_INSENSITIVE：可滚动，对数据变化不敏感  
+  TYPE_SCROLL_SENSITIVE：可滚动，对数据变化敏感
+
+Concurrency：
+  CONCUR_READ_ONLY: 代表只读的结果集  CONCUR_UPDATABLE: 代表可更新结果集
+
+
+
+对结果集进行操作就是对结果集的游标进行操作，常用的方法有：
+
+  absolute(int row)：把游标移至给定的行  
+  afterLast()：把游标移动到最后一行后面  
+  beforeFirst()：把游标移动到第1行前面  
+  isAfterLast()：判断游标是否在最后一行后面  
+  isBeforeFirst()：判断游标是否在第1行前面  
+  first()：把游标移动到第1行  
+  last()：把游标移动到最后一行
+
+  isFirst()：判断游标是否在第1行
+  isLast()：判断游标是否在最后一行  
+  previous()：把游标移动到所在行的前一行  
+  next()：把游标移动到所在行的后一行  
+  relative()：把游标相对移动几行  
+  getRow()：获取当前行数
+
+
+更新结果集：
+  updateXXX(第几列，新值);//把结果集中当前游标指向的那行数据的指定列的值更新为指定的值，只是改内存中的数据
+     如updateLong  updateString ...
+  如需使更新对数据库生效，需要在之后调用updateRow()方法
+
+  updateRow();//用此 ResultSet 对象的当前行的新内容更新底层数据库，oracle不允许此项操作，无法更新到数据库
+
+
+案例：
+public static void main(String[] args) {
+		
+	try {
+		Connection conn=JDBCUtils.getConnection();
+			
+		String sql="select id,name from users"; //执行更新结果集操作时，查询列不能为*，需要具体的列名，也不能关联多张表
+		PreparedStatement st = conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+		ResultSet rs = st.executeQuery();
+		
+		//演示结果集的方法
+		while(rs.next()){ //如果结果集中有记录则执行
+			rs.last();//把游标移动到最后一行
+			System.out.println(rs.getRow());//获取当前游标指向的记录所在结果集中的行数
+			rs.previous();//把游标向前移动一行， 这里就指向了倒数第二条记录
+			System.out.println(rs.getString("name"));//获取倒数第二行记录中的name列的值
+				
+			rs.absolute(3);//移动到第三行
+			System.out.println(rs.getString("name"));
+				
+			rs.last();//移动到最后一行记录
+			rs.updateString(2,"xxxxxx");//更新内存中结果集的name值为xxxxxx,注意修改只是改内存中的值，而不是数据库中值
+			rs.updateRow();//用此 ResultSet 对象的当前行的新内容更新底层数据库，oracle不允许此项操作，无法更新到数据库
+				
+			System.out.println(rs.getString("name"));
+		}
+			
+	} catch (SQLException e) {
+		e.printStackTrace();
+	}		
+}
+注意：更新时 查询语句中不能有*，也不能关联多张表
+      做更新结果集时 tyep需要设置为：ResultSet.TYPE_SCROLL_SENSITIVE 可滚动，对数据变化敏感
+      oracle不允许通过更新结果集，从而更新数据库中数据，所以最好不要使用结果集更新数据

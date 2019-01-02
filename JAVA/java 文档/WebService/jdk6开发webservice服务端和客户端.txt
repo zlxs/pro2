@@ -1,0 +1,78 @@
+web sevice 是远程调用的一种方案
+  一种解决跨平台、跨语言间分布式系统的整合方案(socket)
+
+esb：企业服务总线，web sevice跨平台、跨语言形象上的表述（不存在）
+
+传递xml文档
+
+soap:简单对象访问协议
+soa:面向服务的架构（粗粒度）
+sel:WebServiceEndPointInterface 终端接口
+wsdl:web service 描述语言
+
+
+使用JDK开发web service
+
+开发服务器端
+
+@WebService 加在SEI接口和实现类上, 
+@WebMethod  加在SEI接口方法上
+
+@WebParam 加在方法参数上，用于指定传输的xml的中的arg0,arg1..的节点名，定制从单个参数至 Web Service 消息部件和 XML 元素的映射。
+@WebResult 注释用于定制从返回值至 WSDL 部件或 XML 元素的映射。
+
+
+Endpoint.publish(address,implementor)   发布web service
+
+
+
+/*
+ *SEI  Service Endpoint Interface 发布的服务接口
+ */
+@WebService 
+public interface HelloWorldService{
+   @WebMethod
+   public String sayHello(@WebParam(name="name")String name);
+}
+
+/*
+ *SEL实现 
+ */
+@WebService
+public class HelloWorldServiceImpl implements HelloWorldService{
+   public String sayHello(String name){
+      System.out.println(name);
+      return "hello"+name;
+   } 
+}
+
+public class Test{
+   public static void main(String[] args){
+      String address="http://localhost:6666/TestWebService/HelloWorldService";
+      //发布web sevice
+      Endpoint.publish(address,new HelloWorldServiceImpl());
+      System.out.println("发布成功！");
+   }
+}
+
+http://localhost:6666/TestWebService/HelloWorldService?wsdl 让解析引擎动态生成文档
+
+
+开发客户端
+
+使用jdk的工具：wsimport.exe
+
+cmd进入myEclipse的workspace的客户端项目下： E:\MyEclipse\WebServiceClient\src>
+输入：wsimport -keep url(网上wsdl文件路径，也可以是本地wsdl地址)
+
+wsimport -keep http://localhost:6666/TestWebService/HelloWorldService?wsdl
+就会根据wsdl文件在客户端项目中src下生成相关的包和类
+
+客户端测试：
+public class Test1 {
+	public static void main(String[] args) {
+		HelloWebServiceImplService factory=new HelloWebServiceImplService();
+		HelloWebServiceImpl helloWsPort = factory.getHelloWebServiceImplPort();
+        System.out.println(helloWsPort.sayHello("老王"));
+	}
+}

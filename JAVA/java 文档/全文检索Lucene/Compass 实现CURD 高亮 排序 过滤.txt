@@ -1,0 +1,198 @@
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.compass.core.Compass;
+import org.compass.core.CompassHits;
+import org.compass.core.CompassQuery;
+import org.compass.core.CompassSession;
+import org.compass.core.CompassTransaction;
+import org.compass.core.CompassQuery.SortDirection;
+import org.compass.core.config.CompassConfiguration;
+
+public class TestCompass {
+
+	
+	public static void main(String[] args){
+		
+		
+		CompassConfiguration cfg=new CompassConfiguration().configure();
+		Compass compassSessionFactory = cfg.buildCompass();
+		CompassSession session = compassSessionFactory.openSession();
+		CompassTransaction tx = session.beginTransaction();
+		/*
+		for(int i=0;i<15;i++){
+			Article article=new Article();
+			article.setId(i);
+			article.setTitle("Compass运用");
+			article.setContent("使用Compass来简化Lucene操作");
+			article.setSize(i);
+			//建立索引
+			createIndex(session,article);
+		}
+		*/
+		//查询
+		List<Article> list=search(session,"使用");
+		for(Article a:list){
+			System.out.println(a.getId());
+			System.out.println(a.getTitle());
+			System.out.println(a.getContent());
+			System.out.println(a.getSize());
+		}
+		//索引
+		//UpdateIndex(session, article);
+	
+		//删除索引
+		deleteIndex(session,Article.class,0);
+		
+		tx.commit();
+		session.close();	
+	}
+	
+	public static void createIndex(CompassSession session,Article article){
+		session.create(article);
+	}
+	
+	public static List<Article> search(CompassSession session,String queryString){
+		//无需指定排序方式----------------------
+		//CompassHits hits =session.find(queryString);
+		//--------------------------------
+		
+		//指定排序方式和过滤------------------------
+		CompassHits hits =null;
+		CompassQuery compassQuery = session.queryBuilder().queryString(queryString).toQuery();  
+		//过滤
+		// 1，查询所有
+		//compassQuery = session.queryBuilder().matchAll();	 
+	    // 2，关键词查询
+	    //compassQuery = session.queryBuilder().term("content", "lucene");
+	    // 3，范围查询
+	    //compassQuery = session.queryBuilder().between("id", 5, 15, true,false);
+	    // 4，通配符查询
+	    compassQuery = session.queryBuilder().wildcard("content", "lu*n?"); 
+	    //....其他查询
+	    
+		//compassQuery.addSort("size");//按某字段升序
+		compassQuery.addSort("size",SortDirection.REVERSE);//按某字段降序
+		//------------------------------------
+		hits=compassQuery.hits();
+		
+		List<Article> list=new ArrayList<Article>();
+		for(int i=0;i<hits.length();i++){//通过改变i的初始和结束值，可以实现分页搜索
+			Article article=(Article) hits.data(i);//Document对象-->具体类Article对象
+			//高亮指定的属性，如果此属性中没有查询的关键字，则返回null
+			String text=hits.highlighter(i).fragment("content");
+			if(text!=null){
+			  article.setContent(text);	
+			}
+			list.add(article);
+		}
+		return list;
+	}
+	
+    public static void UpdateIndex(CompassSession session,Article article){
+		session.save(article);
+	}
+    
+    public static void deleteIndex(CompassSession session,Class clazz,int id){
+	    session.delete(clazz,id);
+    }
+    
+}
+
+
+import org.compass.annotations.ExcludeFromAll;
+import org.compass.annotations.Index;
+import org.compass.annotations.Searchable;
+import org.compass.annotations.SearchableBoostProperty;
+import org.compass.annotations.SearchableId;
+import org.compass.annotations.SearchableProperty;
+import org.compass.annotations.Store;
+
+@Searchable
+public class Article {
+    @SearchableId
+	private int id;
+    //excludeFromAll=ExcludeFromAll.YES指定不从当前属性中搜索
+    @SearchableProperty(store=Store.YES,index=Index.ANALYZED,excludeFromAll=ExcludeFromAll.YES)
+	private String title;
+    @SearchableProperty(store=Store.YES,index=Index.ANALYZED)
+	private String content;   
+    //增加浮点型变量boostValue来人为控制匹配得分
+    @SearchableBoostProperty
+    private float boostValue=1f;
+    //自定义的用来测试排序的属性       format：表是size的格式为1-->00000001,不足的用0补齐
+    @SearchableProperty(store=Store.YES,index=Index.ANALYZED,format="00000000")
+    private int size;
+    
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getTitle() {
+		return title;
+	}
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	public String getContent() {
+		return content;
+	}
+	public void setContent(String content) {
+		this.content = content;
+	}
+	public float getBoostValue() {
+		return boostValue;
+	}
+	public void setBoostValue(float boostValue) {
+		this.boostValue = boostValue;
+	}
+	public int getSize() {
+		return size;
+	}
+	public void setSize(int size) {
+		this.size = size;
+	}
+}
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<compass-core-config xmlns="http://www.compass-project.org/schema/core-config"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+    xsi:schemaLocation="http://www.compass-project.org/schema/core-config  
+    http://www.compass-project.org/schema/compass-core-config-2.2.xsd">
+  
+
+ <compass name="default">
+ 
+    <!-- 1，连接信息 -->
+    <connection>
+        <file path="./indexDir/" />
+    </connection>
+ 
+    <!-- 2，声明映射信息 -->
+    <mappings>
+        <class name="my.xxx.xx.Article" />
+    </mappings>
+ 
+    <!-- 其他配置  -->
+    <settings>  
+            <!-- setting元素就像property元素 -->
+            <!-- 配置默认分词器  
+            <setting name="compass.engine.analyzer.default.type"   
+                value="jeasy.analysis.MMAnalyzer"/>    -->
+            <!-- 配置高亮 -->
+            <!-- 前缀 -->  
+            <setting name="compass.engine.highlighter.default.formatter.simple.pre"   
+                value="&lt;font color='red'&gt;&lt;b&gt;"/>  
+            <!-- 后缀 -->              
+            <setting name="compass.engine.highlighter.default.formatter.simple.post"  
+                value="&lt;/b&gt;&lt;/font&gt;"/>
+            <!-- 摘要大小-->  
+            <setting name="compass.engine.highlighter.default.formatter.simple.size" value="20"/>                      
+        </settings>  
+    
+ </compass>
+</compass-core-config> 

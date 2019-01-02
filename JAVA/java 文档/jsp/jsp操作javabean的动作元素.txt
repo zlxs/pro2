@@ -1,0 +1,26 @@
+创建javaBean对象person id属性为beanName class为完整名称（带包名的名称）
+<jsp:useBean id="person" class="cn.xxx.xx.Person" scope="page">xxxxxxx</jsp:useBean>
+从page域中查找person这个bean,如果找到了，就返回，如果找不到就创建一个person这个bean，再以person为关键字存在page域
+
+标签体内容只在创建bean时才执行，比如把bean存入session中，再刷新页面，就不会输出标签体内容
+
+
+设置person bean的属性
+<jsp:setProperty name="person" property="属性" value="参数" />
+手工为bean赋值
+
+
+
+<jsp:setProperty name="person" property="username" param="username" />
+
+通过浏览器带来的请求参数的值来设置person对象的属性
+param参数值要和url地址上的key值一致 -->    ?username=aaa
+
+
+<jsp:setProperty name="person" property="*" />
+用所有请求参数来为bean 赋值
+
+
+
+获得person对象的属性值
+<jsp:getProperty name="person" property="属性" />

@@ -1,0 +1,92 @@
+分散配置：
+把需要在上下文中硬编码值的拿到外部的属性文件中定义，
+让xml文档从外部属性文件中提取值
+
+<!--专门用来分散配置的后置处理器（属性占位符配置器,加载指定位置的属性文件，形成properties集合）-->
+<bean id="propertyPlaceholderConfigurer" 
+    class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+  <property name="locations">
+    <list>
+      <value>xxx/xx/xxx/jddbc.properties</value>  //属性文件地址
+    </list>
+  </property>
+</bean>
+
+<bean id="jdbcUtil" class="xxx.xx.xx.JdbcUtil">
+  <property name="driver" value="${driver}" />
+  <property name="url" value="${url}" />
+  <property name="username" value="${username}" />
+  <property name="password" value="${password}" />
+</bean>
+
+在xxx.xx.xxx.JdbcUtil类同目录下写属性文件：
+jdbc.properties:
+
+driver=com.mysql.jdbc.Driver
+url=jdbc:mysql://localhost:3306/test
+username=root
+password=root
+
+spring2.5之后配置org.springframework.beans.factory.config.PropertyPlaceholderConfigurer
+这个用来分散配置的bean可以通过context的名词空间,用
+<context:propety-placeholder  location="classpath:xxx/xx/xxx/jddbc.properties" />
+来代替
+多个属性文件就用,分隔
+
+--------------------------------------------------------------------------
+
+属性编辑器：能以装配字符串的形式，装配其他类型的属性
+如：
+<bean id="user" class="xxx.xx.xxx.User">
+  <property name="homeAddress" value="jiangsu-nanjin-zhongshan">
+</bean>
+
+
+class Address{
+  private String province;
+  private String city;
+  private String street;
+  get set
+}
+
+class User{
+  private Address homeAddress;
+  ...
+  set get
+}
+
+自定义实现上述配置的属性编辑器(属性编辑器 PropertyEditorSupport是JDK的，不是Spring的)
+class myEditor extends PropertyEditorSupport{
+  @override    //text就是bean配置的value的值
+  public void setAsText(String text) throws IllegalArgumentException{
+   if(text!=null&&text.length()>0){
+     String[] ss=text.split("-");//split的参数是正则表达式，所以如果是以.拆分，
+    //则要写成split("\\.");
+     if(ss!=null&&ss.length>2){
+       Address a=new Address();
+       a.setProvince(ss[0]);
+       a.setCity(ss[1]);
+       a.setStreet(ss[2]);
+       //调用属性编辑器的方法把转换成的地址对象设置到相应的属性上
+       this.setValue(a);//这步非常重要
+      }esle{
+       this.setValue(null);
+      } 
+   }else{
+     this.setValue(null);
+   }
+ }
+}
+
+之后注册属性编辑器：
+<!--注册属性编辑器（自定义编辑器配置器）-->
+<bean id="customEditorConfigurer" 
+   class="org.springframework.beans.factory.config.CustomEditorConfigurer">
+  <property>
+     <map>
+       <entry key="xxx.xx.xxx.Address">
+          <bean class="xxx.xx.xxx.myEditor"></bean>
+       </entry>
+     </map>
+  </property>
+</bean>

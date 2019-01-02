@@ -1,0 +1,87 @@
+DateFormat：
+
+getDateInstance//只输出日期部分
+getTimeInstance//只输出时间部分
+getDateTimeInstance//都输出
+
+
+Date date=new Date();
+
+DateFormat df=DateFormat.getDateInstance(DateFormat.FULL/LONG/SHORT/DEFAULT/MEDIUM,Local.CHINA/..);
+String str=df.format(date);
+System.out.println(str);
+
+
+df=DateFormat.getTimeInstance(DateFormat.LONG,Local.CHINA);
+
+df=DateFormat.getTimeInstance(DateFormat.LONG,DateFormat.SHORT,Local.CHINA);
+
+
+
+
+使用Dateformat反向把一个字符串格式化成一个日期
+
+String str="2011年3月25日 星期五 上午11：44";
+//格式要和str匹配
+DateFormat df=DateFormat.getDateTimeInstance(DateFormat.LONG,DateFormat.SHORT,Local.CHINA);
+Date date=df.parse(str);
+System.out.println(date);
+
+
+
+NumberFormat：
+
+货币表示
+int price=18;
+NumberFormat nf=NumberFormat.getCurrencyInstance(Local.CHINA);
+System.out.println(nf.format(price));
+
+//反向
+String s="￥18";
+NumberFormat nf=NumberFormat.getCurrencyInstance(Local.CHINA);
+Number n=nf.parse(s);
+System.out.println(n.doubleValue());
+
+
+百分比
+double d=0.1;
+NumberFormat nf=NumberFormat.getPercentInstance();
+System.out.println(nf.format(d));
+
+
+
+
+MessageFormat:
+使用模式文本：用占位符替换文本国际化有关的数据
+
+//在数组中保存占位符的参数
+
+String pattern="On (0),a hurricance destroyed (1) hourses and caused (2) of damage.";
+MessageFormat format=new MessageFormat(pattern，Local.CHINA);
+//在数组中保存占位符的参数
+Object params[]={new Date(),99,100000};
+String message=format.format(params);
+System.out.println(message);
+
+占位符可以有输出样式
+String pattern="At(0，time,short) On (0,date),a hurricance destroyed (1) hourses and caused (2,number,currency) of damage.";
+//time short为时间部分短格式输出，date为日期部分默认格式输出，number currency为把数字以货币形式输出
+MessageFormat format=new MessageFormat(pattern，Local.CHINA);
+Object params[]={new Date(),99,100000};//第一个数据会替换｛0}的两个部分
+String message=format.format(params);
+System.out.println(message);
+
+
+
+模式文本可以在资源文件中
+ResourceBundle bundle=ResourceBundle.getBundle("包名.资源文件名（默认资源名且不含后缀)",request.getLocal());
+
+//资源文件中message=On (0),a hurricance destroyed (1) hourses and caused (2) of damage.
+String pattern=bundle.getString("message");//message=On (0),a hurricance destroyed (1) hourses and caused (2) of damage.
+
+MessageFormat format=new MessageFormat(pattern，Local.CHINA);
+//在数组中保存占位符的参数
+Object params[]={new Date(),99,100000};
+String message=format.format(params);
+System.out.println(message);
+

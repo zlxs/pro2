@@ -1,0 +1,109 @@
+select a||b from tablename;
+||可以把a和b两列值合并在一起查询出来，如a对应的是x,b对应的是y,则a||b查出来的是xy
+
+输出如下结果 xy is c 作为一列查询  
+select  a||b 'is' ||c from tablename; 
+
+---------------------------------------------------------------------
+修改当前会话的语言环境
+alter session set nls_language='american'
+alter session set nls_language='simplified chinese'
+注意，只对当前会话有效，数据库链接关闭则失效，恢复为默认语言环境
+
+---------------------------------------------------------------------
+修改当前会话的日期格式
+alter session set nls_date_format='rrrr-mm-dd HH:mi:ss day';
+
+---------------------------------------------------------------------
+别名：
+
+select salary*12 年薪 from employee;
+
+使用"" 可以包裹别名，让它可以空格，而上面的一种不能把 年薪分开
+select salary*a2 "年  薪" from employee;
+
+---------------------------------------------------------------------
+使用like运算符
+% 可以代表任意字符,替代一个或多个字符
+_ 下划线代表一个字符
+select * from table1 where name like  '李%' ;//查询所有name中有姓李的记录
+
+select * from table1 where name like '__\%_\_%' escape '\';//查询所有name中第三个字符是%第五个字符是_的记录,
+escape指定转义字符
+
+---------------------------------------------------------------------
+使用IS NULL 和 IS NOT NULL; 查询包含空值的记录
+select * from table1 where age is null;//空值不能用= ,查询age字段为空的记录
+
+not in关键字
+select * from table1 where job not in('经理'，'总经理');//查询job_id不是经理和总经理的记录
+
+注： not in(.....)中含有null的话，不会找出任何值
+select * from user where job not in('经理'，'总经理',null);
+等价于
+select * from user where job<>'经理' and job<>'总经理' and job<>null;
+而是数据库不认识 job<>null这个子句,只认识job not null 所以where 子句返回false
+---------------------------------------------------------------------
+<>运算符 ：不等于的意思
+---------------------------------------------------------------------
+
+查看所有表 select * from tab/user_tables;   use_tables查出来的信息比较详细
+      相当于mysql的show tables;
+
+0、查看表结构 desc表名
+1、添加一个字段  alter table 表名 add 列名 类型 [新默认值] [新约束];
+2、修改字段类型  alter table 表名 modify 列名 新类型 [新默认值][新约束];
+3、删除一个字段  alter table 表名 drop column 列名;
+4、修改列的名称 alter table 表名 rename column 指定原列名 to 新列名;
+5、修改表的名字 rename student to stu
+//mysql 是 alter table student rename to stu;或rename table student to stu;
+
+6、删除表  drop table 表名  
+
+上述修改表结构相关的语句叫做DDL ，修改，是没有办法恢复的
+
+---------------------------------------------------------------------
+distinct 关键字  去除重复
+
+过滤表中重复的英语成绩(字段)
+select distinct english from student;
+
+过滤表中重复的行（重复记录只显示一个）
+select distinct * from student;
+
+distinct的作用是后面所有查询的组合
+如： select distinct column1,column2 from table;
+则如果查询出来的记录中有column1和column2的数据都一样的记录，则只显示一条记录
+
+---------------------------------------------------------------------
+获取系统的当前日期
+select sysdate from dual;//dual是虚表，被用于计算临时数据
+
+---------------------------------------------------------------------
+Group by 分组
+	Group by，写在FROM后，如果有WHERE，就在WHERE后面。
+	查询的列一定要是：
+	  在group by中出现的列（在Select中不一定全写上） 或是使用组函数
+	按多个列分组，参与分组的多个列有一个不相同就是不同的组。
+	
+分组结果过滤
+	Having，是分完组后再进行过滤，只显示符合条件的结果。
+	在Group by与Having中都不可以使用别名。
+	与Where的区别
+		Having是是分完组后再进行过滤。
+		Where是先过滤，再进行分组操作。
+	如果可以，尽量写Where条件，不写Having。
+
+再次强调：
+------***********十分重要**********------
+在select中出现的列，如果没有使用组函数，则一定要出现在group by后面
+    否则会导致不同列的结果的行数不一致而报错 
+---------------------------------------------------------------------
+Order by排序 
+desc 降序排序
+asc 升序排序 不写时默认asc
+
+ select * from emp order by slary desc;
+
+如果想要在工资降序的基础上，工资相同的再按照id 降序只需要在 之后再添加 ，id desc
+  select * from emp order by slary desc,id desc;   会按从左往右的要求一层层排序

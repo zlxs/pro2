@@ -1,0 +1,35 @@
+
+
+先使用jdk的工具：
+cmd进入myEclipse的workspace的客户端项目下 如： E:\MyEclipse\WebServiceClient\src>
+输入：wsimport -keep url(网上wsdl文件路径，也可以是本地wsdl地址)
+
+自动在项目中生成客户端代码
+调用，如：
+
+//该WebService是用来翻译单词的
+public class Test {
+	public static void main(String[] args) {
+
+		TranslatorWebService service=new TranslatorWebService();
+		TranslatorWebServiceSoap soap = service.getTranslatorWebServiceSoap();//生成代理
+                
+                //ArrayOfString封装了返回信息，可以通过getString()方法，返回一个List<String>集合
+		ArrayOfString result = soap.getEnCnTwoWayTranslator("单词");//调用方法
+                //迭代集合，得到所有返回的字符串
+		List<String> list = result.getString();
+		for(String s:list){
+			System.out.println(s);
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+

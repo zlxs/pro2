@@ -1,0 +1,293 @@
+基本选择器：
+$("#id")  //返回指定id的元素的JQuery对象
+示例：$("#id").css("background","#00FFFF");//把指定id的元素的背景图片修改为#00FFFF颜色
+
+$("元素名，如div")  //返回所有div元素的JQuery对象
+
+$(".myclass")   //返回class类型为myclass的元素的JQuery对象
+
+$("*")   //返回所有元素的集合
+
+$("#id,div")   //返回所有div和指定id的元素的JQuery对象，$("")中可以包括多个选择器
+
+
+
+层次选择器：
+1.$("form input")  //在给定的祖先元素下匹配所有的后代元素  form下的所有input元素 input可以是form的子元素，
+也可以是子元素的子元素，子元素的子元素的子元素....只要在form下就行
+   
+2.$("prev+next")   //匹配紧接在prev元素后的一个next元素
+如 $("#one+div") //表示匹配id为one的元素后面紧接着的一个div元素
+
+3.$("parent>child")  //说明在指定父元素下匹配所有子元素，要区分好后代元素与子元素
+如 $("form>input")  //form下的所有子元素input
+
+4.$("prev～siblings")  //匹配prev元素后的所有siblings元素,注意是之后的元素，不包括prev元素在内,并且siblings匹配的
+是和prev同辈的元素，其后辈元素不被匹配
+如 $("#id～div")  //匹配指定id的元素之后的所有兄弟div元素
+
+
+$("#id").siblings("div")  //匹配指定id的元素的所有兄弟div元素
+
+
+
+过滤选择器：
+1.基础过滤选择器，以:开头
+
+  改变第一个div的背景色
+  $("div:first").css("background","#00FFFF");
+    
+  改变最后一个div的背景色
+  $("div:last").css("background","#00FFFF");
+
+  改变class不为one的所有div元素的背景色
+  $("div:not(.one)").css("background","#00FFFF");
+
+  改变索引值为偶数的所有div元素的背景色
+  $("div:even").css("background","#00FFFF");
+
+  改变索引值为奇数的所有div元素的背景色
+  $("div:odd").css("background","#00FFFF")
+
+  改变索引值大于3的所有div元素的背景色
+  $("div:gt(3)").css("background","#00FFFF");
+
+  改变索引值小于3的所有div元素的背景色
+  $("div:lt(3)").css("background","#00FFFF");
+
+  改变索引值等于3的所有div元素的背景色
+  $("div:eq(3)").css("background","#00FFFF");
+ 
+  改变所有标题元素的背景色
+  $(":header").css("background","#00FFFF");
+  
+  改变当前正在执行动画的所有元素的背景色
+  <div id="m">
+    动画
+  </div>
+  function ca(){
+   $("#m").slideToggle("fast",ca);//第一个参数为设置速度，第二个参数为设置回调函数
+  }  
+  ca(); 
+
+  $(":animated").css("background","#00FFFF");
+
+
+2.内容过滤选择器：
+  
+   改变包含文本 'di' 的div元素的背景色
+   $("div:contains('di')").css("background","#00FFFF");
+
+   改变不包含文本 'di' 的div元素的背景色
+   $("div:not(:contains('di'))").css("background","#00FFFF");//去掉包含文本'di'的div,剩下的就是不包含的div
+
+   改变不包含子元素(或文本元素)的div空元素的背景色
+   $("div:empty").css("background","#00FFFF");
+   
+   改变含有class为mini的div元素的背景色
+   $("div:has(.mini)").css("background","#00FFFF");
+  
+   改变含有子元素(或文本元素)的div元素的背景色
+   $("div:parent").css("background","#00FFFF");
+  
+  
+3.可见度过滤选择器：
+
+  改变所有可见div元素的背景色
+  $("div:visible").css("background","#00FFFF");
+
+  选取所有不可见div元素，并用show()方法使它们显现出来，并设置背景色
+  $("div:hidden").show().css("background","#00FF00");
+
+
+
+  选取所有的文本隐藏域，并打印它们的值 <input type="hidden"/>
+方法一
+  var $hiddenInput=$("input:hidden");
+  
+  //each()以每一个匹配的元素作为上下文来执行一个函数
+  // function的参数 index:每次遍历的索引，从0开始
+  // data:当前的对象，在循环中等价于this
+  $hiddenInput.each(function(index,data){
+    alert($(this).val());
+
+  });
+---------------------
+方法二
+   //JQuery.each(obj,callback);通用的遍历方法，可用于遍历对象和数组
+   //只要是JQuery.xxx 调用方法为$.xxx的形势
+   //第一个参数 obj:要遍历的对象和数组
+   //callback:回调函数
+     
+   $.each($hiddenInput,function(){
+     alert($(this).val()); 
+   });
+   
+
+4.属性过滤选择器：
+  
+[attribute]
+选取拥有此属性的元素
+集合元素
+$(“div[id]”) 选取拥有属性 id 的元素
+
+[attribute=value]
+选取属性的值为 value 的元素
+集合元素
+$(“div[title=test]”) 选取属性 title 为“ test ”的 <div> 元素
+
+[attribute!=value]
+选取属性的值不等于 value 的元素
+集合元素
+$(“div[title!=test]”) 选取属性 title 不等于“ test ”的 <div> 元素（注：没有属性 title 的 <div> 元素也会被选取）
+
+[attribute^=value]
+选取属性的值以 value 开始的元素
+集合元素
+$(“div[title^=test]”) 选取属性 title 以“ test ”开头的 <div> 元素
+
+[attribute$=value]
+选取属性的值以 value 结尾的元素
+集合元素
+$(“div[title$=test]”) 选取属性 title 以“ test ”结束的 <div> 元素
+
+[attribute*=value]
+选取属性的值含有 value 的元素
+集合元素
+$(“div[title*=test]”) 选取属性 title 含有“ test ”的 <div> 元素
+
+[selector1][selector2][selector]
+用属性选择器合并成一个复合的属性选择器，满足多个条件。没选取一次，缩小一次范围
+集合元素
+$(“div[id][title$=’test’]”) 选取拥有属性 id ，并且属性 title 以“ test ”结束的 <div> 元素
+
+
+5 ．子元素过滤选择器
+
+父元素和选择器之间要加空格
+如 div :first-child 和div:first-child不是一样的
+前者表示div下的第一个子元素 后者表示选取任意父元素的第一个子元素，
+ 如果为<div>元素就保留，否则舍弃，得到的是一个数组
+
+
+:nth-child
+(index/even/odd/equation)
+选取每个父元素下的第 index 个子元素或者奇（ odd ）偶（ even ）元素，（ index 从 1 开始）
+集合元素
+:eq(index) 只匹配一个元素，而 :nth-child 将为每一个父元素匹配子元素，并且 :nth-child(index) 的 index 是从 1 开始的，
+而 :eq(index) 是从 0 开始的
+
+也可以使用公式 (an + b)
+如 $("div :nth-child(3n+1)") 匹配所有div下索引值为3的倍数+1的子元素 这里的索引值从1开始，而不是0
+
+
+:first-child
+选取每个父元素的第一个子元素
+集合元素
+:first 只返回单个元素，而 :first-child 将为每个父元素匹配第一个子元素。
+例如： $(“ul li:first-child”) 选取每个 <ul> 中第一个 <li> 元素
+这里所说的父元素并不是li，而是li的父元素。很多人往往误以为是匹配li元素的子元素中的最后一个元素。
+
+
+:last-child
+选取父元素的最后一个子元素
+集合元素
+:last 只返回单个元素，而 :last-child 将为每个父元素匹配最后一个子元素。
+例如： $(“ul li:last-child”) 选取每个 <ul> 中最后一个 <li> 元素
+
+:only-child
+如果某个元素的它父亲中唯一的子元素，那么将会被匹配，如果父元素中含有其他元素，则不会被匹配
+集合元素
+$(“ul li:only-child”) 在 <ul> 中选取是唯一子元素的 <li> 元素
+
+$("div.one :first-child") 选取属性class为“one”的<div>父元素下的第一个子元素。
+
+ 
+6 ．表单对象属性过滤选择器
+
+:enabled
+选取所有可用元素
+集合元素
+$(“#form1 input:enabled”) 选取 id 为“ form1” 的表单中所有可用input元素
+
+:disabled
+选取所有不可用元素
+集合元素
+$(“#form1 input:disabled”) 选取 id 为“ form1” 的表单中所有不可用input元素
+
+:checked
+选取所有被选中的元素（单选框，复选框）
+集合元素
+$(“input:checked”) 选取所有被选中的 <input> 元素
+
+:selected
+选取所有被选中的选项元素（下拉列表）
+集合元素
+$(“select :selected”) 选取所有被选中的选项元素 ,注：select和：selected之间要加空格
+实际上是 select option:select
+ 
+改变表单内可用 <input> 元素的值，代码如下：
+$(“form1 input:enabled”).val(“ 这里的值改变了 ”);
+获取多选框选中的个数，代码如下：
+$(“input:checked ”).length;
+获取下拉框选中的内容，代码如下：
+$(“select :selected”).text();
+同理，其他对象属性选择器的操作与此类似
+
+ 
+7 ．表单对象属性过滤选择器
+        
+:input
+选取所有的 <input>,<textarea>,
+<select>,<button> 元素
+集合元素
+$(“:input”) 选取所有的 <input>,<textarea>,<select>,
+<button> 元素
+:text
+选取所有的单行文本框
+集合元素
+$(“:text”) 选取所有的单行文本框
+:password
+选取所有的密码框
+集合元素
+$(“:password”) 选取所有的密码框
+:radio
+选取所有的单选框
+集合元素
+$(“:radio”) 选取所有的单选框
+:checkbox
+选取所有的多选框
+集合元素
+$(“:checkbox”) 选取所有的多选框
+:submit
+选取所有的提交按钮
+集合元素
+$(“:submit”) 选取所有的提交按钮
+:image
+选取所有的图形按钮
+集合元素
+$(“:image”) 选取所有的图形按钮
+:reset
+选取所有的重置按钮
+集合元素
+$(“:reset”) 选取所有的重置按钮
+:button
+选取所有的按钮
+集合元素
+$(“:button”) 选取所有的按钮
+:file
+选取所有的上传域
+集合元素
+$(“:file”) 选取所有的上传域
+:hidden
+选取所有的不可见元素
+集合元素
+$(“:hidden”) 选取所有的不可见元素
+ 
+得到表单内表单元素的个数，代码如下：
+$(“form1 :input”).length;
+得到表单内单行文本的个数，代码如下：
+$(“form1 :text”).length;
+得到表单内密码框的个数，代码如下：
+$(“form1 :password”).length;
+同理，其他表单选择器的操作与此类似

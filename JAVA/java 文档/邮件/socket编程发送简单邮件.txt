@@ -1,0 +1,50 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+public class SendMail {
+
+	public static void main(String[] args) throws UnknownHostException, IOException{
+		
+            Socket socket=new Socket("smtp.qq.com",25);//连上qq的邮件发送服务器
+	    InputStream in = socket.getInputStream();
+	    OutputStream out = socket.getOutputStream();
+	    BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+	    System.out.println(br.readLine());
+	    //向服务器发送指令，并读取服务器返回的信息，一定要读取，不然发送不成功
+	    out.write("ehlo qq.com\r\n".getBytes());
+	    System.out.println(br.readLine());
+	    System.out.println(br.readLine());
+	    System.out.println(br.readLine());
+	    System.out.println(br.readLine());
+	    System.out.println(br.readLine());
+	    System.out.println(br.readLine());
+	    System.out.println(br.readLine());
+	    
+	    out.write("auth login\r\n".getBytes());
+	    out.write("MTQ1MTg3NTc1MA==\r\n".getBytes());
+	    System.out.println(br.readLine());
+	    out.write("d3ZzdnJpbGJiY3hlZ2dqag==\r\n".getBytes());//这里的密码不是qq的密码，而是qq邮箱设置里
+//开启了imap/smtp之后返回给你的密码，然后你自己base64加密之后的结果
+
+	    System.out.println(br.readLine());
+	    out.write("mail from: <1451875750@qq.com>\r\n".getBytes());
+	    System.out.println(br.readLine());
+	    out.write("rcpt to: <893384148@qq.com>\r\n".getBytes());
+	    System.out.println(br.readLine());
+	    out.write("data\r\n".getBytes());
+	    System.out.println(br.readLine());
+	    out.write("from:<1451875750@qq.com>\r\nto:<893384148@qq.com>\r\nsubject:test\r\n\r\naaaaaaaaa\r\n".getBytes());
+	    System.out.println(br.readLine());
+	    out.write(".\r\n".getBytes());
+	    System.out.println(br.readLine());
+	    out.write("quit\r\n".getBytes());
+	    System.out.println(br.readLine());
+	   	
+	}
+	
+}

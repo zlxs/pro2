@@ -1,0 +1,72 @@
+JQuery事件对象event
+bind()方法为节点绑定事件
+$("#testDiv").click(function(event){ });在fnction中加一个event参数
+ 该参数
+
+事件对象的属性：
+1、event.type：获取事件的类型
+2、event.target：获取触发事件的元素
+3、event.pageX 和 event.pageY：获取鼠标当前相对于页面的坐标
+4、event.preventDefault() 方法：阻止默认行为
+5、event.which：获取在鼠标单击时，单击的是鼠标的哪个键
+
+------------------------------------------
+事件：
+(-1)bind为元素绑定事件：$("#testDiv").bind("click", function(event) { });
+  等同于 $("#testDiv").click(function(event){ });
+(0)unbind 移除事件
+  $("#testDiv").unbind("click");
+
+(1)click事件：click事件于用户在元素敲击鼠标左键，并在相同元素上松开左键时触发
+
+(2)dbclick事件：dbclick事件在用户完成迅速连续的两次点击之后触发，
+  双击的速度取决于操作系统的设置。一般双击事件在页面中不经常使用。
+
+(3)mousedown事件：mousedown事件在用户敲击鼠标键时触发，跟keydown事件不一样，
+  该事件仅在按下鼠标时触发。
+
+(4)mouseup事件：mouseup事件在用户松开鼠标时触发，
+ 如果在与按下鼠标的元素相同元素上松开，那么click事件也会触发。
+
+(5)mouseover事件：mouseover事件于用户把鼠标从一个元素移动到另外一个元素上时触发，
+  如果需要知道来自那个元素可以使用，relatedTagrget属性。
+  不论鼠标指针进入被选元素或其子元素，都会触发 mouseover 事件
+
+(6)mouseout事件：mouseout事件于用户把鼠标移出一个元素时触发，
+  这包括从父元素移动到子元素上，或者使用键盘跳到元素上。
+不论鼠标指针离开被选元素还是任何子元素，都会触发 mouseout 事件
+
+
+(7)mouseenter事件：mouseenter事件是在用户光标进入元素上时触发。
+只有当鼠标进入【被选中】控件的时候才会触发mouseenter事件，
+当鼠标进入【被选中】控件的【子元素】的时候而没有离开被选中控件本身
+的时候【不会再次】触发
+
+
+(8)mouseleave事件：mouseleave事件是在用户的光标离开元素时触发。
+ (7)和(8)这两个事件一般连起来使用，在jQuery中可以使用hover这个函数来代替这两个函数。
+只有当鼠标离开【被选中】控件的时候才会触发mouseleave事件；当鼠标离开【被选中】
+的【子元素】而【没有离开被选中的控件】的时候【不会再次】触发 
+
+ 
+(9)toggle() 方法用于绑定两个或多个事件处理器函数，以响应被选元素的轮流的 click 事件。
+  该方法也可用于切换被选元素的 hide() 与 show() 方法。
+$("p").toggle(
+  function(){
+  $("body").css("background-color","green");},
+  function(){
+  $("body").css("background-color","red");},
+  function(){
+  $("body").css("background-color","yellow");}
+);
+
+(10)mousemove()  当鼠标指针在指定的元素中移动时，就会发生 mousemove事件
+示例：获得鼠标当前坐标
+$(function(){
+  $("body").mousemove(function(e){
+   $("#a").text("x:"e.pageX+" y:"+e.pageY);});
+})
+作用:一般用于鼠标拖动图片等
+
+(11)blur()失去焦点事件
+(12)focus()获得焦点事件

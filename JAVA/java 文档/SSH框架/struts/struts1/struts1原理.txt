@@ -1,0 +1,58 @@
+struts1执行流程：
+1.服务器启动时根据web.xml文件的配置信息实例化ActionServlet
+2.ActionServlet加载struts-config.xml文件，读取信息放置到内存中
+3.客户端发出请求，例如请求路径：/xxxxAction.do (ActionServlet这个servlet的映射路径是*.do的格式，
+    这样才能调用ActionServlet处理这个请求)
+4.ActionServlet解析请求路径（再去掉.do）/xxxxAction
+5.解析完后ActionServlet根据解析后的请求路径 /xxxxAction ，在struts-config.xml配置文件中
+  查找该路径对应的path属性，然后找到对应的type属性，获取属性值 (type属性的值，是继承Action类的具体类的含包名的路径)
+6.ActionServlet 通过反射，创建type属性值的类的实例(cn.xxx.xx.xxxxAction)，调用该类继承Action类后重写的
+    execute方法
+-------------------------------
+开发人员只需要做：
+ 自定义页面请求路径 *.do
+ 定义 具体类 继承Action,重写execute方法
+ 配置struts-config.xml文件
+-------------------------------
+要使用struts管理你的类，就必须继承Action
+
+ActionServlet是struts1的中央控制器，所有的*.do格式请求都要进过该中央控制器
+在struts1中只有一个ActionServlet,它是单实例多线程运行
+
+---------------------------------------------------------------------------
+在web.xml中配置
+<servlet>
+   <servlet-name>action</servlet-name>
+   <servlet-class>org.apache.struts.action.ActionServlet</servlet-class>
+
+   <!--设置ActionServlet启动顺序，数值越小，启动越靠前-->
+   <load-on-starupt>0</load-on-startup>  
+
+   <!--设置ActionServlet启动时加载配置文件-->
+   <init-param>
+     <!--config这个名称是固定的，不能改成别的-->
+     <param-name>config</param-name>
+     <!--配置文件名随意，但要和程序中的一致-->
+     <param-value>/WEB-INF/struts-config.xml</param-value>
+   </init-param>  
+
+</servlet>
+
+<servlet-mapping>
+   <servlet-name>action</servlet-name>
+   <url-pattern>*.do</url-pattern>
+</servlet-mapping>
+---------------------------------------------------------------------------
+
+struts1的配置文件：struts-config.xml
+---------------------------------------------------------------------------
+在配置文件struts-config.xml中配置各个具体的Action
+<struts-config>
+  <action-mapping>
+    <action path="/Demo1Action" type="cn.xxx.xx.xxxxAction" ></action>
+    <action path="/Demo1Action" type="cn.xxx.xx.Demo1Action" ></action>
+    <action path="/Demo2Action" type="cn.xxx.xx.Demo2Action" ></action>
+  </action-mapping>
+</struts-config>
+---------------------------------------------------------------------------
+

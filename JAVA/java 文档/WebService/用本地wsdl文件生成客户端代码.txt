@@ -1,0 +1,22 @@
+
+和使用网上的url一样：
+
+使用jdk的工具：wsimport.exe
+
+cmd进入myEclipse的workspace的客户端项目下： E:\MyEclipse\WebServiceClient\src>
+输入：wsimport -keep 本地或网上url
+
+如：wsimport -keep F:/aaa/xxxxx.wsdl
+就会根据wsdl文件在客户端项目中src下生成相关的包和类
+
+
+
+
+
+
+
+
+
+
+
+

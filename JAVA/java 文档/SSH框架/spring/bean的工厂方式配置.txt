@@ -1,0 +1,93 @@
+
+静态工厂方式
+
+class MyFactory{
+   private static Map<String,User> user=new HashMap() ;
+   static{
+     User u=new User("aaa");
+     User u1=new User("lucy");
+     map.put("aaa",u);
+     map.put("lucy",u1);
+   }
+   public static User getUser(String name){
+     return user.get(name);
+   }
+
+}
+
+class User{
+  public User(String name){
+    this.nam=name;
+  }
+  private String name;
+  get set
+}
+
+在不创建工厂的情况下可以通过工厂的静态方法创建bean的实例
+
+注意：这里是配置User bean实例，不是配置工厂bean
+<bean  id="user" class="xxx.xx.xxx.MyFactory" factory-method="getUser">
+  <constructor-arg value="lucy"></constructor-arg>
+</bean>
+
+class属性指向静态工厂方法的全类名
+constructor-arg 工厂方法创建bean需要传递参数用constructor-arg
+------------------------------------------------------------------------
+
+实例工厂方式
+
+class MyFactory{
+   private Map<String,User> user=null;
+   public MyFactory(){
+     user=new HashMap();
+     user.put("aaa",new User("aaa"));
+     user.put("lucy",new Userr("lucy"));
+   }
+  
+   public User getUser(String name){
+     return user.get(name);
+   }
+
+}
+
+class User{
+  public User(String name){
+    this.nam=name;
+  }
+  private String name;
+  get set
+}
+
+配置工厂的实例
+<bean id="factory" class="xxx.xx.xxx.MyFactory">
+</bean>
+通过实例工厂来配置User bean
+<bean id="user" factory-method="getUser" factory-bean="factory">
+   <constructor-arg value="lucy"></constructor-arg>
+</bean>
+
+-----------------------------------------------------------------
+通过FactoryBean配置bean
+
+class UserFactoryBean implements FactoryBean<User>{
+  private String name;
+  public void setName(String name){
+    this.name=name;
+  }  
+ //返回bean的对象
+  public User getObject() throws Exception{
+    return new User(name);
+  }
+  //返回bean的类型
+  public Class<?>getObjectType(){
+    return User.class;
+  }
+  //是不是单实例的
+  public boolean isSingleton(){
+    return true;
+  }
+}
+
+<bean id="user" class="xxx.xx.xxx.UserFactoryBean">
+  <property name="name" value="lucy"></property>
+</bean>

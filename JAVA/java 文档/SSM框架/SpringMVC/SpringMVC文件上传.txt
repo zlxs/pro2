@@ -1,0 +1,89 @@
+
+springMVC文件上传：
+
+1.form表单设置 enctype="multipart/form-data"  method="post" 这个是上传文件必须的
+
+2.在springMVC-servlet.xml文件中设置：
+
+<!-- SpringMVC上传文件时，需要配置MultipartResolver处理器 --> 
+<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+    <property name="defaultEncoding" value="utf-8" />
+    <property name="maxUploadSize" value="10485760000" />
+    <property name="maxInMemorySize" value="40960" />
+</bean>
+
+
+3.添加文件上传的commons-fileupload.jar和commons-io.jar
+
+
+jsp：
+<form action="${pageContext.request.contextPath}/testController/upload" 
+      method="post" enctype="multipart/form-data">
+
+      <input type="file" name="file" />
+      <input type="submit" />
+</form>
+
+Controller中获取上传文件：
+
+方式1：推荐
+@Controller
+@RequestMapping("/uploadController")
+class UploadController{
+   
+  @RequestMapping("/upload")
+  public String upload(HttpServletRequest request,HttpServletResponse response) 
+                                               throws IllegalStateException, IOException{
+	//得到解析器，需要传入上下文
+        CommonsMultipartResolver multipartResolver 
+                             = new CommonsMultipartResolver(request.getSession().getServletContext());
+	//通过解析器，解析request，判断request中数据是否是multipart类型，即：是否是文件
+	if(multipartResolver.isMultipart(request)){
+		//把 HttpServletRequest 强转为SpringMVC定义的 MultipartHttpServletRequest，用于获取上传文件
+		MultipartHttpServletRequest  multiRequest = (MultipartHttpServletRequest)request;
+		//迭代所有上传文件
+		Iterator<String>  iter = multiRequest.getFileNames();
+		while(iter.hasNext()){    
+                    //iter.next()获取当前遍历到的上传文件的input输入项的name属性，
+                    //然后通过上传输入项的name属性来得到上传文件
+		    MultipartFile file = multiRequest.getFile((String)iter.next());
+		    if(file != null){
+			//得到上传文件简单名称（不含路径）
+			String fileName =file.getOriginalFilename();				
+			File localFile = new File("F:/"+fileName);	
+			//把上传文件写到服务器本地指定位置
+			file.transferTo(localFile);
+		    }				
+		}		
+	}
+	return "/success";
+  }
+}
+
+
+方式2：不推荐
+@Controller
+@RequestMapping("/testController")
+public class TestController {
+
+	   @RequestMapping(value="/upload")
+	    public String upload( @RequestParam("file")MultipartFile file) throws IOException{
+		   String filename = file.getOriginalFilename();//得到上传文件简单名称，不带路径
+          //使用流来读取文件，保存到指定位置，或者可以使用file.transferTo(文件地址);写到指定位置
+		   InputStream in=file.getInputStream();
+		   OutputStream out=new FileOutputStream("F:/"+filename);
+		   int len=0;
+		   byte[] b=new byte[1024];
+		   while(-1!=(in.read(b,0,b.length))){
+			   out.write(b);
+		   }
+                   /*或使用MultipartFile类的transferTo方式 ，这样方便些                
+                    File f=new File("D:/"+filename);
+		    file.transferTo(f);
+                    */
+		   return "/success";
+	    }
+}
+
+@RequestParam("file")注解的 value属性要与上传输入项的name属性一致  通过该注解对简单类型的参数进行绑定
+MultipartFile 用于封装上传文件

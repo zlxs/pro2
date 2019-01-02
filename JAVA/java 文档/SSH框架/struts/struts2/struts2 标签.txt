@@ -1,0 +1,362 @@
+使用struts2的标签需要引入标签体
+<@ target url="struts-tags" prefix="s">
+
+1.通用标签
+------------------------------------------------
+property标签
+ 取出值栈中保存的Action的普通属性name的值
+<s:property value="name"></s:property>
+
+加单引号 取出的值为字符串类型（默认的取值时struts2会把
+name解析为一个OGNL表达式对象类型，而不是String类型）
+<s:property value="'name'"></s:property>
+
+设定默认值 如果值栈中没有admin时，取出admin的默认值管理员
+<s:property value="admin" default="管理员"></s:property>
+
+
+escape属性是转义 escape默认为true
+escape设置为true 输出<hr/>字符串
+escape设置为false输出------------------------------html标签
+<s:property value="'<hr/>'" escape="false"></s:property>
+
+
+<s:property />输出栈顶元素
+
+---------------------------------------------
+set标签 把数据存放在域中
+
+scope属性有5个域：application session request page action
+   不设置时scope会默认为action  即以var为关键字保存在stack context中
+   设置就存放在指定域中
+
+设定addminName值  var是变量名 value内是ognl表达式，值是对象类型
+<s:set  var="adminName" value="name"></s:set>
+
+---------------------------------------------
+push标签 将对象放在栈顶，标签结束后就会从栈顶删除
+
+<s:push>
+   <s:param value="'aaa'"></s:param>
+   <s:property /> //输出栈顶元素 aaa
+</s:push>
+
+
+---------------------------------------------
+<s:date>标签 按指定格式显示日期
+
+
+<s:textfield name="birthday">
+    <s:param name="value">    						
+	<s:date name="birthday" format="yyyy-MM-dd"/>
+    </s:param>
+</s:textfield>
+
+---------------------------------------------
+
+bean标签  实例化javabean对象放在栈顶，标签结束后就会从栈顶删除
+定义一个User类javabean对象user并使用param标签来设定新属性值：
+<s:bean name="xxx.xx.xxx.User" var="user">
+  <s:param name="name" value="'xiaoming'"></s:param>
+</s:bean>
+注意：value不加单引号会当成OGNL表达式  
+
+在标签结束时会从栈中删除，但ActionContext自身中任然有引用
+所以，想要在标签外得到bean的属性,可以通过actionContext域得到
+<s:property value="#user.name" />
+
+---------------------------------------------
+s:action标签，在页面上执行action
+
+<s:action namespace="/" name="userAction_insert" executeResult="true">
+</s:action>
+
+executeResult属性 是否包含action的执行结果
+
+---------------------------------------------
+
+include标签
+包含静态文件
+<s:include value="/aaa.html"></s:include>
+
+%用法: %{}把里面的内容解析为OGNL表达式
+<s:set var="incPage" value="'/aaa.html'" />
+<s:include value="%{#incPage}></s:include>
+
+---------------------------------------------
+s:a 标签
+<s:a namespace="" action="">
+  <s:param  name="user.name" value="'小明'"/>   //参数  value内默认是OGNl表达式，如果需要写成普通值加''
+</s:a> 
+
+代替写 <a href="${pageContext.request.contextPath}/namespace/action的name?参数"></a>
+
+
+---------------------------------------------
+
+s:url 标签
+<s:url/>直接用，会输出当前的url
+
+可以指定地址，地址可以带传递参数
+<s:url action="userAction_update" namespace="/" var="myurl">
+  <s:param name="id" value="#user.id">
+</s:url>
+<s:property value="#myurl" /> //直接输出
+<a href='<s:property value="#myurl" />'></a> //作为超链接地址
+
+s:url的value属性是具体的地址。如：
+<s:url var="a" value="https://www.baidu.com" >
+<a href='<s:property value="#a" />'></a>
+
+
+---------------------------------------------
+
+<s:text> 标签用于从资源束中检索消息显示语言相关的文本
+<s:i18n> 标签用于指定资源束
+
+国际化标签
+
+<!--name属性为国际化资源文件前缀名，如果放在包下需要加包名-->
+<s:i18n name="i18n_zh">
+   <!--name为资源文件中的key-->
+   <s:text name="login.username" var="mytest"/>
+</s:i18n>
+<s:property value="#mytest"> 
+
+
+---------------------------------------------
+
+fielderror标签  用于输出表单验证错误提示
+
+<fielderror fieldName="key" theme="simple" ></fielderror>
+
+
+---------------------------------------------
+
+debug标签
+
+<s:debug></s:debug>
+
+
+---------------------------------------------
+
+2.控制标签
+
+if elseif else
+
+<s:if test="#users.age[0]<15">少年</s:if>
+
+<s:elseif test="#users.age[0]>50">老年</s:elseif>
+
+<s:else>青年</s:else>
+
+
+---******************************---重点---------------------------
+
+iterator 迭代标签，最重要的标签  会把当前迭代的对象放到栈顶
+
+<s:iterator value="{1,2,3}" >
+  <s:property /> //拿里面每个元素
+</s:iterator>
+
+<s:iterator value="{'aaa','bbb','ccc'}"  var="x">
+  <s:property value="#x.toUpperCase()" /> 
+</s:iterator>
+
+<s:iterator value="userList"> //userList是通过ognl获取出来集合属性，里面是User对象
+  <s:property value="name"/>
+  <s:property value="age"/>
+</s:iterator>
+
+
+<s:iterator value="{'aaa','bbb','ccc'}" status="status" >
+  <s:property /> 
+  遍历过的元素的总和<s:property value="#status.count" /> 
+  遍历到的元素索引(从0开始)<s:property value="#status.index" /> 
+  当前是偶数<s:property value="#status.even" /> 
+  当前是奇数<s:property value="#status.odd" /> 
+  是第一个元素吗<s:property value="#status.first" /> 
+  是最后一个元素吗<s:property value="#status.last" /> 
+</s:iterator>
+
+ognl定义map  value需要加#
+<s:iterator value="#{1:'a',2:'b',3:'c'}" >
+  <s:property value="key" />:<s:property value="value" />
+</s:iterator>
+
+<s:iterator value="#{1:'a',2:'b',3:'c'}" var="x" >
+  <s:property value="#x.key" />:<s:property value="#x.value" />
+</s:iterator>
+
+
+---------------------------------------------
+
+subset 截一个集合的一部分
+
+---------------------------------------------
+
+3.UI标签
+
+struts2的ui标签
+
+1.<s:form>
+ namespace属性：写action所在包的命名空间
+ action属性：action配置的name属性值
+ theme属性：设置主题
+
+
+2.<s:textfield>标签的name属性，value属性和html标签基本一致，只是在没有设置
+value的情况下，会从值栈中以name属性去查找对应的值作为value
+
+key属性用于抽取资源束文件值（从资源文件中以key查找值），设置key以后，label可以不用写
+label属性用于生成一个label标签，在输入项左边，用于显示提示
+
+
+3.密码框标签   
+<s:password name="customer.password" label="密码" showPassword="true"/>  
+
+
+4.单个值的复选框标签  
+                a.生成一个checkbox  
+                b.根据name中的OGNL表达式，向来源  
+                    Action取值，并根据取值的结果设置  
+                    是否勾选此checkbox  
+                c.OGNL表达式访问的属性，应该是布尔类型  
+<s:checkbox name="customer.marry" label="是否已婚" labelposition="left"/>  
+          
+      
+  
+5.单选框标签  
+         a.通过list生成一组radio及对应的label，  
+                    list可以指定一个Map，那么Map的key  
+                    用于生成radio的value属性值，Map的  
+                    value用于生成label显示值  
+         b.通过name的OGNL表达式，访问来源Action，  
+                    将返回的值与radio的key匹配，哪个  
+                    radio的key与返回值一致，则该radio  
+                    会设置为选中的。  
+<s:radio name="customer.sex" list="#{'M':'男','F':'女'}" label="性别"/>   如果需要默认选中 加value="'M'"
+
+也可以使用listKey和listValue属性  
+list：用于生成单选框的集合
+listKey: 生成的radio的value属性
+listValue: 生成的radio后面显示的文字   
+如：<s:radio name="checkedUser.id" list="users" listKey="id" listValue="name" label="性别"/>  
+
+来源的Action属性:  
+private List<User> users;
+private User checkedUser;
+set get一定要有，不然会报错
+通过构造函数，模拟一组数据
+public LoginAction(){
+users=new ArrayList();
+	users.add(new User("0","aa"));
+	users.add(new User("1","bb"));
+	users.add(new User("2","cc"));
+	checkedUser=new User("1","bb");
+}
+
+User类：
+class User{
+  private String id;
+  private String name;
+  set get
+}
+
+
+
+6.复选框标签  
+          a.用法等同于5  
+          b.由于可以多选，那么name中OGNL表达式  
+                    访问的属性应该是集合  
+<s:checkboxlist name="customer.travelCities" 
+       list="#{'beijing':'北京','shanghai':'上海',
+               'guangzhou':'广州','dongguan':'东莞',
+               'shenzhen':'深圳','diaoyudao':'钓鱼岛'}" label="去过的城市"/>  
+        
+6.1复选框标签-动态初始化范围  
+                a.通过list的OGNL表达式，访问Action中的  
+                    集合属性，返回的集合用于生成多个选项。  
+                    listKey要指定集合对象中用于生成value  
+                    值的属性名。  
+                    listValue要指定集合对象中用于生成label  
+                    显示值的属性名。  
+                b.通过name来默认勾选，用法同6  
+<s:checkboxlist name="customer.travelCities" list="cities" 
+                listKey="code" listValue="name" label="去过的城市2"/>  
+      
+
+  
+7.下拉选标签  
+                a.通过list生成选项option，其中Map的key  
+                    用于生成option的value，Map的value  
+                    用于生成option的显示值  
+                b.通过name中的OGNL表达式，访问来源  
+                    Action，并将取到的是结果与option匹配，  
+                    哪个option的value值与返回值一致，则将  
+                    此option选中  
+<s:select name="customer.home" 
+         list="#{'beijing':'北京','shanghai':'上海','guangzhou':'广州',
+                 'dongguan':'东莞','shenzhen':'深圳','diaoyudao':'钓鱼岛'}" 
+         label="家乡" headerKey="-1" headerValue="请选择"/>     
+           
+ 7.1下拉选标签-动态初始化选项  
+                同6.1   
+<s:select name="customer.home" list="cities" listKey="code" 
+         listValue="name" label="家乡2" headerKey="-1" headerValue="请选择"/>  
+        
+   headerKey="-1" headerValue="请选择"用于显示首行信息
+
+
+
+注：直接用list会使用map的key作为listKey(提交给服务器的值)，list的value做为listValue(显示在页面上的文字)
+
+
+8. 提交按钮
+<s:submit value="保存"/>  
+
+
+9.级联下拉选择框doubleselect标签
+
+ formName： 对应的表单名称。
+
+ label： 该级联下拉列表的标签。
+ name： 第一个下拉列表的名称。
+ id： 第一个下拉列表的id名称。
+ list： 指定用于输出第一个下拉列表框中选项的集合。
+ listKey： 指定集合元素中的某个属性作为第一个下拉列表框的value。
+ listValue：指定集合元素中的某个属性作为第一个下拉框的标签。
+ doubleName： 第二个下拉列表的名称。
+ doubleId： 第二个下拉列表的id名称。
+ doubleList： 指定用于输出第二个下拉列表框中选项的集合。    
+ doubleListKey： 指定集合元素中的某个属性作为第二个下拉列表框的value。
+ doubleListValue： 指定集合元素中的某个属性作为第二个下拉框的标签。
+
+
+10.文件上传：
+<s:file />
+
+
+
+theme 主题
+
+simple
+xhtml
+css_xhtml
+ajax
+
+在struts.xml中修改：
+<constant name="struts.ui.theme"  value="simple" />
+
+可以在标签中加theme="simple"
+
+
+4.AJAX标签
+
+
+
+
+5.$#%的区别
+ $ i18n配置文件
+ # 用于取得ActionContext中的值
+ %{} 把内容解析为OGNL表达式

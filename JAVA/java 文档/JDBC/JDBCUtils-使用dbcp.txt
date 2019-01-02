@@ -1,0 +1,87 @@
+package com.tz.jdbc.utils;
+
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
+
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp.BasicDataSourceFactory;
+
+@SuppressWarnings("static-access")
+public class JDBCUtils {
+
+	private static ThreadLocal<Connection> tl=new ThreadLocal<>();
+	private static DataSource ds;
+	
+	static{
+		
+		InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("oracledbcpconfig.properties");
+		Properties prop=new Properties();
+		try {
+			prop.load(in);
+			BasicDataSourceFactory factory=new BasicDataSourceFactory();
+			ds=factory.createDataSource(prop);
+		} catch (Exception e) {
+		    throw new ExceptionInInitializerError(e);
+		}
+	}
+	
+	public static Connection getConnection() throws SQLException{
+		
+	   Connection conn=tl.get();
+		
+	   if(conn==null){
+              conn=ds.getConnection();
+              conn.setAutoCommit(false);
+              tl.set(conn);
+	   }
+		
+	   return conn;
+	}
+	
+        public static void commitTransaction() throws SQLException {
+		
+		Connection conn=tl.get();
+		if(conn!=null) {
+			conn.commit();
+		}
+	}
+
+        public static void closeConnection() throws SQLException {
+		
+		Connection conn=tl.get();
+		if(conn!=null) {
+			
+		     try {
+			  conn.close();
+		     } catch (SQLException e) {
+			  throw e;
+		     } finally {
+			  tl.remove(); //千万注意，解除当前线程上绑定的链接（从threadlocal容器中移除对应当前线程的链接）
+		     }
+		}
+	}
+       
+	
+	public static void release(Statement st,ResultSet rs){
+	
+		try {
+			if(rs!=null)
+			rs.close();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		} finally {
+			try {
+				if(st!=null)
+				st.close();
+			} catch (SQLException e) {
+				throw new RuntimeException(e);
+			}
+		}		
+	}
+	
+}

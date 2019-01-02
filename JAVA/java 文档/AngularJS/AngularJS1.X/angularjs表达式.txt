@@ -1,0 +1,12 @@
+AngularJS表达式 {{ }}
+
+把数据绑定到HTML,同ng-bind指令有异曲同工之妙
+
+可以包含文字，运算符和变量 
+如: 
+ 1.{{ 4+5}} 会在页面上输出9
+
+ 2.<div ng-init="firstName='John';lastName='alxs'">
+     {{firstName+""+lastName}}
+   </div>
+   输出 Johnalxs

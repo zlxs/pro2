@@ -1,0 +1,41 @@
+类型转换：
+
+默认转换
+
+当Action中属性是一个List<String> list;时 
+传参： xxxAction?list=aaa&list=bbb&list=ccc
+Set<String> 属性传参方式一样
+
+Map<String,String> map; 方式传参
+  xxxAction?map['a']=aaa&map['b']=bbb&map['c']=ccc
+注意：泛型一定要指定，不然会出各种问题
+
+
+日期处理：
+传参数时用stuts的格式，即 yyyy-MM-dd即可
+如： xxxAction?birthday=1999-01-01 12:23:34
+
+在jsp中展现时，可以用<s:date>标签按指定格式输出
+
+
+
+
+
+可以写自己的转换器
+
+需要继承DefaultTypeConverter
+重写 public Object convertValue(Object value,Class toType){}
+
+也可以继承struts的StrutsTypeConverter，它是从DefaultTypeConverter继承的
+重写里面的两个方法 convertFromString 和 convertToString
+
+
+配置转换器：
+1.局部：放在Action同级目录下:xxxAction-conversion.properties
+   文件中写Action中要转换的属性名=xxx.xx.xx.YourConverter
+2.全局：放在src下:xwork-conversion.properties
+   文件中写Action中要转换的类名(要带包名)=xxx.xx.xx.YourConverter
+   如：xxx.xx.Address=xxx.xx.AddressConverter
+
+
+3.通过注解

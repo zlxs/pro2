@@ -1,0 +1,74 @@
+和Hql语言类似的用于hibernate查询的语言
+
+QBC:
+   
+使用方法：
+
+Criteria c=session.createCriteria(Customer.class) //相当于hql的from Customer
+     //加约束
+      .add(Restrictions.gt("id",2)) //greater than =id>2
+      .add(Restrictions.lt("id",8))   //little than =id<8
+      .add(Restrictions.like("name","李_"))
+      .createCriteria("orders")
+      .add(Restrictions.between("id",3,5))//orders.id=>3 and orders.id<=5
+
+分页方法和hql一样
+注意：上面的id,name都是实体类的属性，不是数据库表的字段名
+  
+
+生成sql语言等同于：
+select c.*,o.* from customer c inner join orders o on(o.cid=c.id) where c.id>2 and c.id<8 and c.name like "李_" 
+        and o.id  between 3 and 5;
+
+
+
+setProjection()方法  设置函数
+
+ne()方法  !=
+lt()方法  <
+le()方法  <=
+gt()方法  >
+ge()方法  >=
+eq()方法  =
+like()  模糊匹配
+ilike()  敏感模糊匹配
+between()  between
+in()    in
+
+addOrder(Order.desc("属性"));  降序排序 
+
+allEq() 参数是map map的key为实体类的属性，value为属性的值
+
+isNull()  属性为null
+isNotNull()  属性不为null
+
+isEmpty() 集合为空，
+如: 查询没有员工的部门 
+Criteria c=session.createCriteria(Department.class)
+           .add(Restrictions.isEmpty("employees"));
+
+
+sizeGe()  集合数据>=    add(Restrictions.sizeGe("employees"),3)  大于等于三个员工的部门
+sizeLe()  集合数据<=
+sizeEq()  集合数据=
+sizeGt()  集合数据>
+sizeLt()  集合数据<
+
+
+createAlias("dept","d") 添加别名
+
+
+----------------------------------------------------------
+
+QBE:
+
+   User u=new User();
+   u.setName("李_");
+   Example e=Example.create(u)
+       .ignoreCase().enableLike(); 
+     
+   Criteria c=session.createCriteria(Customer.class)
+            .add(Restrictions.gt("id",2)) 
+            .add(Restrictions.lt("id",8))
+            .add(e);  //查找和u像的实体对象，即name也为李_
+

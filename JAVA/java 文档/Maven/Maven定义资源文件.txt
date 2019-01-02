@@ -1,0 +1,2 @@
+struts2 spring的配置文件在myeclipse中是放在src下的，
+在maven构建的项目中放在resource文件夹下

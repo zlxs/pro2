@@ -1,0 +1,192 @@
+
+服务端表单校验：
+SpringMVC使用Hibernate的校验框架validate(和Hibernate没有任何关系)
+
+
+添加jar包:
+  hibernate-validate.Final.jar 
+  validation-api.GA.jar
+  jboss-logging.jar 
+
+
+SpringMVC.xml中配置：
+
+配置校验器:
+
+<!--校验器-->
+<bean id="validator" 
+      class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+
+   <!--使用hibernate校验器-->
+   <property name="providerClass" value="org.hibernate.validator.HibernateValidator" />
+   
+   <!--指定校验使用的资源文件，如果不指定则默认使用classpath下的ValidationMessages.properties-->
+   <property name="validationMessageSource" ref="messageSource" />
+</bean>
+
+
+<!--校验错误信息配置文件-->
+<bean id="messageSource"  
+    class="org.springframework.context.support.ReloadableResourceBundleMessageSource"> 
+ 
+    <!--验证错误信息资源文件名-->
+    <property name="basenames">
+      <list>
+        <value>classpath:ValidationMessages</value>
+      </list>
+    </property>
+    
+    <!--资源文件编码格式-->
+    <property name="fileEncodings" value="utf-8" />
+      
+    <!--对资源文件内容缓存事件，单位秒-->
+    <property name="cacheSeconds" value="120" />
+</bean>
+
+
+
+校验器注入到处理器适配器中:
+
+<mvc:annotation-driven validator="validator"></mvc:annotation-driven>
+
+
+
+在pojo中添加校验规则：
+
+
+ValidationMessages.properties中添加错误信息内容:
+
+user.name.length=名称为1到30个字符
+user.password.empty=密码不能为空
+
+
+public class User{
+
+ private Integer id;
+ 
+ //校验名称在1到30字符中间  
+ //message为校验出错显示提示信息
+ @Size(min=1,max=30,message="{user.name.length}")
+ private String name;
+
+ //非空校验
+ @NotNull(message="{user.password.empty}")
+ private String password;
+
+
+ get set
+}
+
+
+
+在页面显示错误信息：
+
+注意：--------
+//在需要校验的pojo前添加@Validated,
+//在需要验证的pojo后添加BindingResult bindingResult接收校验出错信息
+//@Validated和BindingResult bindingResult配对出现，并且形参位置固定（1前1后）
+--------------
+
+@Controller
+@RequestMapping("/mycontroller")
+public class MyController{
+
+  @RequestMapping("/register")
+  public String register(Model model, @Validated User user,BindingResult bindingResult){
+
+   //获取校验错误信息
+   if(bindingResult.hasErrors()){
+
+     List<ObjectError> allErrors=bindingResult.getAllErrors();
+
+     //通过model 来把错误信息传递给页面
+     model.addAttribute("allErrors",allErrors);
+     //出错就回到注册页面
+     return "register";
+   }
+   
+   return "main";
+  }
+
+}
+
+显示错误信息： 显示到具体的位置由div css来确定，这里只是做演示
+
+<c:foreach item="${allErrors}" var="error">
+   ${error.defaultMessage}
+</c:foreach>
+
+<input type="text" name="name" value="" />
+<input type="text" name="password" value="" />
+
+
+
+---------------------------------------------------------------------
+分组校验：
+
+问题：
+ 需求：在pojo中定义校验规则，而pojo是被多个controller所共用，当不同的controller对同一个pojo进行校验，
+但是每个controller方法需要不同的校验规则
+
+解决方法：
+ 定义多个校验分组（其实是一个java接口）
+每个controller方法使用不同的校验分组
+
+public interface ValidationGroup1{
+  //接口中无需定义任何方法，只是对不同的校验规则进行分组
+  //此分组只校验用户的名称
+}
+
+
+public interface ValidationGroup2{
+  //接口中无需定义任何方法，只是对不同的校验规则进行分组
+}
+
+public class User{
+
+ private Integer id;
+ 
+ //校验名称在1到30字符中间  
+ //message为校验出错显示提示信息
+ //groups:此校验属于哪个分组，group可以定义多个分组
+ @Size(min=1,max=30,message="{user.name.length}",groups={ValidationGroup1.class})
+ private String name;
+
+ //非空校验
+ @NotNull(message="{user.password.empty}",groups={ValidationGroup2.class})
+ private String password;
+
+
+ get set
+}
+
+@Controller
+@RequestMapping("/mycontroller")
+public class MyController{
+
+  @RequestMapping("/register")    //@Validated指定使用ValidationGroup1分组的校验
+  public String register(Model model, @Validated(value="ValidationGroup1.class") User user,BindingResult bindingResult){
+
+   //获取校验错误信息
+   if(bindingResult.hasErrors()){
+
+     List<ObjectError> allErrors=bindingResult.getAllErrors();
+
+     //通过model 来把错误信息传递给页面
+     model.addAttribute("allErrors",allErrors);
+     //出错就回到注册页面
+     return "register";
+   }
+   
+   return "main";
+  }
+
+}
+
+则校验时只校验pojo中校验注解中有ValidationGroup1分组的属性
+
+
+
+其他的校验注解还有@Past  @DateTimeFormat等
+    @Past表示时间必须是一个过去值
+    @DateTimeFormat(pattern="yyyy-MM-dd")

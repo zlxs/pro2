@@ -1,0 +1,121 @@
+一级缓存（session级的缓存，或者说在一个事务级别的缓存）：在一个session中load/get同一个对象2次，
+load/get时，hibernate首先在session缓存中查找对象，如果没找到就到数据库中去load/get。
+因此，在同一个session中load/get一个对象2次，只会发出一条sql语句。
+而在2个session中load/get同一个对象则会发送2次sql语句。
+
+使用相同的hql语句会使用缓存  包括iterate()方法也会使用缓存
+
+ 
+   session.flush()   //提前对数据库进行操作，使数据库与缓存同步，但不提交，然后清除缓存，
+                主要为了避免内存溢出   比如update方法在commit时才执行更新sql操作，调用了该方法后，
+         就立即执行更新操作
+
+   session.refresh(Object o)  //刷新，让缓存中指定对象内容跟数据库同步
+
+   session.clear() //清空缓存，不操作数据库
+
+   session.evict(object o); //evict清除session缓存中指定对象
+
+
+
+
+二级缓存（多个session的公用缓存，sessionFactory级别的缓存，jvm级缓存）：hibernate支持多种二级缓存，
+hibernate提供了一个HashTable，用于测试，不建议运用与产品中。
+
+load()方法默认使用二级缓存
+list（集合），默认情况，它只会往二级缓存中存放数据，查找时不会搜索二级缓存
+query要用二级缓存，需要打开查询缓存
+
+
+Hibernate支持的jvm级的缓存有如下：
+org.hibernate.cache.HashtableCacheProvider（hibernate自带的用于测试的2级缓存。）
+org.hibernate.cache.EhCacheProvider
+org.hibernate.cache.OSCacheProvider
+org.hibernate.cache.SwarmCacheProvider
+org.hibernate.cache.TreeCacheProvider
+在hibernate的配置文件中打开二级缓存如下
+
+首先，需要打开二级缓存：配置hibernate.cfg.xml
+
+ <!-- 开启二级缓存 -->
+ <property name="cache.use_second_level_cache">true</property>
+
+ <!-- 配置二级缓存的提供商 -->
+ <property name="hibernate.cache.region.factory_class">
+     org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory
+ </property>
+
+ <!-- 二级缓存ehcache的配置文件位置 -->
+ <property name="hibernate.cache.provider_configuration_file_resource_path">ehcache.xml</property>
+
+注意：导入EhCache的3个jar  ehcache-core.jar  hibernate-ehcache.jar  slf4j-api.jar
+EhCache本身需要一个配置文件ehcache.xml
+
+还需要在类中指定或在hibernate.cfg.xml中指定使用二级缓存
+
+
+hibernate.cfg.xml中加<class-cache usage="read-only" class="全类名">
+或在映射文件在加<cache usage="read-only" />
+或者在类上加@Catch注解
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region="javaClassName")
+
+
+默认情况下二级缓存只会对load get 之类的方法缓存， 想hql语言Query的list之类的方法也使用缓存
+ 必须跟查询缓存一起使用， 重写查询方法 
+
+.setCacheable(true)
+
+criteria.setCacheable(true).list();
+
+
+二级缓存适合放什么对象呢？
+①经常被访问（这个对象经常被访问，如果每次都到数据库去取，会降低效率）
+②改动不大（这个对象改动不大，如果改动较大，就可能造成缓存数据跟数据库中的数据不一致）
+③数量有限（如果这个类的对象太多，缓存就会很大。）
+
+
+
+Spring也能使用ehcache, 所以也需要在spring配置文件中添加ehcache的配置
+<!-- cacheManager, 指定ehcache.xml的位置 -->
+    <bean id="cacheManagerEhcache" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <property name="configLocation">
+            <value>classpath:ehcache.xml</value>
+        </property>
+        <!-- 由于hibernate也使用了Ehcache, 保证双方都使用同一个缓存管理器 -->
+        <property name="shared" value="true"/>
+    </bean>
+
+
+
+
+
+三级缓存（查询缓存）：如果要使Query使用二级缓存，则需要打开查询缓存。
+事实上，三级缓存是基于二级缓存的，如：list（集合），默认情况，它只会往二级缓存中存放数据，
+查找时不会搜索二级缓存，这是因为查询条件会随时变化。
+
+如果2次查询的条件是一样的，要想使用二级缓存，就必须打开查询缓存，打开方式如：
+<property name="cache.use_query_cache">true</property>
+或
+<property name="hibernate.cache.use_query_cache">true</property>
+
+
+然后打开Query的缓存  setCachable(true)
+如：createQuery(".....").setCachable(true).list();
+
+
+
+缓存算法有：
+LRU(Least Recently Used):这种算法是在每个对象中维护一个访问的时间变量，每次访问后，
+时间都会更新，当新的对象需要存放到缓存时，替换那个按时间排序最后的对象。
+LFU(Least Frequently Used)：这种算法是每个对象记录了对象访问的次数（即命中率），
+当新的对象需要存放到缓存时，替换那个访问次数最少的对象。
+FIFO(First In First Out)：这种算法是将缓存中的对象存放成一个数组，
+当新的对象需要存放到内存中是，替换最先存放到缓存的对象。
+使用时通常在缓存配置文件中加入：MemoryStoreEvictionPolicy="LRU"
+
+
+可以读写一级缓存的： get  load  iterate
+可以写入一级缓存的： save list
+
+能够读写二级缓存： get load iterate
+能够写入而不能读取二级缓存： list

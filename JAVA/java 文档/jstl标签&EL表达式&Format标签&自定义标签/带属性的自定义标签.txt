@@ -1,0 +1,8 @@
+tld中添加：
+
+<attribute>
+ <name>属性名</name>
+ <required>true/false</required>
+ <rtexprvalue>true</rtexprvalue>//用true比较好
+</attribute>
+这样在标签处理器类中添加一个这个属性，和set方法就可以把属性的值传递给标签处理器类。

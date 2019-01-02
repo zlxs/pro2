@@ -1,0 +1,97 @@
+mybatis的核心配置文件
+   文件名自定义 可以为 mybatis-config.xml/SqlMapConfig.xml/mybatis-cfg.xml/...
+
+结构：
+configuration      根元素
+  properties          定义配置外在化，用于分散配置，如数据库的信息
+  settings            一些全局性的配置，如缓存配置
+  typeAliases         为一些类定义别名，在映射文件中parameterType和resultType等就可以用别名代替完整名  
+  typeHandlers        定义类型处理，也就是定义java类型与数据库中的数据类型之间的转换关系
+  objectFactory
+  plugins             Mybatis的插件，插件可以修改Mybatis内部的运行规则
+  environments        配置Mybatis的环境
+    environment
+      transactionManager   事务管理器
+      dataSource           数据源
+  databaseIdProvider  数据库厂商标识
+  mappers             指定映射文件或映射类
+
+------------------------------------------------------------------------------------------
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+    <configuration>
+
+        <!-- 启用分散配置时，导入指定路径配置文件 -->
+        <properties resource="jdbc.properties" />
+
+        <environments default="development">
+            <environment id="development">
+                <!-- 指定事务管理类型JDBC(使用JDBC的事务管理机制)或MANAGED(使用MANAGED的事务管理机制, 
+                这种机制MyBatis自身不会去实现事务管理,而是让程序的容器如（JBOSS，Weblogic）来实现对事务的管理) -->
+                <transactionManager type="JDBC" />
+
+                <!-- 指定数据源连接配置 数据源类型POOLED、UNPOOLED、JNDI -->
+                <!-- POOLED :Mybatis实现的简单的数据库连接池类型，它使得数据库连接可被复用，
+                不必在每次请求时都去创建一个物理的连接。 -->
+                <!-- UNPOOLED :这个数据源的实现是每次被请求时简单打开和关闭连接 -->
+                <!-- JNDI :通过JNDI从web容器里获取数据源 -->
+                <dataSource type="POOLED">
+                    <!--利用分散配置，单独配置数据库操作信息，也可以直接写死-->
+                    <property name="username" value="${username}" />
+                    <property name="password" value="${password}" />
+                    <property name="driver" value="${driver}" />
+                    <property name="url" value="${url}" />
+                </dataSource>
+            </environment>
+        </environments>
+
+        <!-- 使用类型别名,主要就是为了书写方便 -->
+        <typeAliases>
+            <!--批量别名定义
+             指定包名：mybatis自动扫描包中的实体类，自动定义别名，别名就是类名（首字母大写或小写都可以）-->
+            <package name="" />
+
+            <!--单个实体类的别名定义-->
+            <typeAlias type="" alias="" />
+        </typeAliases>
+
+        <!-- 这是 MyBatis 中极为重要的调整设置，它们会改变 MyBatis 的运行时行为。比如设置缓存等一些个性化设置配置 -->
+	<settings>
+            <!-- 开启二级缓存 -->
+            <setting name="cacheEnabled" value="true"/>
+	    <!--打开延迟加载的开关-->
+	    <setting name="lazyLoadingEnabled" value="true"/>
+            <!--当启用时, 有延迟加载属性的对象在被调用时将会完全加载任意属性。否则, 每种属性将会按需要加载。
+            也就是将积极加载改为按需加载-->
+	    <setting name="aggressiveLazyLoading" value="false"/>
+    	</settings>
+
+        <!-- 无论是 MyBatis 在预处理语句（PreparedStatement）中设置一个参数时，还是从结果集中取出一个值时，
+         都会用类型处理器将获取的值以合适的方式转换成Java类型。可以通过自定义类实现BaseTypeHandler来实现这个功能 -->
+        <typeHandlers>
+            <package name="" />
+            <typeHandler handler="" javaType="" jdbcType="" />
+        </typeHandlers>
+
+        <!-- 导入描述实体类和表对应关系的Mapper映射文件 -->
+        <mappers>
+            <!--url:使用相对于类路径的资源，
+                resource:使用完全限定路径
+                class:使用mapper接口类路径，如果不用注解，mapper接口要和映射文件名保持一致，且在一个目录中
+            -->
+            <mapper resource="com/mybatis/mapper/UserMapper.xml" />
+            <mapper class="" />
+            <mapper url="" />
+            <!--批量加载mapper-->
+            <package name="" />
+        </mappers>
+    </configuration>
+
+------------------------------------------------------------------------------------------
+src目录下创建文件jdbc.properties
+driver=com.mysql.cj.jdbc.Driver
+url=jdbc:mysql://localhost:3306/test?serverTimezone=UTC
+username=root
+password=root

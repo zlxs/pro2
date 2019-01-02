@@ -1,0 +1,38 @@
+指令元素
+	定义JSP文件中的全局属性
+page指令
+	1、属性：language = "javaScriptLanuage" 默认为Java 
+	2、属性：extends ="ClassName" 主要定义此JSP网页产生的Servlet是继承哪一个父类 
+	3、属性：import = "importList" 主要定义此JSP网页使用那些JAVA API 
+	4、属性：session="true|false" 决定JSP网页是否使用session对象 
+	5、属性：buffer="none | size in kb " 决定输出流(output stream)是否有缓冲区，默认为8KB 
+	6、属性：autoFlush="true | false" 决定输出流的缓冲区是否要自动清除，缓冲区满了会产生异常Exception。默认值为true 
+	7、属性：isThreadSafe ="true | false" 决定是否JSP网页只能请求一个处理SingleThreadModel 
+	8、属性：info = "text" 主要表示此JSP网页的相关信息 
+	9、属性：errorPage ＝ ”error_url“ 表示如果发生异常错误时，网页会被重新指向一个错误页面URL
+	10、属性：isErrorPage ="true | false" 表示此JSP Page是否处理异常错误的网页 
+	11、属性：contentType ="ctinfo" 表示MIME类型和JSP网页的编码方式 
+	12、属性：pageEncoding ="ctinfo" 表示JSP网页的编码方式 
+	13、属性：isELlgnored ="true | false" 表示是否此JSP网页忽略EL表达式，true将忽视
+
+-------------------------------------------------------------------------------
+
+taglib标签指令
+       1.url
+       2.prefix
+
+
+-------------------------------------------------------------------------------
+
+include指令
+       页面静态包含
+      该指令不是声明在jsp最上方的指令
+
+在jsp页面中
+<body>
+  <%@include  file="/head.jsp" %>
+    aaaaaaaaaaaaaaaaaa<br/>
+  <%@include  file="/foot.jsp" %>
+</body>
+注意：被包含页面不要写全局标签
+该方式是静态包含，只翻译成一个servlet

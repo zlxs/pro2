@@ -1,0 +1,3 @@
+servlet-mapping中url-patten配置为/ 该servlet就会处理其他servlet不处理的地址
+不建议配置，因为访问服务器的静态web资源(如 xxx.html)都是通过服务器帮我们配置的默认缺省servlet完成的，
+配置了自己的缺省servlet会覆盖掉默认的，如果随便乱配置会导致无法访问静态web资源

@@ -1,0 +1,51 @@
+子查询：查询的where条件来自另一个查询的结果
+语法如：
+select * from table1 where name=(select username from table2 where id=1);
+
+any运算符:
+any 通常与大小写符号搭配使用，不单独使用，可以是<any和>any:
+    分别被代表着下面的含义
+    <any  小于子查询数据中的最大值
+    >any  大于子查询数据中的最小值
+    =any  类似于in
+
+
+
+all运算符：
+all  通常与大小写符号搭配使用，不单独使用，可以是<all和>all:
+    分别被代表着下面的含义
+    >all  大于子查询数据中的最大值
+    <all  小于子查询数据中的最小值
+
+
+
+
+exists
+指定一个子查询
+
+exists 是Oracle sql中的一个函数。表示是否存在符合某种条件的记录。如
+
+select * from A,B
+where A.id=B.id
+and exists （SELECT 1 // 1表示不关心返回的具体值，只关心是否有记录 
+  FROM A
+  WHERE A.type LIKE 'S%')//查询的结果中type必须以S开头
+
+
+这里有点特别：先主查询，再子查询
+
+如果主查询的结果中包含子查询的结果，则exists返回true,否则返回false
+
+-------------------------------------------------------------------------------------
+union
+
+UNION 指令的目的是将两个 SQL 语句的结果的每列合并起来,可以查看你要的查询结果.
+  会自动去掉结果中的重复行，并当成第一列的结果输出(查询出来的每列数据的列名与第一条查询语句的列名一致)
+
+例如:
+SELECT Date FROM Store_Information
+UNION
+SELECT Date FROM Internet_Sales
+
+注意:union用法中,两个select语句的字段类型匹配,而且字段个数要相同
+  如果选择列表包含了表达式，必须指定别名

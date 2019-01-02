@@ -1,0 +1,14 @@
+
+web.xml中可以配置全局出错处理页面
+
+配置各种状态码的处理页面，如404
+<error-page>  
+ <error-code>状态码</error-code> 
+ <location>处理页面</location>
+</error-page>
+
+配置异常的处理页面
+<error-page>
+ <exception-type>exception</exception-type>
+ <location>处理页面</location>
+</error-page>

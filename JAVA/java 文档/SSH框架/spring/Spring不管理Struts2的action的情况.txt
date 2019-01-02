@@ -1,0 +1,11 @@
+
+action中的service通过WebApplicationContextUtils得到spring的上下文来手动获取
+private PrivilegeService privilegeService= 
+                  (PrivilegeService)WebApplicationContextUtils.getWebApplicationContext(ServletActionContext.getServletContext())
+                 .getBean("privilegeServiceImpl");
+
+
+或者也可以加入struts2-spring-plugin.jar插件，在service上加注入的注解，而无须在struts2的action上加注解，
+这样也是可以的，但是要注意的是，这种方式只适用于action获取service,而在service中获取dao则需要把service也
+交给spring管理
+

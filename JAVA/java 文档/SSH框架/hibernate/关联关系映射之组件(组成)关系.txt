@@ -1,0 +1,47 @@
+映射组成关系(组件映射)：
+如：实体类Customer中，地址属性用另一类：地址类 作为属性类型
+
+@Entity
+class Customer{                       class Address{
+  private int id;                          private String province;
+  private String name;                     private String city
+  private Address homeAddress;             private String street;
+  @Embedded //嵌入的                       ...
+  getAddress()                         }
+  ...                                        
+}                                     
+
+
+Customer的映射文件中如何映射组成关系：
+<component name="homeAddress" class="cn.xxx.xx.Address">
+    <property name="province" column="home_province" type="string" length="20"></property>
+    <property name="city" column="home_city" type="string" length="20"></property>
+    <property name="street" column="home_street" type="string" length="20"></property>
+</component>
+
+
+生成表：customer
+id    name   home_province  home_city   home_street
+
+
+
+
+如果表中home_province  home_city   home_street三个字段全为null，则  
+调用 Customer customer=session.load(Customer.class,1);
+     Address address=customer.getHomeAddress()得到的是address=null，而不是一个属性全为空的Address类对象
+这时用hibernate更新地址时会出空指针异常
+
+解决方法：
+  if(address=null){
+     address=new Address();
+     customer.setHomeAddress(addrerss);
+  }
+  address.setProvince("xxx")
+ ...
+
+
+
+
+如果想要增加从地址到客户的访问
+    可以修改Addrerss类，增加一个属性Customer customer和get set方法
+再在Customer映射文件的<component>下增加 主从关系<parent name="customer"/>

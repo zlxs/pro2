@@ -1,0 +1,33 @@
+AngularJS过滤器可用于转换数据
+  过滤器可以使用一个管道字符(|)添加到表达式和指令中
+
+过滤器：
+  currency  格式化数字为货币格式数据
+  filter    从数组项中选择一个子集
+  lowercase 格式化字符串为小写
+  orderBy   根据某个表达式排列数组
+  uppercase 格式化字符串为大写
+
+如：
+  <input type="text" ng-model="firstName" />
+  <input type="text" ng-model="lastName" />
+  姓名：{{ firstName+lastName|uppercase }}
+则"姓名"后输出的是大写的英文(如果是英文的话)
+---------------
+  <input type="text" ng-model="quantity" />
+  <input type="text" ng-model="price" />
+  {{ quantity*price|currency }}
+如果输入框中输入3和4的话，页面上会输出$12.00
+---------------
+  <div ng-app ng-init="products=[{name:'a',price:50},{name:'b',price:47},{name:'c',price:64}]">
+     <ul>
+       <li ng-repeat=" x in products | orderBy:'price'">
+         {{ x.name+':'+x.price }}
+       </li>
+     </ul>
+   </div>
+输出
+  b:47
+  a:50
+  c:64
+

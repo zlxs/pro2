@@ -1,0 +1,32 @@
+selenium-grid是用于设计帮助我们进行分布式测试的工具，其整个结构是由一个hub节点和若干个代理节点组成。
+hub用来管理各个代理节点的注册和状态信息，并且接受远程客户端代码的请求调用，然后把请求的命令再转发给代理节点来执行。
+
+grid的机制是，启动一个hub，然后启动多个remote control，启动remote control时告知hub的位置，这样这些rc就可以注册到hub上，
+测试程序与hub通讯，当测试被并发地发给hub时，hub会自动将这些测试命令分发给已经注册的rc，rc接到命令后执行测试。 
+
+环境搭建：
+首先下载selenium-server-standalone.jar
+
+cmd启动中央(hub)节点:
+java -jar D:\selenium-server-standalone-3.0.1.jar -port 4444 -role hub
+
+配置远程控制节点：
+在某个远程机器上通过cmd启动一个firefox节点：
+
+java -Dwebdriver.gecko.driver=G:\火狐浏览器\geckodriver\geckodriver.exe -Dwebdriver.firefox.bin=G:\火狐浏览器\firefox.exe  -jar D:\selenium-server-standalone-3.0.1.jar -role webdriver -hub http://localhost:4444/grid/register -browser browserName=firefox -port 5555
+
+
+默认情况下，节点的端口为 5555，每个节点可以启动11个浏览器，包括5个firefox、5个chrome和1个ie浏览器。最多有5个并行的测试案例。
+
+-browser browserName=firefox,maxInstances=3,platform=WINDOWS 表示在WINDOWS平台下启动三个firefox浏览器节点
+
+
+
+测试代码中使用某个节点进行测试：
+String Node = "http://localhost:5555/wd/hub";
+DesiredCapabilities cap = DesiredCapabilities.firefox();
+cap.setBrowserName("firefox");
+driver = new RemoteWebDriver(new URL(Node), cap);
+
+
+java -Dwebdriver.gecko.driver=G:\火狐浏览器\geckodriver\geckodriver.exe -Dwebdriver.firefox.bin=G:\火狐浏览器\firefox.exe  -jar D:\selenium-server-standalone-3.0.1.jar -role node -hub http://localhost:4444/grid/register -browser browserName=firefox -port 5555

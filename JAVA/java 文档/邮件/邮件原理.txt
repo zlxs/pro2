@@ -1,0 +1,51 @@
+smtp协议 邮件发送协议 端口25
+pop3协议 邮件接收协议 端口110
+
+
+发送邮件的6个步骤
+1.连上邮件服务器  telnet smtp.qq.com 25
+2.与服务器交互，向邮件服务器提交认证
+  ehlo flx
+  auth login
+  用户名
+  密码
+-------------------------
+用户名和密码需要base64编码
+-------------------------
+
+
+3.发件人地址
+4.接收人地址
+5.主题
+6.quit退出
+
+命令行：
+发送邮件：
+telnet smtp.qq.com 25
+ehlo qq.com     //用ehlo 表示自己需要身份验证
+auth login      //登录指令
+MTQ1MTg3NTc1MA==  //用户名（base64）
+d3ZzdnJpbGJiY3hlZ2dqag==  //密码wvsvrilbbcxeggjj (base64)
+mail from: <1451875750@qq.com>
+rcpt to: <893384148@qq.com>
+
+data
+from: <1451875750@qq.com>          这里可以冒充其他用户 from: <jjs@taiwan.com>
+to: <893384148@qq.com>
+subject: test//邮件主题   下行必须是空行，邮件头和邮件体之间必须有一个空行
+
+美令，咱们分手吧
+	中正
+.//结束一定要有点，这个.要位于一个单独的行上
+quit
+
+
+接收邮件：
+telnet pop.qq.com 110
+user 893384148@qq.com
+pass ***************
+stat //可以不写
+list  //列出所有电子邮件
+retr 2 //收第二份电子邮件
+
+quit

@@ -1,0 +1,27 @@
+语句的执行顺序
+
+(5)SELECT (6)DISTINCT < select list > 
+(1)FROM < table source > 
+(2)WHERE < condition > 
+(3)GROUP BY < group by list > 
+(4)HAVING < having condition > 
+(7) ORDER BY < order by list > 
+
+
+
+from子句中有多个表时，写最右边的表先被处理
+选择记录最少的表作为基础表，可以提高查询效率，所以记录少的表写在右边较好
+
+
+
+oracle采用自下而上的顺序解析where子句，根据这个原理，表之间的连接必须写在其他where条件之前，
+那些可以过滤掉大量数据记录的条件必须写在where子句的末尾
+
+
+当sql语句连接多个表时，使用表别名指定列较好
+
+
+
+查询语句不要用*
+
+

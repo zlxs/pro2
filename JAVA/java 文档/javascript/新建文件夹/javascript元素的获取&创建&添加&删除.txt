@@ -1,0 +1,36 @@
+元素节点的获取
+
+   1. document.getElementById("html标签id属性值");
+
+   2. document.getElementsByName("html标签name属性值");   返回值为包含所有name属性为指定值的标签元素的数组
+
+   3. document.getElementsByTagName("html标签名");  返回值为包含所有指定标签名的元素节点数组
+      父级元素.getElementsByTagName("html标签名");  返回父级元素下的包含所有指定标签名的元素节点数组
+ 
+   4. 
+
+
+元素的创建
+
+   //创建新元素节点 ,方法返回值是指向新建节点的引用指针，返回的是一个元素节点
+   var newElement=document.createElement("html标签名");
+
+   //创建文本节点
+   var s=document.createTextNode("zz");
+
+
+元素的添加
+
+  元素.appendChild(newNode);把一个节点插入到给定元素节点的最后一个子节点之后
+  元素.insertBefore(newNode,targetNode);把一个节点插入到给定元素节点的给定子节点前面
+
+
+元素的删除
+
+  元素.removeChild(element);从给定元素节点里删除一个子节点
+
+
+元素的替换
+
+  元素.replaceChild(newNode,oldNode);替换节点
+  node1.replaceChild(newNode,oldNode);把node1节点下的子节点oldNode替换为另一个节点newNode

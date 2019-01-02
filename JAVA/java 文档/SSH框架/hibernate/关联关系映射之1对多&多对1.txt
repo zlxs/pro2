@@ -1,0 +1,159 @@
+
+多对1单向关联：多的一方关联1的一方
+
+实体类：
+class Customer{                      class Orders{
+   private  int id;                       private  int orderid;
+   private  String name;                  private  String ordername;
+   private  String password;              private  Customer  customer;//建立orders到customer的多对一关联
+   ...                                    getCustomer()
+}                                         ...
+                                      }
+映射文件方式：
+
+Orders类中用属性Customer customer;来记住它对应的customer;
+映射多对一的关联关系:
+   Orders的映射文件中配置property时，customer属性改用
+<many-to-one name="customer" column="cid" calss="cn.xxx.xx.Customer" >
+</many-to-one>
+              many-to-one中可以通过foreign-key属性指定生成的外键名
+
+注解方式：
+@Entity
+public class Orders {
+
+	private int id;
+	private String orderName;
+	private Customer customer;
+	
+	@Id
+	@GeneratedValue
+	public int getId() {
+		return id;
+	}
+        @JoinColumn(name="cid")  //指定生成的外键字段名，不加该注解默认是customer_id
+	@ManyToOne   ---------------------在这里加@ManyToOne注解就行了
+	public Customer getCustomer() {
+		return customer;
+	}
+        ...其他set和get方法
+	
+}
+
+@Entity
+public class Customer {
+
+	private int id;
+	private String name;
+	private String password;
+	@Id
+	@GeneratedValue
+	public int getId() {
+		return id;
+	}
+        ...其他set和get方法
+	
+}
+
+----------------------------------------------------------------
+
+1对多单向关联：1的一方关联多的一方
+
+实体类：
+class Customer{                        class Orders{
+   private  int id;                         private  int orderid;
+   private  String name;                    private  String ordername; 
+   //建立customer到orders的一对多关联       ...         
+   private  Set orders;                }
+   ...                      
+}   
+
+映射文件方式：
+
+Customer的映射文件中配置property时，orders属性改用
+
+<set name="orders" cascade="all" inverse="true">
+  <!--key 表示外键 ，column指定外键列名-->
+  <key column="cid">   //多的一方对应表中的加外键的字段
+  <one-to-many class="cn.xxx.xx.Orders">
+</set>
+
+invese="true"： 在1的一方放弃关联关系的维护，这样缓存会忽略集合的变化(集合内容变化时不更新数据库orders表)
+     
+cascade级联属性：all，既有save-update的功能，又有delete的功能，
+     delete功能是，在删除有外键关联关系的数据时，把和它关联的数据一起删除，
+         否则的话，数据库是不允许你删除这种数据的  
+
+如果映射文件中设置外键不能为null,则需要先保存一的一方，再保存多的一方
+
+
+注解方式：
+@Entity                              @Entity
+class Customer{                      class Orders{
+   private  int id;                       private  int orderid;
+   private  String name;                  private  String ordername;
+   private  String password; 
+   //建立customer到orders的一对多关联      set，get方法         
+   private  Set orders;               }
+   @OneToMany
+   @JoinColumn(name="cid")    //1对多单向关联需要加这个，不加当成多对多处理，生成中间表
+   //cid字段会加在多的一方表中，即在orders表中加有外键的字段cid
+   getOrders()
+   ...                      
+}
+
+hibernate 在默认的情况下，
+会将 OneToMany 当成是 ManyToMany 的一种特殊情况，故而生成了一张中间表。
+想要去掉这张中间表只需要加上 @JoinColumn 注解即可 
+
+----------------------------------------------------------------
+
+多对1，1对多双向关联：
+
+映射文件方式：
+
+Customer:
+<set name="orders"  inverse="true" class="cn.xxx.xx.Customer">
+  <key column="cid">   //在多的一方表中加cid字段作为外键字段
+  <one-to-many class="cn.xxx.xx.Orders">
+</set>
+
+Orders:
+<!--两边的column要一致-->
+<many-to-one name="customer" column="cid" class="cn.xxx.xx.Orders"></many-to-one>
+
+注解方式：
+@Entity
+public class Orders {
+	private int id;
+	private String orderName;
+	private Customer customer;	
+	@Id
+	@GeneratedValue
+	public int getId() {
+		return id;
+	}
+	@ManyToOne 
+        //需要修改外键字段名可以用@JoinColumn
+	public Customer getCustomer() {
+		return customer;
+	}
+        ...其他set和get方法	
+}
+
+@Entity
+public class Customer {
+
+	private int id;
+	private String name;
+	private String password;
+        private Set<Orders> orders;
+	@Id
+	@GeneratedValue
+	public int getId() {
+		return id;
+	}
+        @OneToMany(mappedBy="customer")   ---mappedBy--表示只在多的一方中加外键，而不是生成中间表
+        getOrders()
+        ...	
+}

@@ -1,0 +1,26 @@
+
+使用<s:token />标签
+
+
+
+防表单重复提交的拦截器struts帮我们写了，但没有放在默认的拦截器中，
+用到时可以自己配
+<action name="test" class="xxx.xx.xx.TestAction">
+  <result>/test.jsp</result>
+ 
+  <interceptor-ref  name="token">
+    <!-- 配置这个参数，表示让action的跳转到表单的方法toForm()执行时不去校验，可以配置多个方法用,隔开
+     防止在跳转到表单页面时，立即出现表单重复提交的提示，  和表单验证拦截器中配置类似
+     <param name="excludeMethods">toForm</param>
+    -->
+  </interceptor-ref>
+
+  <interceptor-ref  name="defaultStack"></interceptor-ref>
+  <result name="invalid.token">/error.jsp</result> //重复提交时转到error页面
+  //struts2会去找invalid.token的result，不要改成别的
+</action>
+
+
+
+
+如果需要打印出错误消息在页面上加<s:actionerror/>

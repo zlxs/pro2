@@ -1,0 +1,160 @@
+
+分页：
+Query q=session.createQuery("from Customer c order by c.name")
+   q.setMaxResult(4);//设置查询4条，即每页4条结果
+   q.setFirstResult(2);//从第三条开始   下标从0开始
+   List<Customer> customers=(List<Customer>)q.list();
+
+
+--------------------------------------------------------
+
+使用占位符:后跟一个字符串来表示指定的占位符
+Query q=session.createQuery("from Customer c where c.id>:min and c.id<:max")  :是占位符
+   q.setParameter("min",2);
+   q.setParameter("max",8);
+或直接指定int类型：
+   q.setInteger("min",2);
+   q.setInteger("max",8);
+
+注：
+占位符可以传递多个参数，通过setParameterList(String string,Object[] o)方法设置
+如hql中  id in :id
+   q.setParameterList("id",new Object[]{3,5,6});
+相当于
+   id in (3,5,6)
+
+--------------------------------------------------------
+
+如果查询的结果只有一列，则list()返回结果是List<Object>
+      uniqueResult()方法返回 Object
+如果查询的结果有几列，则list()返回结果是List<Object[]>  
+      uniqueResult()方法返回 Object[]
+
+查询字段：
+
+Query q=session.createQuery("select c.id,c.name from Customer c order by c.id")
+    List<Object[]> list=(List<Object[]>)q.list();//object数组长度为2，object[0]存放id,object[1]存放name
+    for(Object[] o:list){
+       System.out.println("id: "+o[0]+" name: "+o[1]);
+    }
+
+--------------------------------------------------------
+
+将查询出的数据封装成一个指定的类对象
+
+Query q=session.createQuery("select new cn.xxx.xx.MsgInfo(a.id,a.field1,a.field2,...) from Msg a";
+List<MsgInfo> list=q.list();
+查询Msg的指定信息，并用取出的信息生成一个新的MsgInfo对象返回
+
+自定义的MsgInfo类需要提供给这些属性赋值的构造函数
+
+--------------------------------------------------------
+
+查询唯一结果：
+
+//对象相等，根据equals和hashcode判断
+Query q=session.createQuery("from User u where u=:user1"）
+  User user=new User();
+  user.setId(1);
+  q.setParameter("user1",user);
+//查询id为1的User对象
+  User result=(User)q.uniqueResult();//返回唯一的结果
+
+
+
+Query q=session.createQuery("select count(*) from User u"）
+ long count=(Long)q.uniqueResult(); //count(*)返回的是long类型
+
+  
+--------------------------------------------------------
+
+//使用sql语句方式：
+SQLQuery q=session.createSQLQuery("select * from user limit 2,4").addEntity(User.class);
+    //addEntity(User.class) 表示把查询返回结果转化为User类的对象
+ List<User> list=(List<User>)q.list();
+
+
+--------------------------------------------------------
+
+可以给查询语句起一个名字：
+在User类上加注解：
+@NamedQueries(
+   {
+    @NamedQuery(name="a",query="from User u where u.id=1")
+   }
+)
+
+
+调用方式：
+Query q=session.getNamedQuery("a");
+
+
+--------------------------------------------------------
+
+关联查询：
+
+//由于实体类之间关系映射已经建好了，所以hibernate内部知道怎么关联表
+Query q=session.createQuery("select t.title,c.name from Topic t join t.category c")
+      List<Object[]> list=(List<Object[]>)q.list();
+
+#########################注意点########################
+不指定查询字段时：Object[]中存放的是内连的实体类，
+            Object[0]为Topic,
+            Object[1]为Topic对应的Category
+Query q=session.createQuery("from Topic t join t.category c")
+      List<Object[]> list=(List<Object[]>)q.list();
+#######################################################
+
+--------------------------------------------------------
+
+//查询id为1的顾客的所有订单
+Query q=session.createQuery("from Orders o where o.customer.id=1")
+   List<Orders> orders=(List<Orders>)q.list();
+  
+fetch设置为lazy和eager的效果不同：
+   设置为eager会把id为1的customer也查出来
+    List<Customer> list=(List<Customer>)q.list();
+
+
+--------------------------------------------------------
+-----------
+join fetch
+-----------
+    使用 join fetch 可以让 Hibernate 在查询时也提取关联对象的信息，
+不要再进行延迟加载。
+
+如：查询等于大于某个值的所有客户信息，其中也包含客户所有联系人信息
+Query q=session.createQuery("from Customer c join fetch c.contactSet where c.level > :level")
+        .setParameter("level",2L);
+
+
+--------------------------------------------------------
+
+可以用sql的各种函数和关键字：
+
+Query q=session.createQuery("from User u where u.password=‘123’"); 
+  List<User> users=(List<User>)q.list();
+ 
+
+session.createQuery("select distinct c from Customer c order by c.name desc")
+  List<Customer> customers=(List<Customer>)q.list();
+
+
+Query q=session.createQuery("select max(u.id) from User u"）
+
+Query q=session.createQuery("from User u where u.id between 3 and 5"）
+
+Query q=session.createQuery("from User u where u.id in(3,4,5)"）
+
+Query q=session.createQuery("from User u where u.name is not null"）
+
+Query q=session.createQuery("select lower(u.name),"+
+                                   "upper(u.name),"+
+                                   "trim(u.name),"+ 
+                                   "concat(u.name,'***'),"+
+                                   "length(u.name) from User u"）
+还有sqrt(),mod(a,b)...
+
+
+//取出数据库的时间
+Query q=session.createQuery("select current_date,current_time,current_timestamp,u.id from User u"）

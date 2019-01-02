@@ -1,0 +1,104 @@
+首先需要引入标签库
+
+1.<c:out> 用来显示数据对象（字符串、表达式）的内容或结果，可以使数据转义后输出
+<c:out value="<a src="">超链接</a>" escapeXml="true" default="默认值"></c:out> 
+
+escapeXml 默认为true  设置为true则按原样在页面上输出<a src="">超链接</a>，而不是一个超链接
+default属性 设置默认值，当value属性的值获取不到时，输出默认值
+
+-------------------------------------------------------------------------------------
+
+2.<c:set> 用于将变量存于page|request|session|application范围中或给目标javabean的属性赋值
+
+将value的值储存至范围为scope的 varName 变量之中
+<c:set value="value" var="varName" scope="page|request|session|application"/>
+
+将person的name设置为value的值  通过 target和property属性来完成
+<c:set value="赵五" target="${person}" property="name"></c:set>
+
+-------------------------------------------------------------------------------------
+
+3.<c:remove> 主要用来从指定的 jsp 范围内移除指定的变量。使用类似，下面只给出语法：
+<c:remove var="变量名" scope="page|request|session|application"></c:remove>
+
+-------------------------------------------------------------------------------------
+
+4.<c:catch> 用来处理 JSP 页面中产生的异常，并存储异常信息
+<c:catch var="name">
+      容易产生异常的代码
+</c:catch>
+如果抛异常，则异常信息保存在变量 name 中。${name.message}取出异常信息
+
+-------------------------------------------------------------------------------------
+
+5.<c:if var="name" text="${person.name=="小王"}" scope="page">
+   代码。。。
+</c:if>
+执行结果以name为关键字存在指定域中,${name}返回true/false
+
+-------------------------------------------------------------------------------------
+
+6.<c:choose> <c:when> <c:otherwise> 三个标签通常嵌套使用，第一个标签在最外层，最后一个标签在嵌套中只能使用一次
+  <c:set var="score" value="85"></c:set>
+  <c:choose>
+    <c:when test="${score>=90}">
+    你的成绩为优秀！
+    </c:when>
+    <c:when test="${score>=70&&score<90}">
+    您的成绩为良好!
+    </c:when>
+    <c:when test="${score>60&&score<70}">
+    您的成绩为及格
+    </c:when>
+    <c:otherwise>
+    对不起，您没有通过考试！
+    </c:otherwise>
+  </c:choose>
+
+-------------------------------------------------------------------------------------
+
+7.<c:forEach>
+语法：<c:forEach var="name" items="Collection" varStatus="status" begin="begin" end="end" step="step"></c:forEach>
+
+该标签根据循环条件遍历集合 Collection 中的元素。 var用于把取出的元素以name为关键字存在域中；
+items 指定要遍历的集合；varStatus 用于存放集合中元素的信息。
+varStatus 以status为关键字记住迭代信息。
+  ${ status.first} 判断是否是第一个元素   
+  ${ status.last} 判断是否是最后一个元素
+  ${ status.index}  当前迭代到的元素的在集合中的索引，从0开始
+  ${ status.count}  到当前为止共迭代了多少个元素，从1开始   可用于隔行换色
+
+begin end step:从哪开始(索引)，到哪结束(索引)，步长多少。
+
+-------------------------------------------------------------------------------------
+
+8.<c:forTokens> 用于浏览字符串，并根据指定的字符串截取字符串
+语法：<c:forTokens items="aa,bb,cc,dd" delims="," 
+                   var="name" [begin="begin" end="end" step="len" varStatus="statusName"]>
+        ${name} //迭代出每一个
+      </c:forTokens>
+delims：以什么进行分隔
+
+-------------------------------------------------------------------------------------
+
+9.<c:import> 把其他静态或动态文件包含到 JSP 页面。与<jsp:include>的区别是后者只能包含同一个web应用中的文件，前者可以包含其他web应用中的文件，甚至是网络上的资源。
+语法：<c:import url="url" [context="context"] [value="value"] [scope="..."] [charEncoding="encoding"]></c:import>
+   <c:import url="url"  varReader="name" [context="context"][charEncoding="encoding"]></c:import>
+
+
+-------------------------------------------------------------------------------------
+十分重要的标签<c:url>
+
+10.<c:url> 用于url重写,为地址添加session的id
+<c:url var="newurl" value="/a.jsp"/> 地址会自动加上/web应用根路径--> /MyWeb/a.jsp 和附加session的id
+<a href="${newurl}">xx</a>
+
+还可以为地址添加参数，并且给中文参数进行url编码
+<c:url var="newurl" value="/a.jsp">
+  <c:param name="username" value="小明">  //中文参数会进行url编码
+</c:url>
+
+-------------------------------------------------------------------------------------
+
+11.<c:redirect> 
+重定向到某个地址

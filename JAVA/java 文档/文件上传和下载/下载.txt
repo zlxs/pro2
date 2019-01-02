@@ -1,0 +1,2 @@
+//通知浏览器以下载方式打开，中文参数要用url编码，否则是乱码
+response.setHeader("content-disposition","attachment;filename="+URLEncoding.encode(filename,"utf-8"));

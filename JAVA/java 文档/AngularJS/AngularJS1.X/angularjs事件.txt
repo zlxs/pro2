@@ -1,0 +1,45 @@
+ng-blur
+  规定blur事件的行为
+
+
+ng-click
+  元素被点击时的行为
+
+ng-copy
+  规定拷贝事件的行为
+
+ng-dblclick
+  双击事件的行为
+
+ng-focus
+  聚焦事件的行为
+
+ng-keydown
+  按下按键事件的行为
+
+ng-keypress
+  按下按键事件的行为
+
+ng-keyup
+  松开按键事件的行为
+
+ng-mouseenter
+  规定鼠标指针穿过元素时的行为
+
+ng-mousedown
+  规定按下鼠标按键时的行为
+
+ng-mouseleave
+  规定鼠标指针离开元素时的行为
+
+ng-mousemove
+  规定鼠标指针在指定元素中移动时的行为
+
+ng-mouseover
+  规定鼠标指针位于元素上方时的行为
+
+ng-mouseup
+  规定在元素上松开鼠标按钮时的行为
+
+ng-paste
+  规定粘贴事件行为

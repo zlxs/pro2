@@ -1,0 +1,18 @@
+主要是用来解决因Action过多而导致代码文件膨胀的。
+
+首先假设有个自己写的Action类叫UserAction，并且继承自DispatchAction，
+同时，在UserAction写了saveUser()、deleteUser()、updateUser()三个方法，在Struts配置文件中对应的parameter参数配置为method，
+path参数配置为/userAction。那么，对应与客户端调用UserAction中相应方法的方式为：
+ 
+.../userAction.do?method=saveUser
+.../userAction.do?method=deleteUser
+.../userAction.do?method=updateUser
+
+点击链接，就能调用UserAction的saveUser，deleteUser,updateUser方法（这些方法就只有方法名和execute不同，其他都要一样）
+
+
+
+配置文件中
+
+<action path="/userAction" type="cn.xxx.xx.UserAction" parameter="method" ></action>
+这个parameter的值要和链接中的参数要一致，这里对应上面的method=saveUser/deleteUser/updateUser

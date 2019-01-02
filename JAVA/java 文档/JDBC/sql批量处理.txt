@@ -1,0 +1,53 @@
+第一种方式：适合执行不同的sql语句
+public static void main(String[] args) throws ClassNotFoundException, SQLException{
+		
+		Class.forName("com.mysql.jdbc.Driver");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/mydatabase","root","root");
+		String sql1="insert into user values('1','xxx')";
+		String sql2="insert into user values('2','yyy')";
+		String sql3="insert into user values('3','zzz')";
+		
+		Statement st = conn.createStatement();
+		st.addBatch(sql1);
+		st.addBatch(sql2);
+		st.addBatch(sql3);
+		
+		st.executeBatch();
+		st.clearBatch();//清除批处理命令，把原先addBatch()存放在集合中的sql语句删除，以便不影响后续操作
+	}
+
+
+第二种方式用PreparedStatement：适合做批量插入，更新，该方式用的多
+
+public static void main(String[] args) throws ClassNotFoundException, SQLException{
+		
+		Class.forName("com.mysql.jdbc.Driver");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/mydatabase","root","root");
+		String sql="insert into user(id,name) values(?,?)";
+		PreparedStatement st = conn.prepareStatement(sql);
+		st.setString(1,"4");
+		st.setString(2, "qqq");
+		st.addBatch(); //把sql加到list中
+		
+		st.setString(1,"5");
+		st.setString(2, "www");
+		st.addBatch();
+		
+		st.setString(1,"6");
+		st.setString(2, "eee");
+		st.addBatch();
+		
+		st.executeBatch();
+		st.clearBatch();//清除批处理命令，把原先addBatch()存放在集合中的sql语句删除，以便不影响后续操作
+	}
+
+-------------------------
+ for(int i=0;i<10000000;i++){
+  st.setString(1,i+"");
+  st.setString(2,"aa"+i);
+  if(i%1000==0){ //每1000条做一次插入，防止内存溢出
+    st.executeBatch();
+    st.clearBatch();
+  }
+ }
+ st.executeBatch();

@@ -1,0 +1,58 @@
+A把数据给B可以把数据存放在jndi容器中，B再从jndi容器中取数据,服务器把资源给我们时会放在jndi容器中，
+然后我们自己去取
+
+tomcat也有自己的数据库连接池，在META-INF的context.xml的context标签中配置后，
+dao层获取连接池：
+
+注意：数据库驱动需要加入tomcat的lib中
+
+Context initCtx=new InitialContext();//初始化jndi
+Context envCtx=(Context)initCtx=(Context)initCtx.lookup("java:comp/env");//找到jndi容器
+DataSource ds=(DataSource)envCtx.lookup("jdbc/aaa");//从jndi容器中找到ds
+Connection conn=ds.getConnection();
+
+context.xml
+
+<Context> 
+  <Resource  name="jdbc/aaa"  
+            auth="Container"  
+        type="javax.sql.DataSource"  
+            maxActive="20"  
+            maxIdel="10"
+            maxWait="1000"  
+            username="root"  
+            password="root"  
+    driverClassName="com.mysql.jdbc.Driver"  
+    url="jdbc:mysql://127.0.0.1:3306/test"  
+        >  
+
+</Resource>  
+</Context> 
+
+
+Resource 参考参数：
+          name="jdbc/aaa"  //name自己取
+          auth="Container"
+          type="javax.sql.DataSource"
+          factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+          testWhileIdle="true"
+          testOnBorrow="true"
+          testOnReturn="false"
+          validationQuery="SELECT 1"
+          validationInterval="30000"
+          timeBetweenEvictionRunsMillis="30000"
+          maxActive="100"
+          minIdle="10"
+          maxWait="10000"
+          initialSize="10"
+          removeAbandonedTimeout="60"
+          removeAbandoned="true"
+          logAbandoned="true"
+          minEvictableIdleTimeMillis="30000"
+          jmxEnabled="true"
+          jdbcInterceptors="org.apache.tomcat.jdbc.pool.interceptor.ConnectionState;
+          org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer"
+          username="root"
+          password="root"
+          driverClassName="oracle.jdbc.driver.OracleDriver"
+          url="jdbc:oracle:thin:@localhost:1521:test"/>

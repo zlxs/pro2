@@ -1,0 +1,103 @@
+1.上传文件的中文乱码
+	1.1 解决文件的乱码
+		ServletFileUpload.setHeaderEncoding("UTF-8")
+	1.2 解决普通输入项的乱码（注意，表单类型为multipart/form-data的时候，设置request的编码是无效的）
+		FileItem.setString("UTF-8");  //解决乱码
+
+2.在处理表单之前，要记得调用：
+	ServletFileUpload.isMultipartContent(request)方法判断提交表单的类型，如果该方法返回true，则按上传方式处理，否则按照传统方式处理表单即可。
+
+
+3.设置解析器缓冲区的大小，以及临时文件的删除
+	设置解析器缓冲区的大小  DiskFileItemFactory.setSizeThreshold(1024*1024);
+	临时文件的删除：在程序中处理完上传文件后，一定要记得调用item.delete()方法，以删除临时文件
+
+4.在做上传系统时，千万要注意上传文件的保存目录，这个上传文件的保存目录绝对不能让外界直接访问到。
+
+5.限制上传文件的类型
+	在处理上传文件时，判断上传文件的后缀名是不是允许的
+
+6.限制上传文件的大小
+	调用解析器的ServletFileUpload.setFileSizeMax(1024*1024*5);就可以限制上传文件的大小，
+        如果上传文件超出限制，则解析器会抛FileUploadBase.FileSizeLimitExceededException异常，
+        程序员通过是否抓到这个异常，进而就可以给用户友好提示。
+
+
+7.如何判断空的上传输入项
+	String filename = item.getName().substring(item.getName().lastIndexOf("\\")+1);  //""
+	if(filename==null || filename.trim().equals("")){
+		continue;
+	}
+
+8、为避免上传文件的覆盖，程序在保存上传文件时，要为每一个文件生成一个唯一的文件名
+	public String generateFileName(String filename){
+		//83434-83u483-934934
+		return UUID.randomUUID().toString() + "_" + filename;
+	}
+
+9、为避免在一个文件夹下面保存超过1000个文件，影响文件访问性能，程序应该把上传文件打散后存储。
+	public String generateSavePath(String path,String filename){
+		int hashcode = filename.hashCode();  //121221
+		int dir1 = hashcode&15;
+		int dir2 = (hashcode>>4)&0xf;
+		
+		String savepath = path + File.separator + dir1 + File.separator + dir2;
+		File file = new File(savepath);
+		if(!file.exists()){
+			file.mkdirs();
+		}
+		return savepath;
+	}
+
+10、监听上传进度
+		ServletFileUpload upload = new ServletFileUpload(factory);
+			upload.setProgressListener(new ProgressListener(){
+				public void update(long pBytesRead, long pContentLength, int pItems) {
+					System.out.println("当前已解析：" + pBytesRead);
+				}
+			});
+
+11、在web页面中添加动态上传输入项
+
+Jsp中：
+
+  <script type="text/javascript">
+  		function addfile(){
+  			var files = document.getElementById("files");
+  			
+  			var input = document.createElement("input");
+  			input.type='file';
+  			input.name='file';
+  			
+  			var btn = document.createElement("input");
+  			btn.type = 'button';
+  			btn.value = '删除';
+  			btn.onclick = function del(){
+  				this.parentNode.parentNode.removeChild(this.parentNode);
+  			}
+  			
+  			var div = document.createElement("div");
+  			div.appendChild(input);
+  			div.appendChild(btn);
+  			
+  			files.appendChild(div);
+  		}
+  	
+  </script>
+......
+.....
+..
+
+        <tr>
+    		<td>上传文件</td>
+    		<td>
+    			<input type="button" value="添加上传文件" onclick="addfile()">
+    		</td>
+    	</tr>
+
+	<tr>
+    		<td></td>
+    		<td>
+    			<div id="files"></div>
+    		</td>
+    	</tr>

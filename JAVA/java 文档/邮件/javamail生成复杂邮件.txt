@@ -1,0 +1,86 @@
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import java.util.Properties;
+
+import javax.activation.DataHandler;
+import javax.activation.FileDataSource;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
+
+
+public class Javamail {
+
+	public static void main(String[] args) throws AddressException, MessagingException, FileNotFoundException, IOException{
+	
+                Properties prop=new Properties();
+                prop.setProperty("mail.smtp.host", "smtp.qq.com");//设置连接的服务器
+		prop.setProperty("mail.transport.protocol", "smtp");
+		prop.setProperty("mail.smtp.auth", "true"); //该属性过时了，不需要，可以去掉
+               //session代表邮件的会话信息，如链接哪台邮件服务器等
+		Session session=Session.getDefaultInstance(prop);
+		//新建一个邮件，需要传一个javamail的session进去
+		MimeMessage mm=new MimeMessage(session);
+		//设置发送地址
+	    mm.setFrom(new InternetAddress("1451875750@qq.com"));
+	    //设置接收地址,第一个参数设置是以哪种方式发送的，如抄送，密送。。
+	    mm.setRecipient(Message.RecipientType.TO,new InternetAddress("893384148@qq.com"));
+	    //设置邮件主题
+	    mm.setSubject("邮件主题");
+	    
+	    
+	    
+	    //创建邮件中的的内容    
+	    //创建MimeBodyPart封装正文            MimeBodyPart代表邮件内容，一个邮件有三部分内容：正文，图片，附件
+	    MimeBodyPart text=new MimeBodyPart();
+	    text.setContent("aaaaaa<img src='cid:1.jpg'><br/>xxxxxx","text/html;charset=UTF-8");//解决了正文乱码
+	    //创建MimeBodyPart封装图片
+	    MimeBodyPart image=new MimeBodyPart();
+	    DataHandler dh=new DataHandler(new FileDataSource("src/1.jpg"));  //数据处理器     j2ee的jaf技术
+	    image.setDataHandler(dh);//会从数据处理器中得到图片
+	    image.setContentID("1.jpg");//设置图片的ID,以便在正文中引用这个ID来在适当的位置插入图片
+	    //创建MimeBodyPart封装附件
+	    MimeBodyPart attach = new MimeBodyPart();
+		DataHandler dh1 = new DataHandler(new FileDataSource("src/1.jpg"));
+		attach.setDataHandler(dh1);
+		attach.setFileName(MimeUtility.encodeText(dh1.getName()));  //设置附件名时，解决了附件名乱码
+	    
+	    //正常情况是要设置数据类型的，之所以不用设置数据类型 ,是因为 会自动感知类型
+	    
+	    //把把正文和图片内容加到MimeMultipart容器中，MimeMultipart容器用来保存邮件内容
+	    MimeMultipart multipart1=new MimeMultipart();	    
+	    multipart1.addBodyPart(text);
+	    multipart1.addBodyPart(image);
+	    //描述数据之间的关系
+	    multipart1.setSubType("related"); //"mixed"为附件形式
+	    
+	    //由于还有附件，附件和（正文+图片）的关系为mixed,所以不能把附件也加入multipart1中，
+	    //所以需要把（正文+图片）的整体和附件的MimeBodyPart再加入到MimeMultipart容器中，再描述它们之间的关系为mixed
+	    //但MimeMultipart不能加入到MimeMultpart中，所以要先把这个整体再放入一个MimeBodyPart中
+	    
+	    MimeBodyPart bodypart = new MimeBodyPart();
+	    bodypart.setContent(multipart1);
+	    //再创建一个容器，把附件的MimeBodyPart和正文+图片的整体的MimeBodyPart加入到这个容器中
+	    MimeMultipart multipart2=new MimeMultipart();
+	    multipart2.addBodyPart(attach);
+        multipart2.addBodyPart(bodypart);
+	    //描述数据之间的关系
+        multipart2.setSubType("mixed");
+	    
+	    //把大的MimeMultipart容器加到邮件中
+	    mm.setContent(multipart2);
+	    mm.saveChanges();
+	
+	    
+	    mm.writeTo(new FileOutputStream("d:/1.eml"));
+  }
+}

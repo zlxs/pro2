@@ -1,0 +1,16 @@
+内置对象
+	在JSP中内置创建好的对象,供JSP使用
+
+	内置对象            原型                    作用域
+	application         ServletContext           application
+	session             HttpSession              session
+	request             HttpServletRequest       request
+	page                Object                   page
+
+	response            HttpServletResponse      page
+	out                 JspWrite                 page
+	config              ServletConfig            page
+
+	exception           Throwable                page
+	pageContext         PageContext              page
+

@@ -1,0 +1,18 @@
+public static void deleteDirectory(String path){
+		
+		File f=new File(path);
+		if(!f.exists()){
+			System.out.println("文件或目录不存在！");
+			return;
+		}
+		
+		if(f.isDirectory()){
+			
+			File[] files=f.listFiles();
+			for (File file : files) {
+				deleteDirectory(file.getAbsolutePath());
+			}
+		}
+		
+		f.delete();		
+	}

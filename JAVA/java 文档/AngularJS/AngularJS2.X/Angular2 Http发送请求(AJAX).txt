@@ -1,0 +1,51 @@
+
+1.在main.ts中的bootstrap中加入 [HTTP_PROVIDERS]
+
+如：
+bootstrap(RootComponent, [HTTP_PROVIDERS])
+
+
+2.Component中注入Http
+
+  private http:Http;
+
+  constructor(http:Http){
+     this.http=http;
+  }
+
+注：如果不是根Component,如Service中要想注入Http，则需要在typescript中的Service类上方加注解@Injectable()
+    表示可以注入主键
+
+
+3.
+
+在Component中的和html交互的事件方法中写：
+xxxService.getYyy().subscribe((resp:Response)=>{this.某个属性=resp.json()});
+
+xxxService中的getYyy()方法：
+ public getYyy():Observable<Response>{
+     return this.http.request("http://localhost:8888/Test/testAction");
+ }
+
+合起来直接全部写在Component中也就是：
+  this.http.request("http://localhost:8888/Test/testAction").subscribe((resp:Response)=>{this.某个属性=resp.json()});
+
+某个属性 就是在Component中声明的要和html进行数据绑定以便在html中得到ajax返回的数据的属性
+
+注意：进行get/post方法调用,仅会创建request请求对象实例,但并不会发送出去.接着调用subscribe()方法,将请求发送出去.
+
+
+4.
+
+struts中默认禁止跨服务器之间的请求
+web.xml中配置：
+
+<filter>
+    <filter-name>CorsFilter</filter-name>
+    <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+</filter>
+<filter-mapping>
+    <filter-name>CorsFilter</filter-name>
+    <url-pattern>*</url-pattern>   // 真实开发中，* 改成指定要发送请求的那个服务器的ip
+</filter-mapping>
+

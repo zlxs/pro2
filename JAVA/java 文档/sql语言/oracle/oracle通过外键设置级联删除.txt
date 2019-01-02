@@ -1,0 +1,11 @@
+
+oracle中可以使用on delete cascade和on delete set null来建立外键
+
+on delete cascade
+ 当删除主表中的一条数据时，子表的外键引用该主表主键的记录全部被删除
+
+on delete set null
+ 当删除主表中的一条数据时，子表的外键引用该主表主键的记录的外键字段全被设置为null
+
+on delete restrict 
+ 缺省的设置  不允许删除主表中有该外键关联的记录，否则报错，默认是这种

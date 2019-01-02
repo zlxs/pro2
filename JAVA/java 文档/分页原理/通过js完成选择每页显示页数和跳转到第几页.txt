@@ -1,0 +1,55 @@
+window.onload=function(){
+			var selectItem=document.getElementById("choosePageSize");
+			var goPageItem=document.getElementById("chooseCurrentPage");
+
+			selectItem.onchange=function(){
+				var value=this.value;	
+
+				//注 这里需要进行数据合法性验证
+				
+				//选择每页显示的记录数后，需要从第一页开始重新显示
+				window.location.href="${pageContext.request.contextPath}/permission/book/BookListServlet?pageSize="+value+"&currentPage=1";
+			};
+			
+			goPageItem.onchange=function(){
+				var value=this.value;				
+				if(""==value.trim()){
+					alert("不能为空！");
+					this.value=${pageBean.currentPage};
+					return;
+				}else if(isNaN(value)){
+					alert("请输入数字！");
+					this.value=${pageBean.currentPage};
+					return;
+				}else if(parseFloat(value)!=parseInt(value)){	
+					alert("请输入整数！");
+					this.value=${pageBean.currentPage};
+					return;
+				}else if(Number(value)<=0){
+					alert("请输入正整数！");
+					this.value=${pageBean.currentPage};
+					return;
+				}else if(value>${pageBean.totalPage}){
+					alert("超过总页数了！");
+					this.value=${pageBean.currentPage};
+					return;
+				}
+				
+				//如果是通过按条件查询的，则需要把查询条件作为参数提交过去
+				window.location.href="${pageContext.request.contextPath}/permission/book/BookListServlet?pageSize=${pageBean.pageSize}&currentPage="+value+"&bookName=${bookName}&bookType=${bookType}";
+			}
+				
+		
+};
+
+
+每页显示<select id="choosePageSize" style=" width:39px; height:20px;">
+    			<option value="5" <c:if test='${pageBean.pageSize==5}'>selected</c:if> >5</option>
+    			<option value="6" <c:if test='${pageBean.pageSize==6}'>selected</c:if> >6</option>
+    			<option value="7" <c:if test='${pageBean.pageSize==7}'>selected</c:if> >7</option>
+    			<option value="8" <c:if test='${pageBean.pageSize==8}'>selected</c:if> >8</option>
+    			<option value="9" <c:if test='${pageBean.pageSize==9}'>selected</c:if> >9</option>
+  			<option value="10" <c:if test='${pageBean.pageSize==10}'>selected</c:if> >10</option>
+	</select>条
+
+转到第<input id="chooseCurrentPage" type="text" style=" width: 30px; height: 20px;" value="${pageBean.currentPage}"/>页

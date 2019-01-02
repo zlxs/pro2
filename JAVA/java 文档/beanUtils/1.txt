@@ -1,0 +1,26 @@
+package xx;
+
+
+
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+
+public class A {
+
+	public static void main(String[] args)throws IntrospectionException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+		Class s=Class.forName("xx.B");
+		B o=(B) s.newInstance();
+	    	
+		BeanInfo a= Introspector.getBeanInfo(B.class,Object.class);
+		PropertyDescriptor[] b=a.getPropertyDescriptors();
+		for(PropertyDescriptor x:b)
+		{
+          System.out.println(x.getName());			
+		}	
+}
+}

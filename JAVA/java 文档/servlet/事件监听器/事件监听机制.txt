@@ -1,0 +1,79 @@
+java事件监听机制：
+ 1.java的事件监听机制涉及到三个组件：事件源、事件监听器、事件对象
+ 2.当事件源上发生操作时，它将会调用事件监听器的一个方法，并在调用这个方法时，会传递事件对象过来。
+ 3事件监听器由开发人员编写，开发人员在事件监听器中，通过事件对象可以拿到事件源，从而对事件源上的操作进行处理。
+
+
+
+
+import java.util.Date;
+
+//观察者设计模式
+
+public class asd {
+
+	public static void main(String[] args) throws InterruptedException{
+		Order a=new Order("xxx");
+		a.registerOrderListener(new OrderListener(){
+			@Override
+			public void order(Even e) {
+				Order a=e.getOrder();
+				System.out.println(a+" "+new Date(System.currentTimeMillis()).toLocaleString());
+			}			
+		});
+       a.tijiaoOrder();
+		
+	}
+}
+
+//事件发生器
+interface OrderListener{
+	
+	public void order(Even e);	
+			
+}
+
+//事件对象
+class Even{
+	private Order order;	
+	public Even(){}
+	
+	public Even(Order order){
+		this.order=order;
+	}
+
+	public Order getOrder(){
+		return order;
+	}
+	
+}
+
+//事件源
+class Order{
+	private String name;
+	private OrderListener listener;
+	
+	public Order(){}
+	
+	public Order(String name){
+		this.name=name;
+	}
+	
+	public String toString(){
+		return "Order"+name;
+	}
+	
+	public void registerOrderListener(OrderListener listener){
+		this.listener=listener;
+	}
+	
+	public void tijiaoOrder()
+	{
+		if(listener!=null){
+			Even e=new Even(this);
+			listener.order(e);
+		}
+		
+	}
+	
+}

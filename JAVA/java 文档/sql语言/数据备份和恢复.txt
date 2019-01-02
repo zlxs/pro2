@@ -1,0 +1,29 @@
+//备份当前数据库
+
+			String bakpath = this.getServletContext().getRealPath("/bakup");//备份目录
+			String filename = System.currentTimeMillis() + ".sql";//备份文件名
+			
+			//1.作备份操作
+			String command = "cmd /c mysqldump -uroot -proot bookstore>" + bakpath + "\\" + filename; //windows命令
+			Runtime.getRuntime().exec(command);
+			
+			//2.把备份信息封装到一个javabean DbBak中，并把javabean保存数据库
+			DbBak bak = new DbBak();
+			bak.setBaktime(new Date());//备份时间
+			bak.setDescription(request.getParameter("description"));//备份描述
+			bak.setFilename(bakpath + "\\" + filename);
+			bak.setId(UUID.randomUUID().toString());
+			
+
+                       //把javaBean:DbBak存到数据库中
+                        .....
+                       ......
+                          
+
+//恢复指定的库
+			DbBak bak =findDbBak(参数);//调用一个方法得到封装备份文件的javaBean ,
+                       //参数指定是要恢复哪个备份记录
+			String filename = bak.getFilename();
+			String command = "cmd /c mysql -uroot -proot bookstore<" + filename;
+			Runtime.getRuntime().exec(command);
+	

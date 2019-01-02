@@ -1,0 +1,35 @@
+jsp 的include和forward动作
+
+index.jsp
+<jsp:forward page="/servlet/indexServlet"></jsp:forward>
+转发标签
+一般用于配置首页，因为web.xml无法配置<welcome-file>为servlet
+
+
+<jsp:include page="/head.jsp"></jsp:include>
+页面包含
+和<% pageContext.include("/head.jsp"); %>一样 是动态包含，运行时包含，
+会把每个jsp都翻译成servlet,不建议使用，
+建议使用静态包含，如<%@ include file="/head.jsp" %>
+
+
+<jsp:param name="" value="" />
+附加参数
+如：
+<jsp:forward page="/servlet/indexServlet">
+    <jsp:param name="aaa" value="123" />
+</jsp:forward>
+相当于page="/servlet/indexServlet?aaa=123"
+
+--------------------------------------------------------------
+
+静态包含:
+		利用指令元素<%@ include file="url" %>把被包含文件的原码
+		和包含文件的代码合在一起,进行编码,编译成Servlet文件,
+		然后执行
+
+	
+动态包含:
+		利用的是动作元素<jsp:include page="url" />,把被包含文件
+		的执行结果,包含进来,在执行过程中,各自生成各自的Servlet
+		文件,两个文件可以传递数据

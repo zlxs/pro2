@@ -1,0 +1,32 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <!--POM模型版本4.0.0固定-->
+  <modelVersion>4.0.0</modelVersion>
+  <!--项目或者组织的唯一标志，并且配置时生成路径也是由此生成
+    一般写法 ：公司部门的网址倒过来  + 项目名
+  -->
+  <groupId>com.test.maven</groupId>
+  <!--项目的某一模块 -->
+  <artifactId>TestMaven</artifactId>
+  <!--项目的版本-->
+  <version>0.0.1-SNAPSHOT</version>
+  <!--打包的格式,可以为：pom , jar , maven-plugin , ejb , war , ear , rar , par-->
+  <packaging>jar</packaging>
+
+  <name>TestMaven</name>
+  <url>http://maven.apache.org</url>
+  <!--字符编码-->
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <!--依赖关系-->
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

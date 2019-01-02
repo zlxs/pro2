@@ -1,0 +1,111 @@
+/**
+ * 
+ * 模拟实现ArrayList类
+ */
+public class myarrayList {
+
+	private Object[] elementData;
+	private int size;
+	
+	public myarrayList(){
+		this(10);
+	}
+	
+	public myarrayList(int initialCapacity)
+	{
+		if(initialCapacity<0)//传入参数小于0，捕获异常
+		{
+			try {
+				throw new Exception();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		elementData=new Object[initialCapacity];	
+	}
+	
+    public int size()
+    {
+    	return size;
+    }
+	
+    public boolean isEmpty()
+    {
+     return size==0;
+    }
+    
+    public Object get(int index)
+    {
+     if(index<0||index>=size)
+     {
+    	 try {
+			throw new Exception();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+     }
+     return elementData[index];
+    }
+    
+    public void remove(int index)
+    {
+    //删除指定位置的对象
+     if(index<0||index>=size)
+     {
+      try {
+   		   throw new Exception();
+   		  } catch (Exception e) {
+   			e.printStackTrace();
+   		}
+     }
+     for(int i=index;i<size-1;i++)
+     {
+      elementData[i]=elementData[i+1];
+     }
+     elementData[--size]=null;
+    }
+    
+    public void remove(Object obj)
+    {
+    	for(int i=0;i<size;i++){
+    		//if(obj.equals(elementData[i]))同下一样
+    		if(this.get(i).equals(obj))//比较的不是对象的值，而是是不是一个对象
+    			remove(i);
+    	}
+    }
+    
+	public void add(Object obj)
+	{
+		//数组扩容
+		if(size==elementData.length)
+		{
+			System.out.println("扩容执行");
+		 Object[] newelementData=new Object[2*size+2];//创建一个更大的新数
+		 //把原来的数据放在新数组中
+		/* for(int i=0;i<elementData.length;i++)
+		 {
+			 newelementData[i]=elementData[i];
+		 }
+		*/
+		 System.arraycopy(elementData,0,newelementData,0,elementData.length);
+		 elementData=newelementData;
+		}
+	 	elementData[size]=obj;
+	 	size++;
+	}
+	
+	
+	public static void main(String[] args)
+	{
+		myarrayList a=new myarrayList(3);
+		a.add("a");
+		a.add("b");
+		a.add(123);
+		a.add("ss");
+		System.out.println(a.size());
+	//	a.remove(3);
+		a.remove("a");
+		System.out.println(a.size());
+		System.out.println(a.get(1));
+	}
+}

@@ -1,0 +1,87 @@
+
+如果Action实现了带泛型类型的ModelDriven<T> 接口，重写getModel方法
+
+Action中就不需要去写实体类属性的set和get方法了
+  内部会直接去找实体类的set 和get方法封装该属性
+
+如:
+class TsetAction implements ModelDriven<User>{
+
+   private User user=new User();//一定要new出对象
+
+   public User getModel(){
+     return user;
+   }
+}  
+class User{
+  private String name;
+  private String password;
+  set get
+}
+
+页面中 <s:textfield name="name"/>
+提交时，会把name的值提交给user对象的name属性
+
+----------------------------注：------------------------------
+--------------------------------------------------------------
+用url方式传递参数也不需要写user.name=aaa,而是直接写name=aaa
+
+在jsp中也不需要写${user.name} 直接写${name}，写${user.name}反而获取不到
+
+因为struts2会把user压到栈顶(先压action,再压user,所以user在栈顶)，
+   参数提交后封装给了栈顶的modeldriven实体类对象user的name属性。
+
+--------------------------------------------------------------
+
+如果在action中再加个属性 private String name;和set get方法，
+这时提交后，action中的name属性值还是null,而user的name有值，
+因为在栈中model(user对象)在action上面，表单提交时从上往下找匹配的name赋值，
+所以，就不会把name赋值给action的name,而是赋值给user的name
+
+执行时先把action压入栈中，拦截器判断action是否实现ModelDriven接口，
+如果实现了，就去找action中的模型，并压入栈中，所以user在action上方
+
+--------------------------------------------------------------
+
+如果用模型驱动形式完成增删改查，就会出现以下问题，
+
+在action中添加方法
+
+public String update(){
+  //用user引用来指向另一个封装数据的对象
+  User newUser=new User();//这里模拟一个User对象，实际是查询出来的User对象
+  newUser.setName("aaa");
+  newUser.setPassword("123");
+  user=newUser;
+  return "aaa";
+}
+然后在aaa.jsp中获得user的属性回显时，意图获取到的是newUser的值回显，
+但结果却获取不到新对象的值，
+因为这样仅仅改变了action中user引用指向的地址，
+而在值栈中user引用指向的地址并没有改变
+
+这样，如果在hibernate中查询出封装表字段信息的newUser对象，在用user去
+指向它时，表单回显就会显示不了数据
+
+解决办法：
+
+在getModel方法执行前，把user就换成newUser，或者说hibernate查询到的newUser等
+让Action实现Preparable接口，重写prepare方法,该方法在getModel方法前执行
+
+public void prepare() throws Exception{
+  User newUser=new User();
+  newUser.setName("aaa");
+  newUser.setPassword("123");
+  user=newUser;
+}
+
+在最新的struts2版本中，ModelDrivenInterceptor提供了一个配置参数：refreshModelBeforeResult，
+只要将它定义为true，上述问题就被解决了！struts2的解决方案就是：
+先把旧的model对象从ValueStack中移除，然后再把新的model对象压入ValueStack！
+
+
+如果是用表单传递过来参数封装newUser
+需要用另一个拦截器栈paramsPrepareParamsStack
+因为默认栈中参数传递拦截器在最后，prepare拦截器在它之前执行，
+获取不到表单提交的参数
+<interceptor-ref  name="paramsPrepareParamsStack" />

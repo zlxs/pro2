@@ -1,0 +1,75 @@
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
+
+public class SessionScanner implements HttpSessionListener,ServletContextListener {
+	//Collections这个集合工具类生成的集合是线程安全的。 为了防止多个session抢占list的同一个位置，而造成前一个session被覆盖问题
+	private List<HttpSession> list = Collections.synchronizedList(new LinkedList<HttpSession>());
+	private Object lock = new Object();
+
+        //servletContext创建时被调用，即web服务器启动时调用
+	public void contextInitialized(ServletContextEvent sce) {
+		
+		Timer timer = new Timer();//定时器
+		timer.schedule(new MyTask(list,lock), 0, 1*60*1000);//延迟0毫秒后执行new MyTsak()对象的run()方法，每隔1分钟执行一次
+	}
+
+	//session创建时调用
+	public void sessionCreated(HttpSessionEvent se) {
+		HttpSession session = se.getSession();
+		System.out.println(session + "被创建了！！");
+		synchronized (lock) {  //锁旗标
+			list.add(session);
+		}
+	}
+
+	public void sessionDestroyed(HttpSessionEvent se) {
+		System.out.println(se.getSession() + "被销毁了");
+	}
+
+	public void contextDestroyed(ServletContextEvent sce) {
+		// TODO Auto-generated method stub
+	}
+}
+
+
+//由于迭代的过程中，有可能有session被加入list，这时会发生并发修改异常
+//注意在遍历的过程中，只能对集合中的元素进行相应的处理，不能把集合元素增加或者减少，也就是说，不能改变集合的size大小，否则就会出现异常
+//所以，需要把遍历和上面的list.add(session)放到同步代码块中，不能同时访问两个方法，做法为把这两个代码用同一个锁锁起来
+class MyTask extends TimerTask{
+
+	private List list;
+	private Object lock;
+	public MyTask(List list,Object lock){
+		this.list = list;
+		this.lock = lock;
+	}
+	@Override
+	public void run() {
+		System.out.println("定时器执行！！");
+		synchronized (this.lock) {
+			ListIterator it = list.listIterator();//ListIterator是Iterator的子类，该类调用自己的add和remove时不会产生并发修改异常(当迭代器迭代集合的过程中有对象被加入集合或被删除时发生)
+			while(it.hasNext()){
+				HttpSession session = (HttpSession) it.next();
+                                //判断session的最后访问时间和当前时间的时间差是否大于5分钟，如果大于则摧毁该session
+				if((System.currentTimeMillis()-session.getLastAccessedTime())>5*60*1000){
+					session.invalidate();//摧毁session
+					//list.remove(session);  //产生并发修改异常(当Iterator迭代器迭代集合的过程中有对象被加入集合或被删除时发生)
+
+					it.remove();//用ListIterator对象自己的增加和删除不会产生并发修改异常，不能直接调用list的remove
+				}
+			}
+		}
+	}
+}

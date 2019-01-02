@@ -1,0 +1,40 @@
+
+execute方法的返回值类型ActionForward表示执行玩该方法转到哪个地址上
+ActionForward类中有三个属性：name path和redirect
+这个类的返回值会返回给ActionServlet,ActionServlet中得到ActionForward的path,然后转发或重定向到该地址上
+redirect如果设置为true,则ActionServlet帮你重定向到该地址上，否则转发到该地址上，默认是false
+
+
+
+struts-config.xml配置文件中配置
+
+<action-mapping></action-mapping>下<action></action>标签下配置标签<forward></forward>
+
+<forward>标签定义要转向的路径,在execute方法中调用mapping.findforward("success")就可以得到
+ 表示转向success.jsp的ActionForward对象了
+
+
+<struts-config>
+  <action-mapping>
+    <action path="/Demo1Action" type="cn.xxx.xx.Demo1Action" >
+      <forward name="success" path="success.jsp" redirect="false"></forward>
+      <forward name="error" path="error.jsp" ></forward>      
+    </action>
+
+  </action-mapping>
+</struts-config>
+
+
+配置全局转发,如果不为具体的类配置forward,则会使用全局的配置
+-----------------------------------------------------------
+<global-forwards>
+  <forward name="success" path="success1.jsp" ></forward>
+   <forward name="error" path="error1.jsp" ></forward>      
+</global-forwards>
+-----------------------------------------------------------
+
+
+也可以不查配置文件，自己new一个ActionForward，传一个地址进去，在execute方法中
+返回你自己new 的ActionForward
+
+return new ActionForward("/xxx.jsp");

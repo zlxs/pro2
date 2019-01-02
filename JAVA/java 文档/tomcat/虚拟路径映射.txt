@@ -1,0 +1,29 @@
+在conf\Catalina\localhost目录里新建任意文件名(文件名就是对外访问路径)的xml文件，
+该文件名就成为虚拟目录，xml文件中写如：<Context docBase="D:\news"/>
+就可以在浏览器输入http://localhost:8080/xml文件名/...来访问d盘下的news目录里的页面
+
+也可以把xml文件名写成如a#b#c.xml来映射多级目录，这样http://localhost:8080/a/b/c/...
+
+
+可以用ROOT.xml来设置缺省的web应用
+如http://localhost:8080/a.html
+等于访问了d:\new\a.html
+
+如果path设置为path="" 则访问news文件夹下的内容就不需要加/news了，
+直接http://localhost:8080/a.html
+
+如果在自己的web应用下，设置默认页面（首页）
+这样就可以把访问http://localhost:8080  从tomcat的web应用，变成自己的web应用，出现的是自己的首页
+
+
+
+或者在conf下的server.xml文件中加<Context docBase="D:\news" path="/news"  />
+path为url访问路径 http://localhost:8080/news/...
+
+不建议用这种方式，因为需要重启服务器，建议用最上面方式
+
+
+也可以在conf下的context.xml文件中配，这样会应用到所有web应用上，
+如果要配置指定的web应用，还是用第一种
+
+

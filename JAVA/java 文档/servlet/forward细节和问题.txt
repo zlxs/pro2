@@ -1,0 +1,26 @@
+转发的forwaed方法调用之前，如果原来写入缓冲区的内容没有被写到客户端中，forward可以正常执行，forward执行前会清除原来已经写入response缓存中的数据，
+如response.getWriter().write("aaa");
+request.getRequestDispatcher("/1.jsp").forward(request,response);
+客户端不会输出aaa
+
+forward客户端只发了一次请求，服务器端有多个资源调用，地址栏不变
+
+forward之前，servlet中如果有数据被写到了客户端中，如不小心关闭了输出流等，forward会抛出异常
+
+
+
+两个forward连用也会出异常，建议forward之后写return;
+
+如：
+...若干代码...
+if(条件成立){
+  ...
+  request.getRequestDispatcher("地址").forward(request,response);
+}
+...
+request.getRequestDispatcher("地址").forward(request,response);
+
+条件成立就会抛异常
+
+
+转发有一个问题，就是在浏览器页面刷新时，会把原来的操作，再执行一遍，造成表单重复提交

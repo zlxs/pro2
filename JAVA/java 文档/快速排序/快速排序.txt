@@ -1,0 +1,50 @@
+
+public class QuickSort {
+
+   public static void main(String[] args) {
+	
+	   int[] arr=new int[]{14,75,8,62,54,1,9,7,27,94,3};
+	   s(arr,0,arr.length-1);
+	   for(int a:arr){
+	     System.out.println(a);
+	   }
+	   
+	   
+	   
+   }
+	//“ª¥Œ≈≈–Ú
+	public static int  sort(int[] arr,int low,int high){
+		int temp=arr[low];
+		while(low<high){
+			
+			while(low<high&&arr[high]>=temp){
+				high--;
+				
+			}
+			arr[low]=arr[high];
+			
+			while(low<high&&arr[low]<=temp){
+				low++;
+			}
+			arr[high]=arr[low];
+						
+		}
+		arr[low]=temp;
+		return low;
+		
+	}
+   
+        //µ›πÈ
+	public static void s(int[] arr,int low ,int high){
+		if(low<high){
+			int middle=sort(arr,low,high);
+			
+			s(arr,low,middle-1);
+			
+		        s(arr,middle+1,high);
+		}
+		
+	}
+   
+	
+}

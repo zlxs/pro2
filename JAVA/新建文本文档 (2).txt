@@ -1,0 +1,81 @@
+@ConditionalOnClass：该注解的参数对应的类必须存在，否则不解析该注解修饰的配置类；
+
+@ConditionalOnMissingBean：该注解表示，如果存在它修饰的类的bean，则不需要再创建这个bean；
+可以给该注解传入参数例如@ConditionOnMissingBean(name = "example")，这个表示如果name为“example”的bean存在，
+这该注解修饰的代码块不执行。
+
+
+spring cloud
+
+@EnableConfigServer激活该应用为配置文件服务器  
+应用启动后就会完成读取远程配置文件，转换为rest接口服务的功能
+
+
+@ConfigurationProperties(prefix = "aa.bbb") 
+    把application.properties中的以aa.bbb为前缀的项的配置映射成一个实体
+
+如：
+application.properties：
+
+aa.bbb.name=aaa
+aa.bbb.password=123
+
+
+@ConfigurationProperties(prefix = "aa.bbb")
+public class User{
+ private String name;
+ private String password;
+ ...
+}
+
+
+@Import
+用来导入其他配置类。
+
+@ImportResource
+用来加载xml配置文件
+
+@AutoConfigureAfter(class)
+在指定class之后装配
+
+@AutoConfigureBefore(class) 
+在指定class之前装配
+
+@ConditionalOnBean
+如果没有指定的bean，则不解析实例化被注解的bean
+
+@ConditionalOnClass
+如果没有classpath下没有指定的class，则不解析实例化被注解的bean
+
+@ConditionalOnMissingBean
+如果没有指定的bean，则使用被注解的bean,否则不解析被注解的bean,而使用指定的bean
+
+@ConditionalOnMissingClass
+如果classpath下没有指定的class,则使用被注解的bean，否则不解析被注解的bena，而使用指定的class
+
+
+@ConditionalOnProperty 使用spring boot的配置文件中配置的值来确定是否自动装配
+eg.
+@ConditionalOnProperty(prefix = "aaa.bbb.ccc", name = "sad",
+    havingValue = "true",  matchIfMissing = true)
+只有application.properties中配置 aaa.bbb.ccc.sad=true才会自动装配被注解的bean,否则忽略
+
+
+@ConditionalOnExpression
+根据SpEL expression的结果来决定是否自动装配被注解的bean
+
+
+@ConditionalOnResource
+只有存在指定的资源文件才进行装配
+
+@ConditionalOnNotWebApplication
+是否自动装配被注解的bean取决于应用程序是否是一个web应用程序，不是才装配
+
+@ConditionalOnWebApplication
+是否自动装配被注解的bean取决于应用程序是否是一个web应用程序，是才装配
+
+
+
+@EnableHystrix(fallbackMethod = "fallbackSearchAll")表示启用断路器，断路器依赖于服务注册和发现。
+
+断路器的基本作用就是@HystrixCommand注解的方法失败后，系统将自动切换到fallbackMethod方法执行。

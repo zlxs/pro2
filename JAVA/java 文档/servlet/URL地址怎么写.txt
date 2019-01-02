@@ -1,0 +1,14 @@
+如果这个地址是给浏览器用的，/代表网站（http://localhost:8080/），
+如重定向 response.sendReirect("/MyWeb/1.jsp);  
+<a href="/MyWeb/1.jsp">xx</a>
+
+
+如果这个地址是给服务器用的，/代表web应用的根目录（项目名），myeclipse中的WebRoot，
+如转发，getResourceAsStream
+request.getRequestDispatcher("/1.jsp").forward(request,response);
+
+注：为了防止外界直接访问jsp,通常把jsp写在WEB-INF下新建的jsp文件夹内，
+这样外界无法直接访问jsp,安全性高
+request.getRequestDispatcher("/WEB-INF/jsp/1.jsp").forward(request,response);
+
+

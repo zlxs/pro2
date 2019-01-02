@@ -1,0 +1,18 @@
+
+web中的常规任务：国际化 文件上传 参数传递 类型转换 处理表单重复提交
+
+struts2:struts1+webwork
+  1.分离关注：不再将所有任务交给一个组件完成，而是将任务拆分，每个任务交给独立的一个组件(拦截器)
+                完成，使得框架更加整洁，更便于维护和管理。
+
+  2.struts2实现了应用程序和框架api的解耦，action是pojo,更加容易测试。
+    struts1和原生的servlet api（HttpServletRequest,HttpServletResponse）耦合在一起，难于测试
+
+  3.strruts1由于每个实体都会对应一个formbean，所以会造成类的爆炸，struts2没有actionform组件，
+     使用pojo代替
+  
+  4.struts1的action是单例的，数据不是线程安全的，struts2中的action是原型的(每次访问都new新的)，
+      每个线程独占访问action实例，不会造成并发访问，因此struts2的action是线程安全的。
+
+  5.struts1是基于servlet的，
+    struts2是基于filter的(org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter)

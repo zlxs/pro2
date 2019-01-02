@@ -1,0 +1,54 @@
+需要手动导入mybatis-spring.jar
+
+Spring的applicationContext.xml文件配置
+
+ <!-- 配置数据源-->  
+ <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">  
+     <property name="driverClassName" value="com.mysql.jdbc.Driver"></property>  
+     <property name="url" value="jdbc:mysql://localhost:3306/mybatis"></property>  
+     <property name="username" value="root"></property>  
+     <property name="password" value="root"></property>  
+ </bean>
+
+ <!--配置事务管理器-->  
+ <bean id="transactionManager"  
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager">  
+    <property name="dataSource" ref="dataSource" />  
+ </bean> 
+    
+ <!-- 配置mybatis的本地会话工厂bean --> 
+ <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean"> 
+     <!--数据源--> 
+     <property name="dataSource" ref="dataSource" />
+     <!--mybatis配置文件位置-->  
+     <property name="configLocation" value="classpath:mybatis-cfg.xml"></property>  
+ </bean>  
+ 
+ <!--配置dao层的bean (只需配置Mapper接口不需提供实现类)-->
+ <bean id="userDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+    <!--MapperFactoryBean会提供Mapper接口的实现类bean-->  
+    <property name="mapperInterface" value="xxx.xx.dao.UserDaoMapper"></property>
+    <!--创建实现类bean需要sqlSessionFactory-->     
+    <property name="sqlSessionFactory" ref="sqlSessionFactory"></property>  
+ </bean>
+
+
+
+public interface UserDaoMapper {
+    
+    @Insert("insert into user(name) values(#{name})")
+    public int add(User user);	
+	
+    @Select("select * from user where id=#{id}")
+    public User find(String id);
+}
+
+测试：
+public class Test {
+	public static void main(String[] args) {
+	ApplicationContext ac=new ClassPathXmlApplicationContext("applicationContext.xml");
+        //得到UserDaoMapper接口的实现类
+        UserDaoMapper userDao=(UserDaoMapper) ac.getBean("userDao");
+        userDao.add(new User("aaa"));
+	}
+}

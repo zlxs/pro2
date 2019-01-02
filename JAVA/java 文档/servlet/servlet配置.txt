@@ -1,0 +1,12 @@
+需要在web.xml文件中配置 <servlet></servlet>和<servlet-mapping></servlet-mapping>
+
+
+url-pattern的匹配方式：
+  精确匹配    精确对应某一个服务
+  模糊匹配    匹配一组或所有服务  /*   /user/*
+  后缀匹配    匹配带有某一后缀的服务  *.do  *.action
+
+优先级  模糊>后缀
+
+
+也可以在注解@WebServlet中配置

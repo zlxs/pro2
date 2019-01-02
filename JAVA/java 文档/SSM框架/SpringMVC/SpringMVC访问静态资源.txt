@@ -1,0 +1,28 @@
+如果web.xml中配置的SpringMVC的DispatcherServlet拦截 *.do这样的URL，就不存在访问不到静态资源的问题。
+如果你的DispatcherServlet拦截“/”，拦截了所有的请求，同时对*.js,*.jpg的访问也就被拦截了。
+
+这样就会访问不到图片这些资源
+
+解决办法：
+
+在SpringMVC的springMVC-servlet.xml文件中添加：
+
+<!--对静态资源文件的访问-->
+<mvc:resources mapping="/css/**" location="/css/" />
+<mvc:resources mapping="/images/**" location="/images/" />
+<mvc:resources mapping="/js/**" location="/js/" />
+<mvc:resources mapping="/html/**" location="/html/" />
+
+
+location：本地资源路径，注意必须是webapp根目录下的路径。不能放在WEB-INF下，这里常会犯错
+   表示不去拦截location配置的地址
+
+location:配置静态资源文件地址 webroot下 css(images、js)目录     非固定，可自行指定
+mapping:两个*，它表示映射 /web应用/css(images、js)/下所有的URL，包括子路径（即接多个/）
+    访问这些资源，均不拦截
+
+
+
+
+
+

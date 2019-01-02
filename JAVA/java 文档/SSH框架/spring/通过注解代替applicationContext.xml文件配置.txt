@@ -1,0 +1,115 @@
+spring4中提供了大量的注解来支持零配置，简要说明如下：
+@Configuration ： 类似于spring配置文件，负责注册bean，对应的提供了@Bean注解。
+需要org.springframework.web.context.support.AnnotationConfigWebApplicationContext注册到容器中。
+
+@ComponentScan ： 注解类查找规则定义 <context:component-scan/>
+@EnableAspectJAutoProxy ： 激活Aspect自动代理 <aop:aspectj-autoproxy/>
+@Import @ImportResource: 关联其它spring配置  <import resource="" />
+@EnableCaching ：启用缓存注解  <cache:annotation-driven/>
+@EnableTransactionManagement ： 启用注解式事务管理 <tx:annotation-driven />
+@EnableWebMvcSecurity ： 启用springSecurity安全验证
+
+
+
+
+import org.apache.commons.dbcp.BasicDataSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.orm.hibernate4.HibernateTransactionManager;
+import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import javax.sql.DataSource;
+import java.util.Properties;
+
+/**
+ * Created by Administrator on 2016/9/7.
+ */
+@Configuration
+@ComponentScan({"com.tz.dao","com.tz.service"})  //spring的包扫描功能，扫描spring的bean注解
+@EnableAspectJAutoProxy   //启用aspectj通知
+@EnableTransactionManagement  //启用声明式事物功能
+public class AppConfig {
+
+    /*
+     *配置数据源实现类
+     */
+    @Bean
+    public DataSource getDataSource(){
+
+        BasicDataSource basicDataSource=new BasicDataSource();
+        //设置各种参数
+        basicDataSource.setDriverClassName("oracle.jdbc.OracleDriver");
+        basicDataSource.setUrl("jdbc:oracle:thin:@localhost:1521:XE");
+        basicDataSource.setUsername("jsd1605");
+        basicDataSource.setPassword("jsd1605");
+        basicDataSource.setInitialSize(10);
+        return basicDataSource;
+    }
+
+    /*
+     *配置SessionFactory
+     */
+    @Bean
+    public LocalSessionFactoryBean getLocalSessionFactoryBean() {
+
+        //实例化
+        LocalSessionFactoryBean localSessionFactoryBean=new LocalSessionFactoryBean();
+        //设置数据源
+        localSessionFactoryBean.setDataSource(this.getDataSource());
+        //hibernate配置
+        Properties p=new Properties();
+        p.setProperty("hibernate.dialect","org.hibernate.dialect.Oracle10gDialect");
+        p.setProperty("hibernate.show_sql","true");
+        p.setProperty("hibernate.hbm2ddl.auto","update");
+        localSessionFactoryBean.setHibernateProperties(p);
+        //注册实体类，指定实体类所在的包
+        localSessionFactoryBean.setPackagesToScan("com.tz.entity");
+        return localSessionFactoryBean;
+    }
+
+    /*
+     *配置事务管理器
+     */
+    @Bean
+    public HibernateTransactionManager getHibernateTransactionManager(){
+
+        HibernateTransactionManager hibernateTransactionManager=new HibernateTransactionManager();
+        hibernateTransactionManager.setSessionFactory(this.getLocalSessionFactoryBean().getObject());
+        return hibernateTransactionManager;
+    }
+
+}
+
+
+web.xml改成：
+
+<listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener </listener-class>
+  </listener>
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>com.tz.ssh.config.AppConfig</param-value>
+  </context-param>
+  <!--告诉spring配置信息是用的注解方式，而不是applicationContext.xml-->
+  <context-param>
+    <param-name>contextClass</param-name>
+    <param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
+  </context-param>
+</listener>
+
+
+
+
+public class Test {
+
+    public static void main(String[] args){
+
+        ApplicationContext ac=new AnnotationConfigApplicationContext(AppConfig.class);
+        ClassA a=ac.getBean(ClassA.class);
+        a.getB().b();
+    }
+
+}

@@ -1,0 +1,19 @@
+servlet中
+需要设置返回的mime类型为text/xml
+
+response.setContentType("text/xml;charset=UTF-8");
+
+StringBuffer bf=new StringBuffer();   <a>
+bf.append("<a>");                 	<b>  
+bf.append("<b>");                 	</b>
+bf.append("</b>");                    </a>
+bf.append("</a>");
+
+response.getWriter.write(bf);
+
+
+javascript中使用 xmlhttp.responseXML();
+
+var xmldoc=xmlhttp.responseXML();//得到服务器端传回来的xml对象
+  
+ 然后用 xmldoc.getElementByTagName("");等方法解析这个xml

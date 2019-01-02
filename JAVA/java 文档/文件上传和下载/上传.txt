@@ -1,0 +1,116 @@
+表单的enctype属性必须设置为 enctype="multipart/form-data"
+
+用enctype="multipart/form-data"提交的方式，servlet无法直接通过getParameter("xxx")获取表单的内容
+需要通过解析工具来获取内容
+
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.fileupload.ProgressListener;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
+public class UploadServlet extends HttpServlet {
+
+	public void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		
+		List types = Arrays.asList("jpg","gif","avi","txt");//允许上传的类型 ,Arrays.asList()方法把数组转换为Arraylist对象
+		
+		try{
+			DiskFileItemFactory factory = new DiskFileItemFactory();  //内存缓冲区为10k，大于10k则会把上传文件写入临时缓冲区
+			factory.setSizeThreshold(1024*1024);//设置临时缓冲区的大小为1M，如果上传文件大于1M，则会把文件写入临时文件
+
+			factory.setRepository(new File(this.getServletContext().getRealPath("/temp")));//设置临时文件路径，路径为tomcat的webapps下的网站名下的temp文件夹
+                        //在myeclipse中temp文件夹部署在WebRoot下
+			
+			ServletFileUpload upload = new ServletFileUpload(factory);//得到解析器
+                        
+                        //设置监听器，处理上传进度，由于未学ajax的控件，则暂时用此方式直接输出解析进度
+			upload.setProgressListener(new ProgressListener(){
+				public void update(long pBytesRead, long pContentLength, int pItems) {
+					System.out.println("当前已解析：" + pBytesRead);
+				}
+			});
+			
+			upload.setFileSizeMax(1024*1024*5);//设置最大上传文件大小为5M,超出大小会抛出FileUploadBase.FileSizeLimitExceededException异常
+			if(!upload.isMultipartContent(request)){
+				//按照传统方式获取表单数据
+				request.getParameter("username");
+				return;
+			}
+			upload.setHeaderEncoding("UTF-8");
+			List<FileItem> list = upload.parseRequest(request);
+			
+			for(FileItem item : list){
+				if(item.isFormField()){
+					//为普通输入项
+					String inputName = item.getFieldName();
+					String inputValue = item.getString("UTF-8");
+					//inputValue = new String(inputValue.getBytes("iso8859-1"),"UTF-8");
+					System.out.println(inputName + "="  + inputValue);
+				}else{//item里封装的为上传文件
+					String filename = item.getName().substring(item.getName().lastIndexOf("\\")+1);
+					if(filename==null || filename.trim().equals(""))//如果上传输入项为空时，
+                                        {
+						continue;
+					}
+					
+					String ext = filename.substring(filename.lastIndexOf(".")+1);
+					if(!types.contains(ext)){
+						request.setAttribute("message", "本系统不支持" + ext + "这种类型");
+						request.getRequestDispatcher("/message.jsp").forward(request, response);
+						return;
+					}
+					InputStream in = item.getInputStream();
+					int len = 0;
+					byte buffer[] = new byte[1024];
+					String saveFileName = generateFileName(filename);
+					String savepath = generateSavePath(this.getServletContext().getRealPath("/WEB-INF/upload"),saveFileName);
+					FileOutputStream out = new FileOutputStream(savepath + File.separator + saveFileName);//File.separator分隔符通用
+					while((len=in.read(buffer))>0){
+						out.write(buffer, 0, len);
+					}
+					in.close();
+					out.close();
+					item.delete();  //删除临时文件，必须在流关闭之后，最好放在finally中
+				}
+			}
+		}catch (FileUploadBase.FileSizeLimitExceededException e) {
+			request.setAttribute("message", "文件大小不能超过5m");
+			request.getRequestDispatcher("/message.jsp").forward(request, response);
+			return;
+		}catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		request.setAttribute("message", "上传成功！！");
+		request.getRequestDispatcher("/message.jsp").forward(request, response);
+	}
+	
+	//分配上传文件的保存目录，防止所有文件保存在同一个目录，目录中文件太多影响文件访问效率
+        //该方法的思路为：根据文件名的哈希值来确定保存目录，先用低4位，再用低8位中的前4位，不够再用前4位，再不够再用前4位
+	public String generateSavePath(String path,String filename){
+		int hashcode = filename.hashCode();  //121221
+		int dir1 = hashcode&15;//得到低4位
+		int dir2 = (hashcode>>4)&0xf;//右移4位，再'与'上0000 0000 0000 0000 0000 0000 0000 1111得到最后4位，即原来的低8位中的前4位
+		
+		String savepath = path + File.separator + dir1 + File.separator + dir2;
+		File file = new File(savepath);
+		if(!file.exists()){
+			file.mkdirs();
+		}
+		return savepath;
+	}
+	
+        //为上传文件产生一个唯一的文件名，防止上传同名文件的覆盖问题
+	public String generateFileName(String filename){
+		//83434-83u483-934934
+		return UUID.randomUUID().toString() + "_" + filename;
+	}
+
+
+	public void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		doGet(request, response);
+	}
+
+}

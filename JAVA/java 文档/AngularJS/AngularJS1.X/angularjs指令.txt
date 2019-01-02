@@ -1,0 +1,218 @@
+ng-app指令
+  定义一个AngularJS应用程序,如同java的main方法，一个页面只能有一个
+  告诉AngularJS 该HTML元素是AngularJS应用程序的"所有者"
+  指令在网页加载完毕时会自动引导(初始化)应用程序
+
+-----------------------------------------------------------------------
+ng-model
+  把元素值(如输入域的值)绑定到应用程序
+
+如：
+  <input type="text" ng-model="name" /><br/>
+  <p>欢迎您：{{name}}</p>
+当在输入框中输入值时，页面中"欢迎您"后会及时的出现输入框中的内容
+   输入值改变时，也会同步更新
+
+ng-model也可以：
+  为应用程序数据提供类型验证(number,email,required)
+  为应用程序数据提供状态(invalid,dirty,touched,error)
+  为HTML提供CSS类
+  绑定HTML元素到HTML表单
+
+-----------------------------------------------------------------------
+ng-bind
+  把应用程序数据绑定到HTML视图,把应用程序变量的name绑定到某个段落的innerHTNL
+
+如：
+  <input type="text" ng-model="name" /><br/>
+  <p>欢迎您：<span ng-bind="name"></span></p>
+
+AngularJS表达式{{ }}同ng-bind有同样的绑定数据的功能 
+
+-----------------------------------------------------------------------
+ng-init
+  初始化AngularJS应用程序变量
+
+如：
+  <div ng-init="firstName='John';lastName='alxs'">
+    <input type="text" value="{{firstName}}" />
+    {{firstName+""+lastName}}
+    <span ng-bind="firstName+''+lastName"></span>
+  </div>
+页面上对应位置会出现"Johnalxs",输入框中也会出现John
+
+还可以如下方式定义：
+  ng-init="person={firstName:'John',lastName:'alxs'}"
+  使用：{{ person.firstName}}
+--------
+  ng-init="points=[1,2,3,4,5]"
+  使用： <p>第三个值为{{ points[2] }}</p>
+
+-----------------------------------------------------------------------
+ng-repeat
+  重复一个HTML元素，对于集合(数组)中每一项会克隆一次HTML元素
+
+如：
+  <p>使用ng-repeat来循环数组</p>
+  <div ng-init="names=['jack','rose','lucy','tom']">
+     <ul>
+       <li ng-repeat="x in names">
+          {{ x }}
+       </li>
+     </ul>  
+  </div>
+页面上会用列表方式输出 jack rose lucy tom
+
+-----------------------------------------------------------------------
+ng-controller
+  AngularJS控制器控制AngularJS应用程序的数据
+
+如：
+<div ng-app="myApp" ng-controller="personCtrl">
+     <input type="text" ng-model="firstName" />
+     <input type="text" ng-model="lastName" />
+     {{ firstName+lastName }}
+</div>
+
+<script src="angular.min.js"></script>
+
+<script>
+     var app=angular.module('myApp',[]);//创建一个模块，[]数组参数用于定义模块的依赖关系，这里表示没有依赖
+     app.controller('personCtrl',function($scope){
+	   $scope.firstName="aaa";
+	   $scope.lastName="bbb";
+     });
+</script>
+
+上述代码执行结果为：两个输入框中分别出现aaa bbb
+
+ng-app指定AngularJS模块
+ng-controller="personCtrl" 定义一个控制器 personCtrl是一个JavaScript函数
+$scope:是一个应用象(属于应用变量和函数),用来保存AngularJS Model(模型)的对象
+控制器在作用域中创建了两个属性 firstName和lastName
+
+
+-----------------------------------------------------------------------
+ng-disabled
+  直接绑定应用程序数据到HTML的disabled属性
+
+如：
+  <div ng-app ng-init="mySwitch=false">
+     <input type="checkbox"  ng-model="mySwitch" />我同意
+     <button ng-disabled="!mySwitch">确定</button>     
+  </div>
+
+ng-disabled指令绑定应用程序数据mySwitch到button的disabled属性
+如果mySwitch为true则按钮不可用，false则按钮可用
+ng-model绑定 mySwitch到input checkbox元素的value上，当为true时，勾选，false时不勾选
+
+上面的程序，开始时"我同意"没有勾选(mySwitch为false),并且按钮不可用，当勾选以后，mySwitch变为
+true,此时按钮的 !mySwitch 变为false,按钮变可用  (如同安装软件时要勾选我同意xxx协议，才能安装一样) 
+
+-----------------------------------------------------------------------
+ng-show
+  根据value的值来显示(隐藏)HTML元素。可以使用表达式来计算布尔值(true/false)
+
+如：
+  <div ng-app>
+     <p ng-show="true">我是可见的</p>
+     <p ng-show="false">我是不可见的</p>
+  </div>
+
+  <div ng-app ng-init="hour=12">
+     <p ng-show="hour<=12">我是可见的</p>
+     <p ng-show="hour>12">我是不可见的</p>
+  </div>
+
+-----------------------------------------------------------------------
+ng-hide
+  用于显示或隐藏HTML元素
+
+如：
+  <div ng-app>
+     <p ng-hide="true">我是不可见的</p>
+     <p ng-hide="false">我是可见的</p>
+  </div>
+
+  <div ng-app ng-init="hour=12">
+     <p ng-hide="hour>12">我是可见的</p>
+     <p ng-hide="hour=12">我是不可见的</p>
+  </div>
+
+-----------------------------------------------------------------------
+ng-click
+  定义AngularJS的点击事件
+
+如：
+  <div ng-app ng-init="count=0">   
+     <button ng-click="count=count+1">点我加1</button>
+     <button ng-click="count=count-1">点我减1</button>
+     <p>{{ count }}</p>    
+  </div>
+
+---------------
+案例2：通过点击事件来控制内容的显示和隐藏
+
+  <div ng-app="myApp" ng-controller="myCtrl">   
+     <button ng-click="toggle()">隐藏/显示</button>
+     <div ng-hide="isHide">
+        要显示和隐藏的内容
+     </div>
+   </div>
+   
+  <script src="angular.min.js"></script>
+  <script>
+     var app=angular.module('myApp',[]);
+     app.controller('myCtrl',function($scope){
+	  $scope.isHide=false;
+	  $scope.toggle=function(){
+	      $scope.isHide=!$scope.isHide;
+	  };     
+     });
+  </script>
+
+--------------
+案例3：一个记录笔记的小页面，在文本框中输入文字，网页会同时给出剩余的可写入字数
+     点击保存会弹出对话框，点击清空按钮会把文本框中的文字全部删除
+   
+  <div id="content" ng-app="myApp" ng-controller="myCtrl">   
+     
+      <p>我的笔记</p>
+      <p><textarea ng-model="message" rows="13" cols="34" maxlength="100"></textarea></p>
+      <p>
+        <button ng-click="save()">保存</button>
+        <button ng-click="clear()">清空</button>
+      </p>
+      <p>剩余字数<span ng-bind="left()"></span></p>
+   </div>
+   
+   <script src="angular.min.js"></script>
+   <script>
+      var app=angular.module('myApp',[]);
+      app.controller('myCtrl',function($scope){
+	   $scope.message="";
+	   $scope.left=function(){
+		return 100-$scope.message.length; 
+	   };
+	   $scope.save=function(){
+		alert("saving...");   
+	   };
+	   $scope.clear=function(){
+		$scope.message="";   
+	   };       
+      });
+  </script>
+
+-----------------------------------------------------------------------
+自定义指令
+
+directive：在模块中新建指令，指定的方法在编译步骤会被执行，执行后返回一个自定义的链接函数，
+这个链接函数在完成双向绑定后执行。
+
+
+
+
+
+
+
+

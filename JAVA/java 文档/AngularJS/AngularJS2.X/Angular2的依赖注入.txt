@@ -1,0 +1,49 @@
+
+class Person{
+    name: string;
+    age: number;
+}
+
+//写一个personService,用来获取一个person数组，在Component中通过依赖注入该service,调用getPerson方法就能获取这个数组
+//类似JAVA
+export class PersonService{
+
+    public getPersons():Person[]{
+        return [{name:"小明",age:12},{name:"小张",age:15},{name:"小李",age:78}];
+    }
+}
+
+
+@Component({
+    templateUrl:'./app/root.html',
+    selector:'my-root',
+    providers:[PersonService] //providers值为数组类型，填写要依赖注入的类型
+})
+export class RootComponent{
+
+    personArray: Person[];
+    /*
+    //非依赖注入方式
+    //提供一个空参的构造方法
+    constructor(){
+        console.log("无参构造");
+        var personService:PersonService=new PersonService();
+        this.personArray=personService.getPersons();
+    }
+    */
+
+    //依赖注入的写法(构造注入)，推荐使用
+    private personService:PersonService;
+    constructor(personService:PersonService){
+        console.log("有参构造");
+        this.personService=personService;
+        this.personArray=personService.getPersons();
+    }
+
+}
+
+root.html片段  *ngFor指令用来迭代personArray
+
+<ul>
+    <li *ngFor="let p of personArray">{{p.name}}--{{p.age}}</li>
+</ul>

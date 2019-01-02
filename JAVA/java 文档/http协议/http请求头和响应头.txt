@@ -1,0 +1,48 @@
+1)请求(客户端->服务端[request])
+    GET(请求的方式) /books/java.html(请求的目标资源) HTTP/1.1(请求采用的协议和版本号)
+    Accept: */*(客户端能接收的资源类型)
+    Accept-Charset:客户机采用的编码
+    Accept-Language: en-us(客户端的语言类型) 和国际化相关
+    Connection: Keep-Alive(维护客户端和服务端的连接关系) 
+               close(当前正在使用的tcp链接在请求处理完毕后会被断掉。
+                     以后client再进行新的请求时就必须创建新的tcp链接了)
+    Host: localhost:8080(连接的目标主机和端口号)
+    Referer: http://localhost/links.asp(从哪个资源来访问服务器，用于防盗链)
+    User-Agent: Mozilla/4.0(客户端版本号的名字)
+    Accept-Encoding: gzip, deflate(客户端能接收的压缩数据的类型)
+    If-Modified-Since: Tue, 11 Jul 2000 18:23:51 GMT(缓存时间) 
+    Cookie(客户端暂存服务端的信息)
+    Date: Tue, 11 Jul 2000 18:23:51 GMT(客户端请求服务端的时间)
+
+    Range:bytes=1000-2000表示要求服务器发送从1000到2000字节的数据
+     bytes=1000- 从1000到最后
+     bytes=1000 最后1000个字节
+    该头用于断点续传
+
+
+2)响应(服务端->客户端[response])
+    HTTP/1.1(响应采用的协议和版本号) 200(状态码) OK(描述信息)
+    302（客户端请求服务端，但服务端没有对应的资源，服务端要客户端再次请求找其它的服务端，即客户端二次请求，重定向） 
+    307（客户端请求服务端，但服务端没有对应的资源，服务端自行再次请求找其它的服务端，即客户端一次请求，转发）
+    304（客户端请求服务端，此时客户端缓存中有，无需再从服务端下载新的内容,服务端叫客户端自行找缓存，优化）
+    500(客户端请求的资源，服务端存在，但在执行时出错）
+    Location: http://www.baidu.com(服务端让客户端去访问的页面路径) 重定向 
+    Server:apache tomcat(服务端的Web服务端名)
+    Content-Encoding: gzip(服务端发送压缩编码类型) 
+    Content-Length: 80(服务端发送的压缩数据的长度) 
+    Content-Language: zh-cn(服务端发送的语言类型) 
+    Content-Type: text/html; charset=GB2312(服务端发送的类型及采用的编码方式)
+    Last-Modified: Tue, 11 Jul 2000 18:23:51 GMT(服务端对该资源最后修改的时间)
+    Refresh: 1;url=http://www.it315.org(服务端要求客户端1秒钟后，刷新，然后访问指定的页面路径)
+    Content-Disposition: attachment; filename=aaa.zip(服务端要求客户端以
+      下载文件的方式打开该文件),设置之前可能先要用Content-Type头告诉服务器数据类型  
+       如果文件名为中文，则要经过url编码，调用URLEncoder.encode(filename,"编码类型");
+
+    Transfer-Encoding: chunked(分块传递数据到客户端）  
+    Set-Cookie:SS=Q0=5Lb_nQ; path=/search(服务端发送到客户端的暂存数据)
+    Expires: -1，0为不缓存//3种(服务端禁止客户端缓存页面数据)setDateHeader()
+    Cache-Control: no-cache(服务端禁止客户端缓存页面数据)  setHeader()
+    Pragma: no-cache(服务端禁止客户端缓存页面数据)   setHeader()
+    Connection: close(1.0)/(1.1)Keep-Alive(维护客户端和服务端的连接关系)  
+    Date: Tue, 11 Jul 2000 18:23:51 GMT(服务端响应客户端的时间)
+    ETag: ETag值的变更说明资源状态已经被修改 用于判断缓存资源是否是最新的

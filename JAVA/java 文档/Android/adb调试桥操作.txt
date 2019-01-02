@@ -1,0 +1,34 @@
+adb.exe   android debug bridge  android的调试桥
+
+cmd中操作：
+---------------------------------------------
+adb remount 意思是将设备改为可读可写;
+
+adb push [源文件地址] [目标文件地址]   把一个文件拷贝到手机内存 
+    adb push  e:/haha1.txt  /mnt/sdcard/haha1.txt 
+
+adb pull [源文件] [目标文件]   把手机文件拷贝到电脑上
+
+---------------------------------------------
+adb 连接的调试桥的socket出现了错误 
+1. adb kill-server   关闭调试桥
+2.  adb start-server   打开调试桥
+
+---------------------------------------------
+把电脑上的某个应用装(. apk)到模拟器或者手机里面 
+adb install  demo.apk
+Failure [INSTALL_FAILED_ALREADY_EXISTS]
+
+卸载一个手机上的程序 
+adb uninstall [包名]
+
+---------------------------------------------
+adb version 查看adb的版本
+
+adb devices 查看当前所有连接上来的设备信息 
+
+adb shell 来到模拟器或者是真机的控制台 
+  ls 查看目录信息 
+  ps 查看当前运行进程信息
+  kill pid 杀死进程 
+  

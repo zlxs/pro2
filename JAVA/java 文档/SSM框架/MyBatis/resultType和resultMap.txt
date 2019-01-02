@@ -1,0 +1,32 @@
+
+resultType:
+使用resultType进行输出映射，只有查询出来的列名和pojo中的属性名一致，该列才可以映射成功。
+如果查询出来的列名和pojo中属性名全部不一致，则没有创建pojo对象
+如果查询出来的列名和pojo中属性有一个一致，就会创建pojo对象
+
+
+resultMap:完成高级输出结果映射
+ 可以解决字段名和属性名不一致
+
+<mapper namespace="xxx.xx.domain.user">
+  <!--使用resultMap代替resultType
+  resultMap定义在其他mapper中，需要加namespace
+  -->
+  <select id="getUser" parameterType="int" resultMap="getUserMap">
+    select username,password from user where id=#{id}
+  </select>
+</mapper>
+
+<!--配置属性和字段的映射关系
+    jdbcType设置数据库字段类型 java.sql.Types.下的值
+-->
+<resultMap type="xxx.xx.domain.User" id="getUserMap">
+  <!--id映射主键字段-->
+  <id property="id" column="id">
+  <result property="name" column="username"   [jdbcType="VARCHAR"] /> 
+  <result property="psw"  column="password"   [jdbcType="VARCHAR"] />
+</resultMap>
+
+property:实体类中的属性名
+column:从数据库查询出来的结果的字段名（数据库表的字段名或sql语句中用的别名）
+jdbcType:设置数据库字段类型  值填写 java.sql.Types.下的值   可不写

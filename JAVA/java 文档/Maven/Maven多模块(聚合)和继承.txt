@@ -1,0 +1,48 @@
+
+
+在需要引入其他模块的项目中的pom.xml文件中加入
+
+<modules>
+   <!--模块地址-->
+   <module>../user-service</module>
+   <module>../user-dao</module>
+   <modue>../user-log</module>
+
+</modules>
+
+
+
+
+
+一个模块继承另一个模块的配置：
+在子模块pom.xml中添加parent节点引入父模块：
+<parent>
+  <!--引入父模块-->
+  <groupId></groupId>
+  <artifactId></artifactId>
+  <version></version>
+  <!--父模块路径-->
+  <relativePath>../要继承的模块名</relativePath>
+</parent>
+
+然后重写需要重写的配置,如artifactId：
+  <artifactId></artifactId>
+
+
+
+Maven  jar版本统一管理
+
+properties>
+  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  <spring.version>1.2.6</spring.version>
+  <junit.version>4.12</junit.version>
+
+</properties>
+
+<dependency>
+ <groupId>org.springframework</groupId>
+ <artifactId>spring-core</artifactId>
+
+ <!--这里使用${}来得到配置的spring版本-->
+ <version>${spring.version}</version>
+</dependency>

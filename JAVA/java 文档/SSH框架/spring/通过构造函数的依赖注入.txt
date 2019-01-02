@@ -1,0 +1,47 @@
+<bean id="a" class="xxx.xx.xxx.A">
+  <constructor-arg index="0" value="aaa" />  //index对应构造函数参数的顺序
+  <constructor-arg index="1" value="123" />
+</bean>
+
+class A{
+  private String name;
+  private String password;
+  public A(String name,String password){
+   this.name=name;
+   this.passwor=password;
+  }
+  
+  set get
+
+}
+
+如果构造函数有重载，如
+A(String a,Integer b) 和 A(String a,String b)
+
+则可以通过type来确定调用哪个构造函数
+<bean id="a" class="xxx.xx.xxx.A">
+  <constructor-arg type="java.lang.String" value="aaa" /> 
+  <constructor-arg type="java.lang.Integer" value="123" />
+</bean>
+
+如果构造函数有重载，如
+A(String a,Integer b) 和 A(String a,int b)
+<bean id="a" class="xxx.xx.xxx.A">
+  <constructor-arg type="java.lang.String" value="aaa" /> 
+  <constructor-arg type="int" value="123" />  //直接用int就可以
+</bean>
+
+如果构造函数有重载，如
+A(String a,Integer b) 和 A(Integer a,String b)
+则可以联合用index和type来解决调用构造函数的不确定性
+
+<bean id="a" class="xxx.xx.xxx.A">
+  <constructor-arg index="0" type="java.lang.String" value="aaa" /> 
+  <constructor-arg index="1" type="java.lang.Integer" value="123" /> 
+</bean>
+表示调用的是 A(String a,Integer b)这个构造函数
+
+
+
+注：如果要为属性赋值为null，则需要用 <null/>
+<constructor-arg><null/></constructor-arg>

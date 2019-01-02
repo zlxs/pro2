@@ -1,0 +1,95 @@
+1.
+添加依赖：
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-redis</artifactId>
+</dependency>
+
+
+2.
+application.properties中增加redis配置：
+
+  spring.redis.host=localhost
+  spring.redis.port=6379
+  spring.redis.pool.max-idle=8
+  spring.redis.pool.min-idle=0
+  spring.redis.pool.max-active=8
+  spring.redis.pool.max-wait=-1
+
+redis配置：
+  spring.redis.database= # database name  
+  spring.redis.host=localhost # server host  
+  spring.redis.password= # server password  
+  spring.redis.port=6379 # connection port  
+  spring.redis.pool.max-idle=8 # pool settings ...  
+  spring.redis.pool.min-idle=0  
+  spring.redis.pool.max-active=8  
+  spring.redis.pool.max-wait=-1  
+  spring.redis.sentinel.master= # name of Redis server  
+  spring.redis.sentinel.nodes= # comma-separated list of host:port pairs  
+
+
+我们需要做的配置到这里就已经完成了，Spring Boot会在侦测到存在Redis的依赖并且Redis的配置是可用的情况下，
+使用RedisCacheManager初始化CacheManager。
+
+
+注：
+Redis的缓存独立存在于我们的Spring应用之外，我们对数据库中数据做了更新操作之后
+需要通过@CachePut来让数据更新操作同步到缓存中
+
+
+
+自定义KeyGenerator 如：
+@Bean
+public KeyGenerator keyGenerator() {
+
+       returnnew KeyGenerator() {
+
+           @Override
+           public Object generate(Object o, Method method, Object... objects) {
+
+              StringBuilder sb = new StringBuilder();
+              sb.append(o.getClass().getName());
+
+              sb.append(method.getName());
+
+              for (Object obj : objects) {
+
+                  sb.append(obj.toString());
+              }
+              returnsb.toString();
+           }
+       };
+}
+
+生成的key为 类名+方法名+参数的toString形式
+
+
+
+缓存管理器：
+@Bean
+public CacheManager cacheManager(RedisTemplate<?,?> redisTemplate) {
+
+     RedisCacheManager cacheManager = new RedisCacheManager(redisTemplate);
+     cacheManager.setDefaultExpiration(3000); //设置缓存过期时间
+     returncacheManager;
+}
+
+
+Spring和Redis对话需要用到RedisTemplate:
+
+@Bean  
+    public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory factory) {
+        StringRedisTemplate template = new StringRedisTemplate(factory);  
+        Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);  
+        ObjectMapper om = new ObjectMapper();  
+        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);  
+        om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);  
+        jackson2JsonRedisSerializer.setObjectMapper(om);  
+        template.setValueSerializer(jackson2JsonRedisSerializer);  
+        template.afterPropertiesSet();  
+        return template;  
+    }  
+}  
+

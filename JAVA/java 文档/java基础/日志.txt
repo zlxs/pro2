@@ -1,0 +1,39 @@
+import java.io.BufferedReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class q {
+	public static void main(String[] args)
+	{
+		PrintWriter p=null;
+		DateFormat date=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			try {
+				p=new PrintWriter(new FileWriter("e:/2.txt",true));
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+	
+	BufferedReader a=new BufferedReader(new InputStreamReader(System.in));
+	String s=null;
+	try {
+		while(!((s=a.readLine()).equals("exit")))
+		{
+			p.println(s);
+			p.println("–¥»Î ±º‰£∫"+date.format(new Date()));
+			p.flush();
+		}
+		a.close();
+		p.close();
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	
+	}
+}

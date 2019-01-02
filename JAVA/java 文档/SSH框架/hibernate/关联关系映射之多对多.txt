@@ -1,0 +1,264 @@
+
+多对多单向关联；
+
+@Entity
+public class Student {
+	private int id;
+	private String name;
+	@Id
+	public int getId() {
+		return id;
+        }
+	...
+	
+}
+
+@Entity
+public class Teacher {
+	private int id;
+	private String name;
+	private Set<Student> students;
+	@Id
+	public int getId() {
+		return id;
+	}
+	@ManyToMany
+	public Set<Student> getStudents() {
+		return students;
+	}
+	...
+}
+
+
+如果想要修改生成的中间表的名字，和字段名，可以使用@JoinTable
+
+@ManyToMany
+@JoinTable(
+   name="t_s"，  //中间表的名字
+         //joinColumns指定中间表中和当前实体类对应的表有的关联关系的字段名，防止中间表字段外键错乱
+   joinColumns={@JoinColumn(name="teacher_id")},
+         //inverseJoinColumns指定中间表中不和当前实体类对应的表有关联关系的字段名，防止中间表字段外键错乱
+   inverseJoinColumns={@JoinColumn(name="student_id")}		
+)
+	public Set<Student> getStudents() {
+		return students;
+	}
+
+
+在映射文件中如何配置：
+Teacher:
+  <set name="students" table="t_s">
+  <key column="teacher_id"> //中间表中与Teacher表关联的字段名
+  <many-to-many class="cn.xxx.xx.Student" column="student_id"> //中间表中与Student表关联的字段名
+</set>
+
+
+
+-----------------------------------------------------------------------------------------------
+
+多对多双向关联：
+
+@Entity
+public class Student {
+
+	private int id;
+	private String name;
+	private Set<Teacher> teachers;
+	@Id
+	public int getId() {
+		return id;
+	}
+	@ManyToMany(mappedBy="students")//Teacher表里的students,不加会生成两张中间表，加在另一个类上也行
+	public Set<Teacher> getTeachers() {
+		return teachers;
+	}
+	...
+}
+
+@Entity
+public class Teacher {
+
+	private int id;
+	private String name;
+	private Set<Student> students;
+	@Id
+	public int getId() {
+		return id;
+	}
+	@ManyToMany
+	public Set<Student> getStudents() {
+		return students;
+	}
+        ...	
+}
+
+在映射文件中如何配置:
+Teacher:
+<set name="students" table="Teacher_Student">
+  <key column="teachers_id"> //中间表中与Teacher表关联的字段名
+  <many-to-many class="cn.xxx.xx.Student" column="students_id"> //中间表中与Student表关联的字段名
+</set>
+
+Student：
+<set name="teachers" table="Teacher_Student" inverse="true">
+  <key column="students_id"> //中间表中与Student表关联的字段名
+  <many-to-many class="cn.xxx.xx.Teacher" column="teachers_id"> //中间表中与Teacher表关联的字段名
+</set>
+
+注：
+如果两个映射文件的inverse都设为false（默认）,则会出现异常（主键重复）导致插入失败
+   因为两映射文件中的inverse都为false，则两方都去维护关联关系，
+即同时向连接表中插入记录，则会导致主键重复而插入失败。
+  需要将其中一方的inverse设为true,让对方维持关联关系
+
+
+
+--------------------###########################################--------------------
+实际上经常把多对多方式，拆分成两个1对多方式来配置，这样可以在中间表中添加其他字段，如：学生课程成绩
+把多对多拆分成两个1对多的案例
+案例：学生-成绩-课程  成绩保存在中间表中  
+
+方式1：中间表有自己的主键，而不是用联合主键的方式：
+ 这是双向关联方式，如需单向关联，把学生和课程中的Set<SC>去掉即可
+
+@SuppressWarnings("serial")
+@Entity
+public class Student implements Serializable{
+
+	private Long id;
+	private String name;
+
+	private Set<SC> scs;//去掉后变为单向关联
+	
+	public Student() {}
+	
+	public Student(String name) {
+		super();
+		this.name = name;
+	}
+
+	@Id
+	@GeneratedValue
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	@Column(name="sname",length=20)
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@OneToMany(mappedBy="student")
+	public Set<SC> getScs() {
+		return scs;
+	}
+
+	public void setScs(Set<SC> scs) {
+		this.scs = scs;
+	}
+}
+
+
+@SuppressWarnings("serial")
+@Entity
+public class Course implements Serializable{
+
+	private Long id;
+	private String name;
+	
+	private Set<SC> scs;//去掉后变为单向关联
+	
+	public Course() {}
+	
+	public Course(String name) {
+		super();
+		this.name = name;
+	}
+
+	@Id
+	@GeneratedValue
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	
+	@Column(name="cname",length=20)
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@OneToMany(mappedBy="course")
+	public Set<SC> getScs() {
+		return scs;
+	}
+
+	public void setScs(Set<SC> scs) {
+		this.scs = scs;
+	}
+}
+
+@SuppressWarnings("serial")
+@Entity
+@Table(name="score")
+public class SC implements Serializable{
+
+	private Long id;
+	
+	private Double score;
+	
+	private Student student;
+	private Course course;	
+	
+	@Id
+	@GeneratedValue
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	
+	@Column
+	public Double getScore() {
+		return score;
+	}
+	public void setScore(Double score) {
+		this.score = score;
+	}
+	
+	@ManyToOne
+	@JoinColumn(name="student_id")
+	public Student getStudent() {
+		return student;
+	}
+	public void setStudent(Student student) {
+		this.student = student;
+	}
+	
+	@ManyToOne
+	@JoinColumn(name="course_id")
+	public Course getCourse() {
+		return course;
+	}
+	public void setCourse(Course course) {
+		this.course = course;
+	}
+	
+}
+
+--------------
+方式2：中间表的主键是学生和课程id的联合主键
+

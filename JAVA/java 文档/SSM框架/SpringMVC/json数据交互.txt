@@ -1,0 +1,57 @@
+
+环境准备：
+
+导入jar
+jackson-core-asl.jar
+jackson-mapper-asl.jar
+
+
+在注解适配器中加入messageConverters
+<!--注解适配器-->
+
+<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+   <property name="messageConverters">
+    <list>
+     <bean class="org.springframework.http.converter.json.MapperingJacksonHttpMessageConverter"></bean>
+    </list>
+   </property>
+</bean>
+
+如果使用<mvc:annotation-driven/>则不用定义上边内容
+
+@RequestBody  加在形参前  将json数据转换成key/value
+@ResponseBody 加在返回值前  将key/value转换成json
+
+
+
+1.通过ajax与服务器交互时，输入json,输出json
+
+$.ajax({
+        type: "POST",
+        url: "http://localhost:8080/SpringMVC/requestJson",
+        contentType: "application/json; charset=utf-8",  //指定传递的是json格式数据，默认是key/value格式
+        data: {"name":"aaa","age":"20"},
+        dataType: "json",
+        success: function (message) {
+           .......
+        },
+        error: function (message) {
+           .......
+        }
+    });
+
+
+@RequestMapping("/requestJson")
+public @ResponseBody User requestJson(@RequestBody User user){
+  ...
+  return user;  //将user转成Json输出
+}
+
+
+2.输入key=value,输出json
+
+@RequestMapping("/requestJson")
+public @ResponseBody User requestJson(User user){
+  ...
+  return user;  //将user转成Json输出
+}

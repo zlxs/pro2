@@ -1,0 +1,59 @@
+
+Action级别：资源文件和对应的Action(如LoginAction)放在同一个目录下，且
+名字前缀和对应的Action相同
+
+先写好不同语言的资源文件
+LoginAction_zh_CN.properties
+LoginAction_en_US.properties
+
+
+<s:property value="getText('key')">
+如：<s:property value="getText('login.username')">
+
+<s:textfield  name="username" key="login.username" />
+
+--------------------key属性---------------------
+key属性和label标签作用一样，在表单项左边显示提示文字，
+只是它用来显示的是国际化的
+
+------------------------------------------------
+
+
+
+package级别
+资源文件前缀必须为package
+package_zh_CN.properties
+package_en_US.properties
+
+放在包下，表示当前包下所有的Action都可以访问资源文件
+
+
+
+Application(整个应用)级别：一般用这种
+ 资源文件放在src目录下
+
+  struts.xml文件中配置
+
+<constant name="struts.custom.i18n.resources" value="资源文件前缀名"></constant>
+
+-----------------------------------------------------------
+
+资源文件中的value带参数：
+如：welcome.msg=欢迎你：{0}
+
+这时，可以传递参数过去
+<s:text name="welcome.msg">
+  <s:param value="username"></s:param> //value内为OGNL表达式
+</s:text>
+
+
+-----------------------------------------------------------
+
+动态语言切换  重载框架locale检测
+点击切换语言的超链接时，只需要传递参数request_locale=资源文件后缀
+如：
+<a href="/xxxAction?request_locale=en_US">english</a>
+<a href="/xxxAction?request_locale=zh_CN">中文</a>
+jsp中可以通过ognl获取locale的具体值，action继承的ActionSuppor类中有locale属性  
+获得方式：<s:property value="locale" /> 其他标签也可以获得
+

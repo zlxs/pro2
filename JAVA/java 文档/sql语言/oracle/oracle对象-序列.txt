@@ -1,0 +1,51 @@
+序列：是oacle提供的用于产生一系列唯一数字的数据库对象
+   主要用于提供主键值和唯一键值  一般为每张表都创建一个序列
+
+创建序列：
+CREATE SEQUENCE 序列名
+       [INCREMENT BY n]  //递增的序列值是n 如果n是正数就递增,如果是负数就递减 默认是1
+       [START WITH n]    //开始的值,不写的话 递增默认是minvalue 递减是maxvalue，maxvalue和minvalue不写，则默认为1
+       [{MAXVALUE n | NOMAXVALUE}] //最大值
+       [{MINVALUE n | NOMINVALUE}] //最小值
+       [{CYCLE | NOCYCLE}] //循环/不循环
+       [{CACHE n | NOCACHE}]//预先分配多少个数字，并存入到内存中
+       [{ORDER | NOORDER}]//是否有序
+
+例：
+create sequence  seq1
+increment by 1
+start with 1
+maxvalue  100000000
+minvalue  1
+  NOCYCLE
+
+
+初始化序列的值：
+select seq1.nextval from dual;
+
+获取序列的当前值：
+select seq1.currval from dual;
+
+注：使用序列的 nextval 属性
+    当第一次使用的时候，是初始化序列的值
+    之后使用时，获取的是序列的下一个值
+
+
+在开发中如何使用：
+      当需要使用该序列号的值时，直接调用创建的序号号中的 nextval方法。
+insert into employee(id,name) values(seq1.nextval,"aaa");
+insert into employee(id,name) values(seq1.nextval,"bbb");
+
+删除序列
+DROP SEQUENCE seq1;
+
+
+修改序列
+alter sequence  seq1
+increment by 5
+start with 1    //这个不能该
+maxvalue  200000000
+minvalue  1
+  CYCLE
+
+start with 不能修改，其他都可以

@@ -1,0 +1,23 @@
+
+可以返回类型
+1.返回ModelAndView
+
+
+2.返回String   和struts2一样
+
+参数传递给jsp:
+   1. 可以在方法参数上添加 Model/ModelMap model 形参
+    通过model的addAttribute("key",value)来把数据传递给jsp页面 (将model数据填充到request域)
+  
+   2.也可以在方法参数上添加HttpServletRequest request Spring会自动注入这些bean
+
+
+返回值：
+    return "login";  
+    return "redirect:login";  //重定向到login.jsp
+    return "forword:login";   //页面转发 共享request
+
+
+
+3.返回void 即无返回值
+通过给方法加参数request和response来实现转发和重定向

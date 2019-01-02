@@ -1,0 +1,18 @@
+邮件主题：无乱码
+
+
+邮件内容乱码：
+解决：
+MimeBodyPart text=new MimeBodyPart();
+text.setContent("aaaaaa<img src='cid:1.jpg'><br/>xxxxxx","text/html;charset=UTF-8");
+设置正文时，加上charset=UTF-8
+
+
+
+邮件附件名乱码：
+MimeBodyPart attach = new MimeBodyPart();
+DataHandler dh1 = new DataHandler(new FileDataSource("src/1.jpg"));
+   attach.setDataHandler(dh1);
+   attach.setFileName(MimeUtility.encodeText(dh1.getName())); //设置附件名时，解决乱码 
+
+

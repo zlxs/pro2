@@ -1,0 +1,52 @@
+
+ApplicationContext只维护单例bean的生命周期
+
+对于原型bean，每次使用都new一个新的，容器中没有原型bean的引用
+
+
+bean被载入到容器中时，他的生命周期就开始了。
+
+
+若bean实现了InitializingBean接口，则它在初始化
+会调用afterPropertiesSet()方法
+或者添加init-method属性
+bean标签的init-method属性：
+ 配置该bean被初始化时调用的方法
+如：
+init-method="a";//初始化时调用bean的a()方法
+
+若bean实现了DisposableBean接口，则它被销毁时
+会调用destroy()方法
+或者添加destroy-method属性
+bean标签的destroy-method属性：
+ 配置该bean被销毁时调用的方法
+如：
+destroy-method="b";//销毁时调用bean的b()方法
+
+------------------------------------------
+
+bean的生命周期：
+
+实例化
+
+设置属性
+
+调用BeanNameAware的setBeanName()方法
+
+调用BeanFactoryAware的setBeanFactory()方法
+
+调用BeanPostProcess的前初始化方法
+
+调用InitializingBean的afterPropertiesSet()方法
+
+调用定制的初始化方法 bean标签的init-method属性配置的方法
+
+调用BeanPostProcess的后初始化方法
+
+bean可以使用了
+
+容器关闭
+
+调用DisposableBean的destroy()方法
+
+调用定制的销毁方法   bean标签的destroy-method属性配置的方法

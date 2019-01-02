@@ -1,0 +1,85 @@
+使用pojo+xml开发aop
+
+public interface A{
+   public void show();
+]
+
+public class AImpl implements A{
+   public void show(){
+     System.out.println("xxxxx");
+   }
+}
+
+public class B{
+  public void before(JoinPoint jp){
+   System.out.println("before");
+  }
+
+  public void after(){
+   System.out.println("after");
+  }
+
+  public void afterReturning(Object ret){
+     System.out.println("afterReturning");
+  }
+
+  public void afterThrowing(Exception e){
+     System.out.println("afterThrowing");
+  }
+ 
+  public Object around(ProceedingJoinPoint pjp){  //ProceedingJoinPoint pjp这个参数很重要，
+  //目标对象的方法要执行，就需要调用pjp.proceed();
+     System.out.println("around");
+     Object result=null;
+     try {
+	result=pjp.proceed();
+     } catch (Throwable e) {
+	System.out.println("抛异常了"+e);
+     }
+     System.out.println("around");
+     return result;
+  }
+}
+
+-------------------------------------------
+引入通知 
+增加Date类属性，需要加的接口和实现类
+public interace AddDate{
+  public void setDate(Date date);
+  public Date getDate();
+}
+
+public class AddDateImpl implements AddDate{
+  
+    private Date date;
+    public void setDate(Date date){
+       this.date=date;
+    }
+    public Date getDate(){
+       return date;
+    }
+}
+-------------------------------------------
+
+<!--配置目标bean-->
+<bean id="aimpl" class="xxx.xx.xxx.AImpl"></bean>
+<!--配置通知bean-->
+<bean id="b" class="xxx.xx.xxx.B"></bean>
+
+<!--通过配置元素将pojo配置成切面-->
+<aop:config>
+   <!--定义通知-->
+   <aop:aspect ref="b">
+     <!--定义切入点表达式-->   作用于A接口的所有实现类
+     <aop:pointcut id="pointcut1" expression="execution(* xxx.xx.xxx.A.show(..)" />
+
+     <aop:before method="before" pointcut-ref="pointcut1" />    
+     <aop:after-returning method="afterReturning" pointcut-ref="pointcut1" returning="ret" />
+     <aop:after-throwing  method="afterTrowing" pointcut-ref="pointcut1"  throwing="e"/>  
+     <aop:after method="after" pointcut-ref="pointcut1" />   
+     
+     <!--定义引用通知 type-mapping指定给哪些类加属性-->
+     <aop:declare-parents type-mapping="xxx.xx.xxx.AImpl" implement-interface="xxx.xx.xxx.AddDate" 
+          default-impl="xxx.xx.xxx.AddDateImpl" />
+   </aop:aspect>
+</aop:config>

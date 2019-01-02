@@ -1,0 +1,64 @@
+Action接收参数方式：
+
+1.在地址后加参数名和值，如？name=aaa&password=123
+  在Action中写name和password属性和对应的set get方法就能接收到
+如：？name=aaa
+public class TestAction {
+	private String name;
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String execute(){
+		System.out.println(name);
+		return "success";
+	}
+}
+
+
+2.使用Domain Model 接受参数
+ 写一个用来封装属性的实体类，属性名需要和参数名一致
+   在Action的属性中加要接收的实体类 private 实体类名 对象名
+
+在地址后加user.name=aaa&user.password=123
+  在Action中写个User类的属性 private User user;和对应的set get方法 ，就能接收到
+ struts2内部会自动帮你new 这个类对象并调用set方法传递参数
+
+
+如果要传递的参数中含有实体类所没有的属性，则可以使用dto（数据传输对象）
+
+public class UserDTO{
+    private String name;
+    private String password;
+    private String confirmPassword;//确认密码，User类中所没有的参数 
+    set
+    get
+}
+
+在Action中再写一个属性 private UserDTO userdto;和set get方法
+ struts2内部会从userdto中拿出相应的参数，封装到user中
+
+
+模型驱动：详细看ModelDriven的txt文件
+
+如果Action实现了带泛型类型的ModelDriven<T> 接口，重写getModel方法
+
+Action中就不需要去写实体类属性的set和get方法了
+  内部会直接去找实体类的set 和get方法封装该属性
+
+
+class TsetAction implements ModelDriven<User>{
+
+   private User user=new User();//需要new出对象
+
+   public User getModel(){
+     return user;
+   }
+}  
+class User{
+  private String name;
+  private String password;
+  set get
+}

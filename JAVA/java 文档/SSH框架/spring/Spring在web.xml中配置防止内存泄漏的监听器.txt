@@ -1,0 +1,4 @@
+ÅäÖÃÔÚContextLoaderListenerÖ®Ç°
+<listener>
+    <listener-class>org.springframework.web.util.IntrospectorCleanupListener</listener-class>
+</listener>

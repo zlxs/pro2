@@ -1,0 +1,94 @@
+NPM是随同NodeJS一起安装的包管理工具，能解决NodeJS代码部署上的很多问题，常见的使用场景有以下几种：
+
+    允许用户从NPM服务器下载别人编写的第三方包到本地使用。
+    允许用户从NPM服务器下载并安装别人编写的命令行程序到本地使用。
+    允许用户将自己编写的包或命令行程序上传到NPM服务器供别人使用。
+
+
+使用国外镜像下载模块可能会很缓慢，可以使用一些国内的镜像：
+
+查看当前镜像地址：npm config get registry
+
+更换npm镜像地址：npm config set registry 具体的url
+
+如换成淘宝的镜像地址：
+临时使用：在安装某个模块是使用
+npm --registry https://registry.npm.taobao.org install express
+
+持久使用：
+npm config set registry https://registry.npm.taobao.org
+
+
+也可以使用淘宝定制的 cnpm (gzip 压缩支持) 命令行工具代替默认的npm:
+
+npm install -g cnpm --registry=https://registry.npm.taobao.org
+
+这样就可以使用 cnpm 命令来安装模块了：
+
+cnpm install <Module Name>
+
+
+----------------------------------------------------------------------
+
+安装模块:
+
+npm install <Module Name>  安装 Node.js 模块
+
+eg:
+ npm install express
+
+安装好之后，express 包就放在了工程目录下的 node_modules 目录中，
+因此在代码中只需要通过 require('express') 的方式就好，无需指定第三方包路径。 
+
+
+全局安装与本地安装:
+
+npm 的包安装分为本地安装（local）、全局安装（global）两种，从敲的命令行来看，差别只是有没有-g而已，比如
+
+npm install express          # 本地安装
+npm install express -g       # 全局安装
+
+本地安装
+    1. 将安装包放在 ./node_modules 下（运行 npm 命令时所在的目录），如果没有 node_modules 目录，会在当前执行 npm 命令的目录下生成 node_modules 目录。
+    2. 可以通过 require() 来引入本地安装的包。 
+
+全局安装
+    1. 将安装包放在 /usr/local 下或者你 node.js 的安装目录。
+    2. 可以直接在命令行里使用。
+
+如果你希望具备两者功能，则需要在两个地方安装它或使用 npm link。
+
+
+----------------------------------------------------------------------
+
+卸载模块：
+npm uninstall <Module Name>
+
+----------------------------------------------------------------------
+
+更新模块：
+npm update <Module Name>
+
+----------------------------------------------------------------------
+
+搜索模块：
+npm search<Module Name>
+
+----------------------------------------------------------------------
+
+创建模块:
+
+1.首先需要定义一个package.json
+可以使用 npm init 来生成一个package.json
+
+2.然后可以使用 npm adduser 命令在 npm 资源库中注册用户（使用邮箱注册）：
+eg:
+npm adduser
+
+Username: xxx
+Password: ***
+Email: aaa@xxx.com
+
+3.最后发布模块：
+npm publish
+

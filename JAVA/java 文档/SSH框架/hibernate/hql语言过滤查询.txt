@@ -1,0 +1,39 @@
+过滤器的使用 为查询加上某些条件
+
+1.定义过滤器
+
+  在映射文件中定义一些过滤器 如book.hbm.xml 
+  <!--过滤器定义-->
+  <filter-def name="testFilter">
+    <!--过滤器参数-->
+    <filter-param name="id" type="integer" />
+  </filter-def>
+
+2.使用过滤器，加条件
+
+  在映射文件中指定使用哪个过滤器 如book.hbm.xml
+  <!--注意条件< >需要转义-->
+  <filter name="testFilter" condition="id &It; :id"></filter>
+
+3.在查询时使得过滤器生效
+
+  session.enableFilter("testFilter").setParameter("id",4)
+  
+  然后查询List list=session.createQuery("from Book b").list();
+    会在查询语句中加上条件 b.id<4
+
+
+使用注解方式：
+
+@Entity
+//定义过滤器
+@FilterDef(name="testFilter",parameters={@ParamDef(name="id",type="integer")})
+//使用过滤器
+@Filter(name="testFilter",condition="id &It; :id")
+public class Book{
+
+   ...
+}
+
+
+  session.enableFilter("testFilter").setParameter("id",4)

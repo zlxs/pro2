@@ -1,0 +1,252 @@
+模拟拦截器执行原理:
+
+先模拟一个Interceptor拦截器接口
+public interface Interceptor {
+	public void intercept(ActionInvocation a);
+}
+创建A B拦截器
+public class AInterceptor implements Interceptor {
+
+	@Override
+	public void intercept(ActionInvocation a) {
+		System.out.println("1");
+		a.invoke();  //拦截器执行到一半，返回ActionInvocation继续执行下一个拦截器的方法，
+            //最终再返回此拦截器
+		System.out.println("-1");
+	}
+
+}
+
+public class BInterceptor implements Interceptor {
+
+	@Override
+	public void intercept(ActionInvocation a) {
+		System.out.println("2");
+		a.invoke();  //拦截器执行到一半，返回ActionInvocation继续执行下一个拦截器的方法，
+             //最终再返回此拦截器
+		System.out.println("-2");
+	}
+
+}
+
+模拟一个Action
+public class Action {
+
+	public String execute(){
+		System.out.println("action执行");
+		return null;
+	}
+}
+
+
+public class ActionInvocation {
+	
+	private List<Interceptor> list=new ArrayList<>();//保存所有的拦截器
+        private Action action=new Action();//保存要访问的Action
+        private int index=-1;  //拦截器执行到第几个的索引
+	public ActionInvocation(){  //初始化时把所有拦截器加入集合中
+		list.add(new AInterceptor());
+		list.add(new BInterceptor());		
+	}
+	public void invoke(){
+		index++;
+		if(index>=list.size()){  //如果所有拦截器都拦截过后执行Action的execute方法
+			action.execute();
+		}else{   //否则，调用下一个拦截器的方法
+			list.get(index).intercept(this);
+		}	
+	}
+		
+	public static void main(String[] args){
+		new ActionInvocation().invoke();
+	}
+	
+}
+
+
+所以最终执行结果为：
+1
+2
+action执行
+-2
+-1
+
+----------------------------------------------------------------------------------------------------
+
+struts2的内置拦截器：
+
+1.别名拦截器  com.opensymphony.xwork2.interceptor.AliasInterceptor
+  配置名：alias
+  描述：允许参数在跨越多个请求时使用不同别名，这个拦截器可将多个action使用不同名字链接起来，然后用于处理同一信息
+
+2.自动装配拦截器  com.opensymphony.xwork2.spring.interceptor.ActionAutowiringInterceptor
+  配置名：autowiring
+  描述：信息自动装配的拦截器，主要用于当struts2和Spring整合时，Struts可以使用自动装配的方式来访问Spring容器中的Bean.
+  
+3.链拦截器  com.opensymphony.xwork2.interceptor.ChainingInterceptor
+  配置名：chain
+  描述：允许当前action能够使用上一个被执行action的属性，这个拦截器通常要和“chain”结果类型一起使用（<result type=”chain”…/>）
+
+4.多选框拦截器  org.apache.struts2.interceptor.CheckboxInterceptor
+  配置名：checkbox
+  描述：为没有被选定的多选框增加一个值为false的参数，协助管理多选框（在HTTP请求里，那些没有被选定的多选框通常是没有任何信息的）
+
+5.转换错误拦截器  org.apache.struts2.interceptor.StrutsConversionErrorInterceptor
+  配置名：conversionError
+  描述：将转换错误的信息（包括转换的字符串和参数类型等）存放到action的字段错误集里去
+
+6.Cookie拦截器  org.apache.struts2.interceptor.CookieInterceptor
+  配置名：cookie
+  描述：使用配置的name,value来指定cookies
+
+7.清除Session拦截器  N/A
+  配置名：clearSession
+  描述：负责销毁HttpSeesion
+
+8.会话创建拦截器  org.apache.struts2.interceptor.CreateSessionInterceptor
+  配置名：createSession
+  描述：自动创建一个HttpSession会话（如果会话不存在）,用来为需要使用到HttpSession的拦截器服务
+
+9.调试拦截器  org.apache.struts2.interceptor.debugging.DebuggingInterceptor
+  配置名：debugging
+  描述：当使用Struts2的开发模式时，此拦截器会提供更多的调试信息，为开发者提供几种不同调试界面
+
+10.扩展引用拦截器  com.opensymphony.xwork2.interceptor.ExternalReferencesInterceptor
+  配置名：externalRef
+  描述：负责扩展引用
+
+11.执行和等待拦截器  org.apache.struts2.interceptor.ExecuteAndWaitInterceptor
+  配置名：execAndWait
+  描述：当action在后台执行时，给用户显示一个过渡性的等待页面
+
+12.异常拦截器  com.opensymphony.xwork2.interceptor.ExceptionMappingInterceptor
+  配置名：exception
+  描述：将action抛出的异常映射到结果，这样就通过重定向来自动处理异常，一般情况下，应该为最后一个拦截器
+
+13.文件上传拦截器  org.apache.struts2.interceptor.FileUploadInterceptor
+  配置名：fileUpload
+  描述：此拦截器主要用于文件上传，它负责解析表单中文件域的内容
+
+14.国际化拦截器  com.opensymphony.xwork2.interceptor.I18nInterceptor
+  配置名：i18n
+  描述：这是支持国际化的拦截器，它负责把所选的语言、区域放入用户Session中。
+
+15.日志拦截器  com.opensymphony.xwork2.interceptor.LoggingInterceptor
+ 配置名：logger
+ 描述：通过输出被执行action的名字，提供简单的日志功能，记录用于追踪的信息（可位于拦截器序列的不同位置）
+
+16消息存储拦截器  org.apache.struts2.interceptor.MessageStoreInterceptor
+ 配置名：store
+ 描述：在会话中为action存储和检索消息、字段错误以及action错误，该拦截器要求action实现ValidationAware接口
+
+17.模型驱动拦截器  com.opensymphony.xwork2.interceptor.ModelDrivenInterceptor
+ 配置名：modelDriven
+ 描述：这是一个用于模型驱动的拦截器，当某个Action类实现了ModelDriven接口时，它负责把getModel()方法的结果放入ValueStack中
+
+18.作用域模型驱动拦截器  com.opensymphony.xwork2.interceptor.ScopedModelDrivenInterceptor
+ 配置名：scopedModelDriven
+ 描述：如果一个Action实现了一个ScopedModelDriven接口，该拦截器负责从指定生存范围中找出指定的Modol，
+       并将通过setModel方法将该Model传给Action实例
+
+19.参数拦截器  com.opensymphony.xwork2.interceptor.ParametersInterceptor
+ 配置名：params
+ 描述：这是最基本的一个拦截器，它负责解析HTTP请求中的参数，并将参数值设置成Action对应的属性值
+
+20.参数过滤拦截器  org.apache.struts2.interceptor.ProfilingActivationInterceptor
+ 配置名：N/A
+ 描述：控制action对参数的访问（非默认配置）
+
+21.预备拦截器  com.opensymphony.xwork2.interceptor.PrepareInterceptor
+ 配置名：prepare
+ 描述：如果action实现Preparable接口，将会调用该拦截器的prepare()方法
+
+22.概要拦截器  com.opensymphony.xwork2.interceptor.StaticParametersInterceptor
+ 配置名：profiling
+ 描述：允许action记录简单的概要信息日志
+
+23.作用域拦截器  org.apache.struts2.interceptor.ScopeInterceptor
+ 配置名：scope
+ 描述：这是范围转换拦截器，它可以将Action状态信息保存到HttpSession范围，或者保存到ServletContext范围内。
+
+24.Servlet配置拦截器  org.apache.struts2.interceptor.ServletConfigInterceptor
+ 配置名：servletConfig
+ 描述：如果某个Action需要直接访问ServletAPI，就是通过这个拦截器实现，
+       它提供访问HttpServletRequest和HttpServletResponse的方法，以map的方式访问
+
+25.静态参数拦截器  com.opensymphony.xwork2.interceptor.StaticParametersInterceptor
+ 配置名：staticParams
+ 描述：设置action里的静态定义值（通过action配置里的param标签来实现）；
+       这个拦截器负责将struts.xml文件中<action>标签下<param>标签中的参数传入action
+
+26.角色拦截器  org.apache.struts2.interceptor.RolesInterceptor
+ 配置名：roles
+ 描述：这是一个JAAS（Java Authentication and Authorization Service, Java授权和认证服务）拦截器，
+       只有当浏览者取得合适的授权后，才可以调用被该拦截器拦截的Action
+
+27.计时拦截器  com.opensymphony.xwork2.interceptor.TimerInterceptor
+ 配置名：timer
+ 描述：以执行action所花时间的形式，简单记录action概要信息，此拦截器负责输出Action的执行时间，可以利用此拦截器分析该Action的性能瓶颈
+
+28.令牌拦截器  org.apache.struts2.interceptor.TokenInterceptor
+ 配置名：token
+ 描述：检查action的合法令牌，以防止重复提交表单，当表单被多次提交时，跳转到一个错误页面
+
+29.令牌会话拦截器  org.apache.struts2.interceptor.TokenSessionStoreInterceptor
+ 配置名：tokenSession
+ 描述：功能与令牌拦截器相同，但是对于非法令牌，提交的数据将保存在会话中，不跳转到错误页面，再次生成与第一次相同的页面。
+
+30.验证拦截器  org.apache.struts2.interceptor.validation.AnnotationValidationInterceptor
+ 配置名：validation
+ 描述：通过执行在xxxAction-validation.xml中定义的校验器，从而完成数据校验。
+
+31.工作流拦截器  com.opensymphony.xwork2.interceptor.DefaultWorkflowInterceptor
+ 配置名：workflow
+ 描述：为action定义默认的工作流，一般跟在validation等其他拦截器后，当验证失败时，不执行action然后重定向到INPUT视图
+
+32.Json拦截器  com.opensymphony.xwork2.interceptor.annotations.AnnotationWorkflowInterceptor
+ 配置名：jsonValidation
+ 描述：验证失败，此拦截器可以将fieldErrors和actionErrors两个属性给序列化成json返回给客户端
+
+
+----------------------------------------------------------------------------------------------------
+
+自定义拦截器
+
+实现Interceptor接口
+重写intercept(ActionInvocation invocation) 方法
+
+public String intercept(ActionInvocation invocation){
+
+  拦截下来做的操作  
+   ...
+  invocation.invoke();//这个一定要加，放行
+  
+  返回拦截器做的操作 
+   ...
+} 
+
+再在struts.xml文件中配置自定义的拦截器
+<interceptors>
+  <interceptor name="my" class="xxx.xx.xx.MyInterceptor"><interceptor>
+</interceptors>
+
+<action name="test" class="xxx.xx.xx.TestAction">
+  <result>/test.jsp</result>
+  <interceptor-ref  name="my"></interceptor-ref>
+  <interceptor-ref  name="defaultStack"></interceptor-ref>
+</action>
+
+
+---------------------------------------------------------------
+
+防表单重复提交的拦截器struts帮我们写了，但没有放在默认的拦截器中，
+用到时可以自己配
+<action name="test" class="xxx.xx.xx.TestAction">
+  <result>/test.jsp</result>
+  <interceptor-ref  name="defaultStack"></interceptor-ref>
+  <interceptor-ref  name="token"></interceptor-ref>
+  <result name="invalid.token">/error.jsp</result> //重复提交时转到error页面
+  //struts2会去找invalid.token的result，不要改成别的
+</action>
+
+在jsp的form中加入<s:token />标签

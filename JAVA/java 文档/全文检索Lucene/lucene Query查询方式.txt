@@ -1,0 +1,129 @@
+        // 关键词查询
+ 27     @Test
+ 28     public void testTermQuery() {
+ 29         // 对应的查询字符串为：title:lucene
+ 30         TermQuery query = new TermQuery(new Term("title", "lucene"));
+ 31         searchAndShowResult(query);
+ 32     }
+ 33 
+ 34     // 通配符查询
+ 35     // ? 表示一个任意字符
+ 36     // * 表示0或多个任意字符
+ 37     @Test
+ 38     public void testWildcardQuery() {
+ 39         // 对应的查询字符串为：title:lu*n?
+ 40         // WildcardQuery query = new WildcardQuery(new Term("title", "lu*n?"));
+ 41 
+ 42         // 对应的查询字符串为：content:互?网
+ 43         WildcardQuery query = new WildcardQuery(new Term("content", "互?网"));
+ 44         searchAndShowResult(query);
+ 45     }
+ 46 
+ 47     // 查询所有
+ 48     @Test
+ 49     public void testMatchAllDocsQuery() {
+ 50         // 对应的查询字符串为：*:*
+ 51         MatchAllDocsQuery query = new MatchAllDocsQuery();
+ 52         searchAndShowResult(query);
+ 53     }
+ 54 
+ 55     // 模糊查询
+ 56     @Test
+ 57     public void testFuzzyQuery() {
+ 58         // 对应的查询字符串为：title:lucenX~0.9
+ 59         // 第二个参数是最小相似度，表示有多少正确的就显示出来，比如0.9表示有90%正确的字符就会显示出来。
+ 60         FuzzyQuery query = new FuzzyQuery(new Term("title", "lucenX"), 0.8F);
+ 61         searchAndShowResult(query);
+ 62     }
+ 63 
+ 64     // 范围查询
+ 65     @Test
+ 66     public void testNumericRangeQuery() {
+ 67         // 对应的查询字符串为：id:[5 TO 15]
+ 68         // NumericRangeQuery query = NumericRangeQuery.newIntRange("id", 5, 15, true, true);
+ 69 
+ 70         // 对应的查询字符串为：id:{5 TO 15}
+ 71         // NumericRangeQuery query = NumericRangeQuery.newIntRange("id", 5, 15, false, false);
+ 72 
+ 73         // 对应的查询字符串为：id:[5 TO 15}
+ 74         NumericRangeQuery query = NumericRangeQuery.newIntRange("id", 5, 15, true, false);
+ 75 
+ 76         searchAndShowResult(query);
+ 77     }
+ 78 
+ 79     // 布尔查询
+ 80     @Test
+ 81     public void testBooleanQuery() {
+ 82         BooleanQuery booleanQuery = new BooleanQuery();
+ 83         // booleanQuery.add(query, Occur.MUST); // 必须满足
+ 84         // booleanQuery.add(query, Occur.SHOULD); // 多个SHOULD一起用表示OR的关系
+ 85         // booleanQuery.add(query, Occur.MUST_NOT); // 必须不满足
+
+             //单独使用Not无意义
+ 86 
+ 87         Query query1 = new TermQuery(new Term("title", "lucene"));
+ 88         Query query2 = NumericRangeQuery.newIntRange("id", 5, 15, false, true);
+ 89 
+ 90         // // 对应的查询字符串为：+title:lucene +id:{5 TO 15]    +:必须满足 -:必须不满足
+ 91         // // 对应的查询字符串为（大写的AND）：title:lucene AND id:{5 TO 15]
+ 92         // booleanQuery.add(query1, Occur.MUST);
+ 93         // booleanQuery.add(query2, Occur.MUST);
+ 94 
+ 95         // 对应的查询字符串为：title:lucene id:{5 TO 15]
+ 96         // 对应的查询字符串为：title:lucene OR id:{5 TO 15]
+ 97         // booleanQuery.add(query1, Occur.SHOULD);
+ 98         // booleanQuery.add(query2, Occur.SHOULD);
+ 99 
+100         // 对应的查询字符串为：+title:lucene -id:{5 TO 15]
+101         // 对应的查询字符串为：title:lucene (NOT id:{5 TO 15] )
+102         booleanQuery.add(query1, Occur.MUST);
+103         booleanQuery.add(query2, Occur.MUST_NOT);
+104 
+105         searchAndShowResult(booleanQuery);
+106     }
+
+/**
+109      * 测试搜索的工具方法
+110      * 
+111      * @param query
+112      */
+113     private void searchAndShowResult(Query query) {
+114         try {
+115             // // 准备查询条件
+116             // String queryString = "content:lucene";
+117             // 1，把查询字符串转为Query对象（从title和content中查询）
+118             // QueryParser queryParser = new MultiFieldQueryParser(Version.LUCENE_30, new String[] { "title", "content" }, LuceneUtils.getAnalyzer());
+119             // Query query = queryParser.parse(queryString);
+120 
+121             System.out.println("--->  // 对应的查询字符串为：" + query + "\n");
+122 
+123             // 2，执行查询，得到中间结果
+124             IndexSearcher indexSearcher = new IndexSearcher(LuceneUtils.getDirectory()); // 指定所用的索引库
+125             TopDocs topDocs = indexSearcher.search(query, 100); // 最多返回前n条结果
+126 
+127             // 3，处理结果
+128             List<Article> list = new ArrayList<Article>();
+129             for (int i = 0; i < topDocs.scoreDocs.length; i++) {
+130                 // 根据编号拿到Document数据
+131                 int docId = topDocs.scoreDocs[i].doc; // Document的内部编号
+132                 Document doc = indexSearcher.doc(docId);
+133                 // 把Document转为Article
+134                 Article article = ArticleDocumentUtils.documentToArticle(doc);
+135                 list.add(article);
+136             }
+137             indexSearcher.close();
+138 
+139             // 显示结果
+140             System.out.println("总结果数：" + list.size());
+141             for (Article a : list) {
+142                 System.out.println("------------------------------");
+143                 System.out.println("id = " + a.getId());
+144                 System.out.println("title = " + a.getTitle());
+145                 System.out.println("content = " + a.getContent());
+146             }
+147         } catch (Exception e) {
+148             throw new RuntimeException(e);
+149         }
+150     }
+151 }
+107 

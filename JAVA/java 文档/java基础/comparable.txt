@@ -1,0 +1,59 @@
+/**
+ * 测试实现comparable接口的比较大小案例
+ * comparable定义在类内部，要求重写compareTo方法
+ * 
+ * 先比较id，id相同再比较name，name字符串比较直接用String类的comepareTo方法
+ */
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class b implements Comparable{
+	private int id;
+	private String name;
+	
+	b(int a,String b)
+	{
+		this.id=a;
+		this.name=b;
+	}
+	//重写compareTo
+	public int compareTo(Object a)
+	{
+		b m=(b)a;
+		if(this.id>m.id)
+			return 1;
+		else if(this.id<m.id)
+			return -1;
+		else if(this.name.compareTo(m.name)>0)
+			return 1;
+		else if(this.name.compareTo(m.name)<0)
+		return -1;
+		else
+			return 0;
+	}
+	
+	public String toString()
+	{
+		return "id:"+id+" "+"name:"+name;
+	}
+	
+	public static void main(String[] args)
+	{
+		List<b> s=new ArrayList<b>();
+		
+		b a=new b(3,"xsd");
+		b b=new b(3,"xad");
+		b c=new b(2,"xsd");
+		
+		s.add(a);
+		s.add(b);
+		s.add(c);
+		Collections.sort(s);
+		System.out.println("从小到大排序:"+s);
+		Collections.reverse(s);;
+		System.out.println("从大到小排序:"+s);
+		
+	}
+
+}

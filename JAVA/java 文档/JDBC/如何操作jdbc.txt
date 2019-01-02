@@ -1,0 +1,46 @@
+使用mysql驱动
+
+1.加载驱动
+//DriverManager.registerDriver(new com.mysql.jdbc.Driver());//这种方式不太好,驱动会注册两次
+
+Class.forName("com.mysql.jdbc.Driver");//使用这种方式比较好
+ 建议使用com.mysql.jdbc.Driver?useUnicode=true&charracterEncoding=UTF-8 确保获取的是UTf-8的连接，防止乱码
+//oracle为 Class.forName("oracle.jdbc.driver.OracleDriver");
+2.获取链接
+String url="jdbc:mysql://localhost:3306/数据库名";
+//oracle写法 url="jdbc:oracle:thin:@localhost:1521:数据库名";
+String user="root";
+String password="root";
+
+Connection conn=DriverManager.getConnection(url,user,password);//实际开发中，链接通过连接池得到，而不是直接得
+
+3.获取向数据库发送sql语句的statement对象
+Statement st=conn.createStatement();//实际开发中要用PreparedStatement st=conn.prepareStatement(sql);预编译这条sql来防止sql注入
+具体做法如：
+String sql="select * from user where username=? and paaword=?";
+PreparedStatement st=conn.prepareStatement(sql);//预编译这条sql
+st.setString(1,"username");
+st.setString(2,"password");
+
+且第4步方法不用带参数
+ResultSet rs=st.executeQuery();
+
+4.向数据库发送sql，获取数据库返回的结果集
+ResultSet rs=st.executeQuery("select* from 表名");
+
+5.从结果集中获取数据
+while(rs.next())
+{
+ System.out.println(rs.getObject("id"));
+ System.out.println(rs.getObject("name"));
+  .....
+
+获取到的数据一般封装到具体的 bean中，这时调用的不是getObject()，而是getInt("id")/getString("name")/..了
+}
+
+6.释放链接
+rs.close();
+st.close();
+conn.close();//链接很宝贵，用完要释放
+要想释放链接一定执行的话，要把代码用try catch finally套起来，把conn.close()放在finally中，
+如果finally中代码有异常，还要再用try catch finally;

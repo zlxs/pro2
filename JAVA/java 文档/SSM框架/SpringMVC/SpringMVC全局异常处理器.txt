@@ -1,0 +1,84 @@
+
+异常处理
+
+系统遇到异常，在程序中手动抛出，dao抛给service,service抛给controller,
+controler抛给前端控制器，前端控制器调用全局异常处理器
+
+全局异常处理器处理思路：
+解析出异常类型
+如果该异常类型是系统自定义的异常，直接取出异常信息，在错误页面显示
+如果该异常类型不是系统自定义的异常，构造一个自定义的异常类型（信息为"未知错误"）
+
+
+//自定义异常
+public class CustomException extends Exception{
+
+  private String message;
+  public CustomException(){
+    super();
+  }
+  public CustomException(String message){
+    super(message);
+    this.message=message;
+  }
+
+}
+
+
+SpringMVC提供了HandlerExceptionResolver接口
+
+//全局异常处理器
+public class CustomExceptionResolver implements HandlerExceptionResolver{
+
+   public ModelAndView resolveException(HttpServletRequest request,HttpServletResponse response,
+                        Object handler,Exception ex){
+
+     /*方式1
+
+       //解析出异常类型
+       //如果该异常类型是系统自定义的异常，直接取出异常信息，在错误页面显示
+       String message=null;
+       if(ex instanceof CustomException){
+          message=((CustomException)ex).getMessage();
+       }else{
+       //如果该异常类型不是系统自定义的异常，构造一个自定义的异常类型（信息为"未知错误"）
+          message="未知错误";
+       }
+
+       ModelAndView modelAndView=new ModelAndView();
+       //把错误信息传到页面
+       modelAndView.addObject("message",message);
+       //指向错误页面
+       modelAndView.setViewName("error")
+       return modelAndView;
+
+      */
+
+       // 方式2     变换上边代码
+       CustomException customException=null;
+       if(ex instanceof CustomException){
+           customException=(CustomException)ex;
+       }else{
+           customException=new CustomException("未知错误");
+       }
+       String message=customException.getMessage();
+      
+       ModelAndView modelAndView=new ModelAndView();
+       //把错误信息传到页面
+       modelAndView.addObject("message",message);
+       //指向错误页面
+       modelAndView.setViewName("error");
+       return modelAndView;
+   }
+
+}
+
+需要在SpringMVC.xml文件中配置异常处理器
+
+<!--全局异常处理器 只能配置一个-->
+<bean class="xxx.xx.CustomExceptionResolver"></bean>
+
+
+error.jsp
+
+错误信息：${message}

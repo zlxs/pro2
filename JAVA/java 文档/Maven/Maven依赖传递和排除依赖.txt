@@ -1,0 +1,39 @@
+
+依赖传递：     A-->C  B-->A  ===> B-->C
+注： 基于compile这个范围进行传递
+
+如果我的当前项目是project1，project1要依赖project2，project1的pom.xml文件中配置的依赖project2
+中加上 <optional>true</optional>，表示依赖可选
+
+<dependency>
+  <groupId>com.projecct</groupId>
+  <artifactId>project2</artifactId>
+  <version>1.0</version>
+  <scope>compile</scope>
+
+  <optional>true</optional>
+</dependency>
+
+<optional>true</optional>作用：
+ 那么以后所有声明依赖project1的项目如果也依赖project2，就必须写手动声明。
+比如project3依赖project1和project2，如果project3只声明了对project1的依赖，
+那么project2不会自动加入依赖，需要重新声明对project2的依赖。
+
+
+
+
+排除依赖：
+
+<dependency>    
+  <groupId></groupId>
+  <artifactId></artifactId>
+  <version></version> 
+  <!--排除某个依赖-->
+  <exclusions>  
+     <exclusion>	 
+       <groupId>commons-logging</groupId>		
+       <artifactId>commons-logging</artifactId>  
+     </exclusion>  
+  </exclusions>  
+</dependency>
+

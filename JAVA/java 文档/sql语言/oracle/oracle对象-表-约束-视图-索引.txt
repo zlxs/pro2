@@ -1,0 +1,289 @@
+Oracle数据库数据对象中最基本的是表和视图，
+其他还有约束、序列、函数、存储过程、包、触发器等。
+
+--------------------------------------------------------------------------------------------------------------
+表：
+
+使用子查询创建表
+创建带数据的表
+
+create table department1
+as
+select department_id,department_name,manager_id,locatiob_id from department
+
+
+创建不带数据的表
+
+create table department1
+as
+select department_id,department_name,manager_id,locatiob_id from department where 1>2
+
+
+不省略字段列表
+
+create table department1
+(
+ id,
+ name,
+ mgr,
+ lid
+)
+as
+select department_id,department_name,manager_id,locatiob_id from department
+
+
+省略字段列表
+create table department1
+as 
+select department_id id ,department_name name,manager_id mgr,locatiob_id lid from department
+
+
+
+修改表：
+
+增加字段：alter table department add sex char(4)
+
+修改字段： alter table department modify sex char(6)
+
+删除列：alter table department drop column sex
+
+
+
+删除表：
+1.truncate table department 销毁表，释放表存储空间，ddl语句无法回滚
+2.drop table department ddl语句无法回滚，未完成的事务被提交，所有相关的索引被删除，
+     表中所有数据被删除
+
+
+修改表名称：
+rename department to depart;
+
+--------------------------------------------------------------------------------------------------------------
+数据字典：
+  格式：前缀_后缀   
+
+  前缀有 user  all dba
+
+  后缀指数据库对象  users tables constraints sequences indexes views
+
+如：当前用户下的数据字典
+  user_users       用户
+  user_tables      表
+  user_constraints 约束
+  user_sequences   序列
+  user_indexes     索引
+  user_views       视图
+
+  user_cons_columns 某张表中的列与其约束名对应的信息 
+  ...
+
+-------------------------------------------
+--将当前用户下的某张表的curd权限赋值给另一个用户
+grant select insert,select,update,delete on 表名 to 用户名(如 user1);
+或grant all on 表名 to 指定用户名;
+
+登录指定的用户进行测试：
+conn user1/密码
+select * from 表所属用户.表名(如 jsd1605.表名)
+-------------------------------------------
+
+--查询该用户拥有哪些表
+select * from user_tables;
+
+--查询该用户拥有哪些索引
+select index_name from user_indexes;
+
+--查询该用户拥有哪些视图
+select view_name from user_views;
+
+--查询该用户拥有哪些数据库对象,对象包括表、视图、存储过程、触发器、包、索引、序列、JAVA文件等。
+select object_name from user_objects;
+
+--主要描述当前用户的信息，主要包括当前用户名、帐户id、帐户状态、表空间名、创建时间等。
+select * from user_users;
+
+--查询表空间的信息(当前用户必须拥有DBA角色)。
+select * from dba_data_files
+
+--查询CUSTOMER表中列与其约束名对应的信息
+select * from user_cons_columns where table_name='CUSTOMER';
+
+--------------------------------------------------------------------------------------------------------------
+约束：
+
+1.非空约束：not null  只能在字段级定义
+ 
+ 给employee表id增加非空约束 
+ alter table employee modify id  not null;
+
+如需要定义在表级别，可以使用check约束代替
+   如： constraint 约束名 check(字段名 is not null);
+
+
+2.唯一性约束：unique  确保字段或字段组合不出现重复值
+字段只允许出现（一个或多个）空值（不同的数据库不一样）
+oracle将为唯一性约束条件创建唯一性索引
+
+定义约束在表级：
+constraint 用户定义的约束名称 约束的类型（字段1，字段2）
+注：constraint 定义约束的关键字
+    用户定义的约束的名称    自定义
+    约束的类型    unique 和 primary key
+    字段1，字段2.. 可以是多个字段，中间用，隔开
+ 
+create table employee(
+   id number(6),
+   first_name varchar2(20),
+   last_name varchar2(25),
+   constraint un_employee unique(id) --在表级定义约束
+)
+
+在表级定义约束和在列级定义约束的区别：
+       表级可以单起一行，列级只能在字段后
+
+
+联合唯一:
+create table employee(
+   id number(6),
+   first_name varchar2(20),
+   last_name varchar2(25),
+   constraint un_employee unique(first_name,last_name) --在表级定义约束
+)
+
+
+
+3.主键约束  primary key  唯一标识一条记录，不能有重复的，不允许为空
+
+增加主键约束 alter table employee add constraint pk_employee primary key(id)
+
+联合主键：多个字段组合在一起形成主键，和联合唯一性约束类似
+
+
+
+4.外键约束  foreign key  用来和其他表建立联系用的
+          表的外键是另一表的主键, 外键可以有重复的, 可以是空值 
+
+constraint fk_employee foreign key(id) references user(id) 
+         定义employee表的id来自user表的id,或者为空，不能有其他的值
+
+增加外键约束 alter table employee add constraint fk_employee foreign key(id) references user(id);
+
+
+
+自连接的表 ,外键作用在自身
+create table person
+(
+	id int primary key,
+	name varchar(40),
+	parent_id int,
+	constraint parent_id_FK foreign key(parent_id) references person(id)
+);
+
+
+
+5.检查 check  在表的列中增加额外的限制条件
+
+如： 
+     增加工资小于6000的约束
+     alter table 表名 add constraint ch_salary_employee check(salary<6000)
+     增加性别只能是男或女的约束
+     alter table 表名 add constraint ch_sex_employee check(sex in('男','女'))
+
+--------
+删除约束
+alter table 表名 drop constraint 约束名；
+使约束失效/生效
+alter table 表名 disable/enable constraint 约束名；
+
+--------------------------------------------------------------------------------------------------------------
+视图：一个或多个表中数据的逻辑表达式。
+   相当于对复杂的sql语句创建一个别名
+视图是一张虚拟表，视图的字段是由我们自定义的，视图只供查询，数据不可更改，查询数据来源于我们建立的实体表。
+它和表共享存储空间，如果修改了视图的数据，则会影响原表的数据，所以一般在创建视图时添加 with read only来限制
+该视图只能读取
+
+创建视图：
+create or replace view v_employee
+as
+select id,name from employee  where salary=5000; 
+
+查询视图：
+select * from v_employee
+做用等同于
+select id,name from employee  where salary=5000; 
+
+使用视图的目：视图可以将多个复杂表关联，提取出我们需要的信息，优化查询速度
+    对于某些经常需要查询的但数据量很多的sql语句，可以定义视图，简化数据操作。
+
+
+查询视图结构：desc 视图名;
+         或者 describe 视图名;
+
+
+查看用户下的视图：select * from user_views;
+
+禁止对视图进行DML操作，视图只供查询，数据不可更改
+
+定义视图为只读视图：
+create or replace view v_employee
+as
+select id,name from employee  where salary=5000
+with read only;
+
+删除视图：
+drop view v_employee;
+
+
+视图的分类：对象视图 内嵌视图 关系视图 物化视图
+
+
+with check option   
+ 创建视图时加这句，则select如果有where子句,则where后的出现的列
+都不能在修改视图中某行记录时改变这些列的值
+
+
+简单视图:视图来自于查询单表的SQL语句!简单视图是支持DML语句!
+           除了创建视图的时候,添加了with read only
+
+复杂视图:视图来自于多表查询的!复杂视图是不支持DML操作的!
+
+--------------------------------------------------------------------------------------------------------------
+索引：用来加速对表的查询
+
+创建索引：
+create index employee_index
+on employee(id);
+
+select * from employee_index where id=480;
+相当于
+select * from employee where id=480;
+但速度快很多
+
+删除索引：
+drop index employee_index;
+
+
+如果某个列添加了主键或者唯一性约束，那么系统会自动为这列建立一个索引
+默认的索引名和约束名是一样的
+
+索引拥有独立的命名空间和存储空间
+索引是存放在BTree(二叉树)的数据结构中的
+
+伪列rowid  表示数据行的物理地址
+
+ 
+索引创建的原理是什么?
+  将加了索引的列和其对应的rowid组成一个键值对,这个键值对就是索引!
+  并且存储到BTree的数据结构中去!
+
+索引的查询原理是什么?
+  如果where条件中的列上加了索引,则查询分为俩个步骤:
+  1.先去BTree中找出句列中的值对应的rowid
+
+  2.根据rowid直接定位到表中的某一行
+
+  注意点:
+  主键列/唯一性列   适合
+  不经常更新的列    适合
+  null值太多的列    不适合
+  重复值太多的列    不适合

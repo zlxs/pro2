@@ -1,0 +1,26 @@
+list和iterate查询数据不同形式：
+
+JCS(Java Caching System)是一个对象Cache，它可以把Java对象缓存起来，
+提高那些访问频率很高的Java对象的存取效率。JCS是按照对象的唯一标示来存取对象的，
+比如说可以按照对象的hashCode来存取。
+
+
+ 1、Hibernate Iterator的查询本身是分为两步的：先查所有主键，再根据主键来查数据  存在N+1问题
+  ==> select id from cat //一条
+  ==> select * from cat where id = ?  //n条 
+  解析：第一步，去数据库中取主键列表，第二步，按照主键一个一个取数据。
+假如不用JCS的话，那么从数据库中取出n条记录就需要n+1次sql查询，假如使用了JCS，他会先到JCS里面去看看，
+按照主键去找持久对象，假如有了，直接拿出来用，假如没有，那么只好去数据库中取得，然后再把它填到JCS里面去。
+
+ 2、而Hibernate List方式：
+  ==> select * from cat
+  它是JDBC的简单封装，一次sql就把所有的数据都取出来了，它不会像Iterator那样先取主键，
+然后再取数据，因此List无法利用JCS。不过List也可以把从数据库中取出的数据填充到JCS里面去。
+当再次使用list查询数据的时候，仍然要发送sql去数据库中读取数据，证明list()方法不使用缓存 
+
+
+list和iterate返回的对象分析：
+ list()中返回的是实体对象, 而iterate()中返回的对象是代理对象.
+
+
+iterate会查询session缓存、2级缓存， list只会使用查询缓存（如果查询缓存开启的话）

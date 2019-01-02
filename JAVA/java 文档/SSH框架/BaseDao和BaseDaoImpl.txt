@@ -1,0 +1,121 @@
+Spring和Hibernate整合之BaseDao和BaseDaoImpl
+
+import java.util.List;
+
+public interface BaseDao<T> {
+		
+	/**
+	 * 保存
+	 * @param entity
+	 */
+	public void save(T entity);
+	
+	/**
+	 * 删除
+	 * @param id
+	 */
+	public void delete(Long id);//id一般写成Serializable
+	
+	/**
+	 * 更新
+	 * @param entity
+	 */
+	public void update(T entity);
+	
+	/**
+	 * 查询
+	 * @param id
+	 * @return
+	 */
+	public T getById(Long id); 
+	
+	/**
+	 * 查询所有
+	 * @return
+	 */
+	public List<T> findAll();
+
+        /**
+         * 分页查询
+         * @param start 从第几个开始，下标从0开始
+         * @param length 查询几个
+         */
+        List<T> pagingQuery(int start,int length);
+	
+}
+
+
+import java.lang.reflect.ParameterizedType;
+import java.util.List;
+
+import my.ssh.dao.BaseDao;
+
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import org.springframework.context.annotation.Lazy;
+
+//要么就加下面两个注解，要么就都不加
+@Repository
+@Lazy(true)   
+public class BaseDaoImpl<T> implements BaseDao<T> {
+    @Autowired
+    private SessionFactory sessionFactory;
+	
+    private Class<T> clazz;
+    
+    @SuppressWarnings("unchecked")
+    public BaseDaoImpl() {
+    	ParameterizedType parameterizedType = (ParameterizedType)this.getClass().getGenericSuperclass();
+    	this.clazz=(Class<T>) parameterizedType.getActualTypeArguments()[0];  
+    }
+    
+	@Override
+	public void save(T entity) {
+                //getCurrentSession会从当前上下文中拿session,
+                //它并不自动打开一个新连接，如果没有可用的会报错。
+                //所以需要在Service层方法上加@Transactional开启事务才能得到session
+                //@Transactional会打开一个给连接开启事务的session，再存放到当前线程中，
+                //方法结束时再返回通知，关闭session和连接
+		this.sessionFactory.getCurrentSession().save(entity);		
+	}
+
+	@Override
+	public void delete(Long id) {
+		this.sessionFactory.getCurrentSession().delete(getById(id));		
+	}
+
+	@Override
+	public void update(T entity) {
+		this.sessionFactory.getCurrentSession().update(entity);		
+	}
+
+        @SuppressWarnings("unchecked")
+	@Override
+	public T getById(Long id) {
+		return (T) this.sessionFactory.getCurrentSession().get(clazz, id);
+	}
+
+        @SuppressWarnings("unchecked")
+	@Override
+	public List<T> findAll() {
+		return this.sessionFactory.getCurrentSession().createQuery("from"+clazz.getSimpleName()).list();
+	}
+
+        @SuppressWarnings("unchecked")
+	@Override
+	public List<T> pagingQuery(int start, int length) {
+		return sessionFactory.getCurrentSession().createQuery("from "+clazz.getSimpleName())
+                           .setMaxResults(length).setFirstResult(start).list();
+	}
+	
+}
+
+public interface IUserDao extends BaseDao<User> {
+
+}
+
+@Repository
+public class UserDaoImpl extends BaseDaoImpl<User> implements IUserDao{
+
+}

@@ -1,0 +1,11 @@
+排序：
+
+
+field.setBoost() //影响相关度得分
+
+
+
+//排序
+Sort sort=new Sort(new SortField("id",SortField.Type.INT,true));//按id降序排序，去掉true为升序排序
+TopDocs topDocs=indexSearcher.search(query, null, 100, sort);//第二个参数为过滤器
+
